@@ -1,11 +1,11 @@
 import { MainNav } from '../layout/main-nav';
 
-export const Home = () => {
+export const OnGame = () => {
   return (
-    <div className="text-center">
+    <div className="text-center h-full">
       <MainNav />
       <h1 className="text-4xl font-bold">
-        electron-react-boilerplate with tailwind Home Page
+        electron-react-boilerplate OnGame Page
       </h1>
     </div>
   );

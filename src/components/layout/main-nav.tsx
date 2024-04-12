@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { Link } from 'react-router-dom';
+import { cn } from '../../lib/utils';
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -7,29 +9,36 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from '../ui/navigation-menu';
-import { cn } from '../../lib/utils';
-import { Link } from 'react-router-dom';
 
 export function MainNav() {
   return (
-    <NavigationMenu>
-      <NavigationMenuList>
-        <NavigationMenuItem>
-          <Link to="/find-room">
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Find Room
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem>
-        <Link to="/on-game">
+    <div className="h-min py-1">
+      <NavigationMenu>
+        <NavigationMenuList>
           <NavigationMenuItem>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              On Game
-            </NavigationMenuLink>
+            <Link to="/">
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                Home
+              </NavigationMenuLink>
+            </Link>
           </NavigationMenuItem>
-        </Link>
-      </NavigationMenuList>
-    </NavigationMenu>
+          <NavigationMenuItem>
+            <Link to="/find-room">
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                Find Room
+              </NavigationMenuLink>
+            </Link>
+          </NavigationMenuItem>
+          <Link to="/on-game">
+            <NavigationMenuItem>
+              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                On Game
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          </Link>
+        </NavigationMenuList>
+      </NavigationMenu>
+    </div>
   );
 }
 

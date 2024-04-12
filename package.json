@@ -135,6 +135,7 @@
     "@typescript-eslint/eslint-plugin": "^5.18.0",
     "@typescript-eslint/parser": "^5.18.0",
     "autoprefixer": "^10.4.7",
+    "axios": "^1.6.8",
     "browserslist-config-erb": "^0.0.3",
     "chalk": "^4.1.2",
     "concurrently": "^7.1.0",
@@ -189,7 +190,8 @@
     "webpack-bundle-analyzer": "^4.5.0",
     "webpack-cli": "^4.9.2",
     "webpack-dev-server": "^4.8.0",
-    "webpack-merge": "^5.8.0"
+    "webpack-merge": "^5.8.0",
+    "react-use-websocket": "^4.8.1"
   },
   "build": {
     "productName": "ElectronReact",
