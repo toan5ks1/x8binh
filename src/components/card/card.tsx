@@ -15,13 +15,12 @@ const Card: React.FC<CardProps> = ({ imageUrl, altText }) => {
         borderRadius: '8px',
         padding: '2%',
         maxWidth: '300px',
-        margin: '10px',
       }}
     >
       <img
         src={imageUrl}
         alt={altText || 'Card image'}
-        style={{ width: '100%', height: 'auto', borderRadius: '5px' }}
+        style={{ width: '100%', height: 'auto', borderRadius: '1%' }}
       />
     </div>
   );
