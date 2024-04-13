@@ -6,10 +6,15 @@ interface LoginResponse {
   token: string;
 }
 
-const login = async (
-  username: string,
-  password: string
-): Promise<LoginResponse | null> => {
+export interface LoginParams {
+  username: string;
+  password: string;
+}
+
+const login = async ({
+  username,
+  password,
+}: LoginParams): Promise<LoginResponse | null> => {
   const credentials = {
     LoginType: 1,
     UserName: username,
@@ -34,7 +39,7 @@ interface ConnectTokenResponse {
 }
 
 const getConnectToken = async (
-  token: string
+  token?: string
 ): Promise<ConnectTokenResponse | null> => {
   try {
     const url = `https://maubinh.twith.club/signalr/negotiate?access_token=${token}`;
@@ -51,3 +56,23 @@ const getConnectToken = async (
 };
 
 export { getConnectToken, login };
+
+export async function setupBot(
+  bot: LoginParams,
+  setToken: any,
+  setConnectionToken: any,
+  setUser: any
+) {
+  try {
+    const res = await login(bot);
+    const token = res?.token;
+
+    const connectionToken = await getConnectToken(token);
+
+    setToken(token);
+    setConnectionToken(connectionToken?.connectionToken);
+    setUser(bot.username);
+  } catch (err) {
+    console.error('Error when calling setup bot:', err);
+  }
+}

@@ -10,6 +10,25 @@ import {
   navigationMenuTriggerStyle,
 } from '../ui/navigation-menu';
 
+const menuItems = [
+  {
+    name: 'Home',
+    link: '/',
+  },
+  {
+    name: 'Config',
+    link: '/config',
+  },
+  {
+    name: 'Find Room',
+    link: '/find-room',
+  },
+  {
+    name: 'On Game',
+    link: '/on-game',
+  },
+];
+
 export function MainNav() {
   return (
     <div className="h-min py-1">

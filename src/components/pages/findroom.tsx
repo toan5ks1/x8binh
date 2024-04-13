@@ -1,210 +1,76 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { getConnectToken, login } from '../../lib/login';
+import { useSetupBot } from '../../hooks/useSetupBot';
+import { bots } from '../../lib/config';
+import { BotStatus } from '../bots/bot';
 import { MainNav } from '../layout/main-nav';
-
-enum ServerMessageType {
-  JoinGame = 'joinGame',
-  StartActionTimer = 'startActionTimer',
-  PlayerJoin = 'playerJoin',
-  UpdateGameSession = 'updateGameSession',
-}
+import { Button } from '../ui/button';
 
 export const FindRoom = () => {
-  let hostWSS: string = 'wss://maubinh.twith.club';
+  const {
+    userId: userId1,
+    messageHistory: messageHistoryBot1,
+    handleJoinRoom: handleJoinRoomBot1,
+    handleLeaveRoom: handleLeaveRoomBot1,
+    connectionStatus: connectionStatusBot1,
+    handleLoginClick: loginBot1,
+    handleConnectMauBinh: handleConnectMauBinhBot1,
+  } = useSetupBot(bots[0]);
 
-  const [socketUrl, setSocketUrl] = useState('');
-  const [token, setToken] = useState('');
-  const [iTime, setITime] = useState(1);
-  const [currentUser, setCurrentUser] = useState('Unknow');
-  const [connectionToken, setConnectionToken] = useState(null);
-  const [messageHistory, setMessageHistory] = useState<MessageEvent<any>[]>([]);
-  const [shouldConnect, setShouldConnect] = useState(false);
+  const {
+    userId: userId2,
+    messageHistory: messageHistoryBot2,
+    handleJoinRoom: handleJoinRoomBot2,
+    handleLeaveRoom: handleLeaveRoomBot2,
+    connectionStatus: connectionStatusBot2,
+    handleLoginClick: loginBot2,
+    handleConnectMauBinh: handleConnectMauBinhBot2,
+  } = useSetupBot(bots[1]);
 
-  const iTimeRef = useRef(iTime);
-
-  function handleJoinGame(message: any) {
-    const gameData = message.M?.[0]?.A?.[0];
-    console.log('Handling join game with data', gameData);
-  }
-
-  function handleStartActionTimer(message: any) {
-    const timerData = message.M?.[0]?.A;
-    console.log('Handling start action timer with data', timerData);
-  }
-
-  function handleMessage(message: any) {
-    const messageType = message.M?.[0]?.M;
-    switch (messageType) {
-      case ServerMessageType.JoinGame:
-        handleJoinGame(message);
-        break;
-      case ServerMessageType.StartActionTimer:
-        handleStartActionTimer(message);
-        break;
-      default:
-        console.log('Unknown message type', messageType);
-    }
-  }
-
-  const { sendMessage, lastMessage, readyState } = useWebSocket(
-    socketUrl,
-    {
-      shouldReconnect: () => true,
-      reconnectInterval: 3000,
-      reconnectAttempts: 10,
-      onOpen: () => console.log('Connected'),
-    },
-    shouldConnect
-  );
-
-  useEffect(() => {
-    iTimeRef.current = iTime;
-  }, [iTime]);
-
-  useEffect(() => {
-    if (lastMessage !== null) {
-      const message = JSON.parse(lastMessage.data);
-      handleMessage(message);
-    }
-  }, [lastMessage]);
-
-  const handleEnterLobby = useCallback(
-    () =>
-      sendMessage(
-        `{"M":"EnterLobby","A":[1,1],"H":"maubinhHub","I":${iTimeRef.current}}`
-      ),
-    []
-  );
-  const handleClickSendMessage = useCallback(() => {
-    sendMessage(
-      `{"M":"PlayNow","A":[1000,1,0,0],"H":"maubinhHub","I":${iTimeRef.current}}`
-    );
-    sendMessage(
-      `{"M":"UnregisterLeaveRoom","H":"maubinhHub","I":${iTimeRef.current}}`
-    );
-  }, []);
-  const handleLeaveRoom = useCallback(
-    () =>
-      sendMessage(
-        `{"M":"RegisterLeaveRoom","H":"maubinhHub","I":${iTimeRef.current}}`
-      ),
-    []
-  );
-
-  const connectionStatus = {
-    [ReadyState.CONNECTING]: 'Đang kết nối',
-    [ReadyState.OPEN]: 'Sẵn sàng',
-    [ReadyState.CLOSING]: 'Ngắt kết nối',
-    [ReadyState.CLOSED]: 'Đã đóng',
-    [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
-  }[readyState];
-
-  useEffect(() => {
-    const pingPongMessage = () =>
-      `{"M":"PingPong","H":"maubinhHub","I":${iTimeRef.current}}`;
-    const intervalId = setInterval(() => {
-      sendMessage(pingPongMessage());
-      setITime((prevITime) => prevITime + 1);
-    }, 4000);
-
-    return () => clearInterval(intervalId);
-  }, [sendMessage]);
-
-  const handleLoginClick = (): void => {
-    const username: string = 'dungdung';
-    const password: string = '123123a';
-
-    login(username, password)
-      .then((data: any) => {
-        const token = (data as any).Token;
-        setToken(token);
-        getConnectToken(token)
-          .then((data: any) => {
-            setConnectionToken(data.ConnectionToken);
-            setCurrentUser(username);
-          })
-          .catch((err: Error) =>
-            console.error('Error when calling getConnectToken function:', err)
-          );
-      })
-      .catch((err: Error) =>
-        console.error('Error when calling login function:', err)
-      );
+  const onLogin = () => {
+    loginBot1();
+    loginBot2();
   };
 
-  const handleConnectMauBinh = (): void => {
-    if (connectionToken) {
-      const encodedConnectionToken = encodeURIComponent(connectionToken);
-      const encodedConnectionData = encodeURIComponent(
-        JSON.stringify([{ name: 'maubinhHub' }])
-      );
-      const encodedAccessToken = encodeURIComponent(token);
+  const onJoinRoom = () => {
+    handleConnectMauBinhBot1();
+    handleConnectMauBinhBot2();
 
-      const connectURL = `${hostWSS}/signalr/connect?transport=webSockets&connectionToken=${encodedConnectionToken}&connectionData=${encodedConnectionData}&tid=${7}&access_token=${encodedAccessToken}`;
+    handleJoinRoomBot1();
+    handleJoinRoomBot2();
+  };
 
-      setSocketUrl(connectURL);
-      setShouldConnect(true);
-      handleEnterLobby();
-    }
+  const onLeaveRoom = () => {
+    handleLeaveRoomBot1();
+    handleLeaveRoomBot2();
   };
 
   return (
     <div className="flex flex-col h-screen">
       <MainNav />
 
-      <div className="flex flex-col justify-center items-center bg-gray-800 space-y-4 py-8 flex-1">
-        <div className="flex">
-          <span className="font-bold text-white px-[10px]">Bot 1:</span>
-          <h1 className="bg-red-500 font-bold px-[10px]">
-            {' '}
-            {connectionStatus}
-          </h1>
+      <div className="flex flex-col justify-center items-center bg-gray-800 text-white space-y-4 py-8 flex-1">
+        <div className="space-y-4">
+          <BotStatus
+            name={'Bot 2'}
+            userId={userId1}
+            connectionStatus={connectionStatusBot1}
+            messageHistory={messageHistoryBot1}
+          />
+
+          <BotStatus
+            name={'Bot 2'}
+            userId={userId2}
+            connectionStatus={connectionStatusBot2}
+            messageHistory={messageHistoryBot2}
+          />
         </div>
 
-        <p className="w-[200px] truncate">
-          Token: {token && connectionToken ? token : 'Chưa đăng nhập'}
-        </p>
-        <p className="w-[200px] truncate">
-          User: {currentUser ? currentUser : 'Chưa đăng nhập'}
-        </p>
-        <span>The WebSocket is currently {connectionStatus}</span>
-        <div className="flex flex-col gap-[10px] max-h-[300px] max-w-[600px] overflow-x-scroll overflow-y-scroll">
-          {messageHistory.map((message, idx) => (
-            <span className="bg-white text-black font-bold" key={idx}>
-              {message ? message.data : null}
-            </span>
-          ))}
-        </div>
-        <div className="grid grid-cols-4 gap-[20px]">
-          <button
-            type="button"
-            className="bg-green-500 hover:bg-green-400 py-[10px] rounded-[7px] px-[5px]"
-            onClick={handleLoginClick}
-          >
-            Login
-          </button>
-          <button
-            type="button"
-            className="bg-green-500 hover:bg-green-400 py-[10px] rounded-[7px] px-[5px]"
-            onClick={handleConnectMauBinh}
-          >
-            Connect Mậu Binh
-          </button>
-          <button
-            type="button"
-            className="bg-green-500 hover:bg-green-400 py-[10px] rounded-[7px] px-[5px]"
-            onClick={handleClickSendMessage}
-          >
-            Join Room
-          </button>
-          <button
-            type="button"
-            className="bg-green-500 hover:bg-green-400 py-[10px] rounded-[7px] px-[5px]"
-            onClick={handleLeaveRoom}
-          >
-            Rời phòng
-          </button>
+        <div className="flex space-x-2">
+          <Button onClick={onLogin}>Đăng nhập</Button>
+          <Button onClick={onJoinRoom}>Tìm phòng</Button>
+          <Button onClick={onLeaveRoom}>Rời phòng</Button>
+          <Button variant="destructive" onClick={onLeaveRoom}>
+            Ngắt kết nối
+          </Button>
         </div>
       </div>
     </div>
