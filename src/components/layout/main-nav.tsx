@@ -10,32 +10,39 @@ import {
   navigationMenuTriggerStyle,
 } from '../ui/navigation-menu';
 
+const menuItems = [
+  {
+    name: 'Home',
+    link: '/',
+  },
+  {
+    name: 'Config',
+    link: '/config',
+  },
+  {
+    name: 'Find Room',
+    link: '/find-room',
+  },
+  {
+    name: 'On Game',
+    link: '/on-game',
+  },
+];
+
 export function MainNav() {
   return (
     <div className="h-min py-1">
       <NavigationMenu>
         <NavigationMenuList>
-          <NavigationMenuItem>
-            <Link to="/">
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                Home
-              </NavigationMenuLink>
-            </Link>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <Link to="/find-room">
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                Find Room
-              </NavigationMenuLink>
-            </Link>
-          </NavigationMenuItem>
-          <Link to="/on-game">
+          {menuItems.map((item) => (
             <NavigationMenuItem>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                On Game
-              </NavigationMenuLink>
+              <Link to={item.link}>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  {item.name}
+                </NavigationMenuLink>
+              </Link>
             </NavigationMenuItem>
-          </Link>
+          ))}
         </NavigationMenuList>
       </NavigationMenu>
     </div>
