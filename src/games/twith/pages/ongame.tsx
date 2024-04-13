@@ -1,6 +1,6 @@
-import { MainNav } from '../layout/main-nav';
+import { MainNav } from '../../../components/layout/main-nav';
 
-export const Config = () => {
+export const OnGame = () => {
   return (
     <div className="text-center h-full">
       <MainNav />

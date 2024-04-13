@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { hostWSS } from '../config';
 import { LoginParams, getConnectToken, login } from '../lib/login';
 import { handleMessage } from '../lib/utils';
 
 export function useSetupBot(bot: LoginParams) {
-  let hostWSS: string = 'wss://maubinh.twith.club';
-
   const [socketUrl, setSocketUrl] = useState('');
 
   const [token, setToken] = useState('');

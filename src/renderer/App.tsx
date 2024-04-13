@@ -1,8 +1,8 @@
 import { Route, MemoryRouter as Router, Routes } from 'react-router-dom';
-import { Config } from '../components/pages/config';
-import { FindRoom } from '../components/pages/findroom';
-import { Home } from '../components/pages/home';
-import { OnGame } from '../components/pages/ongame';
+import { Config } from '../games/twith/pages/config';
+import { FindRoom } from '../games/twith/pages/findroom';
+import { Home } from '../games/twith/pages/home';
+import { OnGame } from '../games/twith/pages/ongame';
 import './App.css';
 import AppProvider from './providers/app';
 

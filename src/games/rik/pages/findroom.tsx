@@ -1,8 +1,8 @@
-import { useSetupBot } from '../../hooks/useSetupBot';
-import { bots } from '../../lib/config';
+import { MainNav } from '../../../components/layout/main-nav';
+import { Button } from '../../../components/ui/button';
+import { useSetupBot } from '../../twith/hooks/useSetupBot';
 import { BotStatus } from '../bots/bot';
-import { MainNav } from '../layout/main-nav';
-import { Button } from '../ui/button';
+import { bots } from '../config';
 
 export const FindRoom = () => {
   const {
