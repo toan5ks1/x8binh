@@ -13,31 +13,33 @@ import {
 export function MainNav() {
   return (
     <div className="h-min py-1">
-      <NavigationMenu>
-        <NavigationMenuList>
-          <NavigationMenuItem>
-            <Link to="/">
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                Home
-              </NavigationMenuLink>
-            </Link>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <Link to="/find-room">
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                Find Room
-              </NavigationMenuLink>
-            </Link>
-          </NavigationMenuItem>
-          <Link to="/on-game">
+      <div className="">
+        <NavigationMenu>
+          <NavigationMenuList>
             <NavigationMenuItem>
-              <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                On Game
-              </NavigationMenuLink>
+              <Link to="/">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Home
+                </NavigationMenuLink>
+              </Link>
             </NavigationMenuItem>
-          </Link>
-        </NavigationMenuList>
-      </NavigationMenu>
+            <NavigationMenuItem>
+              <Link to="/find-room">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Find Room
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <Link to="/on-game">
+              <NavigationMenuItem>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  On Game
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+            </Link>
+          </NavigationMenuList>
+        </NavigationMenu>
+      </div>
     </div>
   );
 }
