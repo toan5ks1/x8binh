@@ -32,19 +32,33 @@ const menuItems = [
 export function MainNav() {
   return (
     <div className="h-min py-1">
-      <NavigationMenu>
-        <NavigationMenuList>
-          {menuItems.map((item) => (
+      <div className="">
+        <NavigationMenu>
+          <NavigationMenuList>
             <NavigationMenuItem>
-              <Link to={item.link}>
+              <Link to="/">
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  {item.name}
+                  Home
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
-          ))}
-        </NavigationMenuList>
-      </NavigationMenu>
+            <NavigationMenuItem>
+              <Link to="/find-room">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Find Room
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <Link to="/on-game">
+              <NavigationMenuItem>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  On Game
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+            </Link>
+          </NavigationMenuList>
+        </NavigationMenu>
+      </div>
     </div>
   );
 }
