@@ -1,7 +1,7 @@
-import { MainNav } from '../../../components/layout/main-nav';
 import { Button } from '../../../components/ui/button';
 import { useSetupBot } from '../../twith/hooks/useSetupBot';
-import { BotStatus } from '../bots/bot';
+import { BotStatus } from '../components/bots/bot';
+import { MainNav } from '../components/layout/main-nav';
 import { bots } from '../config';
 
 export const FindRoom = () => {

@@ -2,14 +2,15 @@ import * as React from 'react';
 
 import { Link } from 'react-router-dom';
 
-import { cn } from '../../lib/utils';
+import { Badge } from '../../../../components/ui/badge';
 import {
   NavigationMenu,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
   navigationMenuTriggerStyle,
-} from '../ui/navigation-menu';
+} from '../../../../components/ui/navigation-menu';
+import { cn } from '../../../../lib/utils';
 
 const menuItems = [
   {
@@ -18,52 +19,40 @@ const menuItems = [
   },
   {
     name: 'Config',
-    link: '/config',
+    link: '/game/rik/config',
   },
   {
     name: 'Find Room',
-    link: '/find-room',
+    link: '/game/rik/find-room',
   },
   {
     name: 'On Game',
-    link: '/on-game',
+    link: '/game/rik/on-game',
   },
 ];
 
 export function MainNav() {
   return (
-    <div className="h-min py-1">
-      <div className="">
+    <div className="h-min py-1 px-2">
+      <div className="flex justify-between items-center">
         <NavigationMenu>
           <NavigationMenuList>
-            <NavigationMenuItem>
-              <Link to="/">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Home
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link to="/find-room">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Find Room
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <Link to="/on-game">
+            {menuItems.map((item) => (
               <NavigationMenuItem>
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  On Game
-                </NavigationMenuLink>
+                <Link to={item.link}>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    {item.name}
+                  </NavigationMenuLink>
+                </Link>
               </NavigationMenuItem>
-            </Link>
+            ))}
           </NavigationMenuList>
         </NavigationMenu>
+        <Badge>Rik</Badge>
       </div>
     </div>
   );
 }
-
 const ListItem = React.forwardRef<
   React.ElementRef<'a'>,
   React.ComponentPropsWithoutRef<'a'>
