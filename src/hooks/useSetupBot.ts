@@ -10,10 +10,11 @@ export function useSetupBot(bot: LoginParams) {
 
   const [token, setToken] = useState('');
   const [connectionToken, setConnectionToken] = useState(null);
-  const [userId, setUserId] = useState('Unknow');
+  const [userId, setUserId] = useState(null);
+  const [roomId, setRoomId] = useState(null);
 
   const [iTime, setITime] = useState(1);
-  const [messageHistory, setMessageHistory] = useState<MessageEvent<any>[]>([]);
+  const [messageHistory, setMessageHistory] = useState<string[]>([]);
   const [shouldConnect, setShouldConnect] = useState(false);
 
   const iTimeRef = useRef(iTime);
@@ -44,13 +45,12 @@ export function useSetupBot(bot: LoginParams) {
       `{"M":"UnregisterLeaveRoom","H":"maubinhHub","I":${iTimeRef.current}}`
     );
   }, []);
-  const handleLeaveRoom = useCallback(
-    () =>
-      sendMessage(
-        `{"M":"RegisterLeaveRoom","H":"maubinhHub","I":${iTimeRef.current}}`
-      ),
-    []
-  );
+  const handleLeaveRoom = useCallback(() => {
+    handleMessage('RegisterLeaveRoom');
+    return sendMessage(
+      `{"M":"RegisterLeaveRoom","H":"maubinhHub","I":${iTimeRef.current}}`
+    );
+  }, []);
 
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Đang kết nối',
@@ -67,7 +67,9 @@ export function useSetupBot(bot: LoginParams) {
   useEffect(() => {
     if (lastMessage !== null) {
       const message = JSON.parse(lastMessage.data);
-      handleMessage(message);
+      const newMsg = handleMessage(message);
+
+      setMessageHistory((msgs) => [...msgs, newMsg]);
     }
   }, [lastMessage]);
 
