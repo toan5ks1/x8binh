@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import log from 'electron-log';
 import { autoUpdater } from 'electron-updater';
+import os from 'os';
 import path from 'path';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
@@ -71,10 +72,21 @@ export const getAssetPath = (...paths: string[]): string => {
   return path.join(RESOURCES_PATH, ...paths);
 };
 
-(async () => {
-  const userProfilePath = 'C:/Users/PC/MyPuppeteerProfile';
+async function startPuppeteer() {
+  let userProfilePath;
+
+  const username = os.userInfo().username;
+
+  if (os.platform() === 'win32') {
+    userProfilePath = path.join('C:/Users', username, 'MyPuppeteerProfile');
+  } else if (os.platform() === 'darwin') {
+    userProfilePath = path.join('/Users', username, 'MyPuppeteerProfile');
+  } else {
+    userProfilePath = path.join('/home', username, 'MyPuppeteerProfile');
+  }
   const browser = await puppeteer.launch({
     headless: false,
+    defaultViewport: null,
     userDataDir: userProfilePath,
   });
   const page = await browser.newPage();
@@ -141,7 +153,11 @@ export const getAssetPath = (...paths: string[]): string => {
       console.error('Error executing script in the page:', error);
     }
   });
-})();
+}
+
+ipcMain.on('start-puppeteer', async () => {
+  await startPuppeteer();
+});
 
 const createWindow = async () => {
   if (isDebug) {
