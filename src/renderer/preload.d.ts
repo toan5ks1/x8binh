@@ -1,13 +1,15 @@
-import { Channels } from 'main/preload';
-
+// preload.d.ts
 declare global {
   interface Window {
     electron: {
       ipcRenderer: {
-        sendMessage(channel: Channels, args: unknown[]): void;
-        on(channel: string, func: (...args: unknown[]) => void): void;
+        sendMessage(channel: string, args: unknown[]): void;
+        executeScript(channel: string, args: unknown[]): void;
+        on(channel: string, func: (...args: unknown[]) => void): () => void;
         once(channel: string, func: (...args: unknown[]) => void): void;
       };
+      onWebSocketData(func: (data: unknown) => void): void;
+      removeWebSocketData(channel: string): void;
     };
   }
 }

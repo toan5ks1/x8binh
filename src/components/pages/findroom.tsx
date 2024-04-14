@@ -1,3 +1,4 @@
+import background from '../../../assets/bg/bg-poker.png';
 import { useSetupBot } from '../../hooks/useSetupBot';
 import { bots } from '../../lib/config';
 import { BotStatus } from '../bots/bot';
@@ -47,7 +48,15 @@ export const FindRoom = () => {
     <div className="flex flex-col h-screen">
       <MainNav />
 
-      <div className="flex flex-col justify-center items-center bg-gray-800 text-white space-y-4 py-8 flex-1">
+      <div
+        className="flex flex-col justify-center items-center  text-white space-y-4 py-8 flex-1"
+        style={{
+          backgroundImage: `url('${background}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          height: '100vh',
+        }}
+      >
         <div className="space-y-4">
           <BotStatus
             name={'Bot 2'}

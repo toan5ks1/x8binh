@@ -1,19 +1,26 @@
-/* eslint global-require: off, no-console: off, promise/always-return: off */
-
-/**
- * This module executes inside of electron's main process. You can start
- * electron renderer process from here and communicate with the other processes
- * through IPC.
- *
- * When running `npm run build` or `npm run build:main`, this file is compiled to
- * `./src/main.js` using webpack. This gives us some performance wins.
- */
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import log from 'electron-log';
 import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+const puppeteer = require('puppeteer');
+
+interface WebSocketCreatedData {
+  requestId: string;
+  url: string;
+}
+
+interface WebSocketClosedData {
+  requestId: string;
+}
+
+interface WebSocketFrameReceivedData {
+  requestId: string;
+  response: {
+    payloadData: string;
+  };
+}
 
 export default class AppUpdater {
   constructor() {
@@ -64,6 +71,78 @@ export const getAssetPath = (...paths: string[]): string => {
   return path.join(RESOURCES_PATH, ...paths);
 };
 
+(async () => {
+  const userProfilePath = 'C:/Users/PC/MyPuppeteerProfile';
+  const browser = await puppeteer.launch({
+    headless: false,
+    userDataDir: userProfilePath,
+  });
+  const page = await browser.newPage();
+
+  const client = await page.target().createCDPSession();
+
+  await client.send('Network.enable');
+
+  let specificWebSocketRequestId: any = null;
+
+  client.on(
+    'Network.webSocketCreated',
+    ({ requestId, url }: WebSocketCreatedData) => {
+      if (url.includes('wss://cardskgw.ryksockesg.net/websocket')) {
+        console.log(`WebSocket Created to specific URL: ${url}`);
+
+        specificWebSocketRequestId = requestId;
+      }
+    }
+  );
+
+  client.on('Network.webSocketClosed', ({ requestId }: WebSocketClosedData) => {
+    if (requestId === specificWebSocketRequestId) {
+      console.log(`WebSocket Closed: ${requestId}`);
+      specificWebSocketRequestId = null;
+    }
+  });
+
+  client.on(
+    'Network.webSocketFrameReceived',
+    ({ requestId, response }: WebSocketFrameReceivedData) => {
+      if (requestId === specificWebSocketRequestId) {
+        var receivedMessage = response.payloadData;
+        if (
+          mainWindow &&
+          !receivedMessage.includes('[6,1') &&
+          !receivedMessage.includes('[5,{"rs":[{"mM":1000000,"b')
+        ) {
+          mainWindow.webContents.send('websocket-data', response.payloadData);
+        }
+      }
+    }
+  );
+
+  await page.goto('https://play.rik.vip/', { waitUntil: 'networkidle2' });
+
+  ipcMain.on('send-message', async (_event, [messageContent]) => {
+    console.log('Sendmessage');
+    try {
+      await client.send('Network.sendMessageToWebSocket', {
+        requestId: specificWebSocketRequestId,
+        message: JSON.stringify({ data: 'Hello from Puppeteer!' }),
+      });
+    } catch (error) {
+      console.error('Error sending message to WebSocket:', error);
+    }
+  });
+
+  ipcMain.on('execute-script', async (_event, script) => {
+    console.log('Received IPC message to execute script.');
+    try {
+      await page.evaluate(new Function(script));
+    } catch (error) {
+      console.error('Error executing script in the page:', error);
+    }
+  });
+})();
+
 const createWindow = async () => {
   if (isDebug) {
     await installExtensions();
@@ -71,8 +150,8 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 1440,
+    height: 900,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       webSecurity: false,
@@ -103,24 +182,15 @@ const createWindow = async () => {
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();
 
-  // Open urls in the user's browser
   mainWindow.webContents.setWindowOpenHandler((edata) => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
 
-  // Remove this if your app does not use auto updates
-  // eslint-disable-next-line
   new AppUpdater();
 };
 
-/**
- * Add event listeners...
- */
-
 app.on('window-all-closed', () => {
-  // Respect the OSX convention of having the application in memory even
-  // after all windows have been closed
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -131,8 +201,6 @@ app
   .then(() => {
     createWindow();
     app.on('activate', () => {
-      // On macOS it's common to re-create a window in the app when the
-      // dock icon is clicked and there are no other windows open.
       if (mainWindow === null) createWindow();
     });
   })
