@@ -10,6 +10,9 @@ contextBridge.exposeInMainWorld('electron', {
     executeScript(channel: Channels, args: unknown[]) {
       ipcRenderer.send(channel, args);
     },
+    openPuppeteer() {
+      ipcRenderer.send('start-puppeteer');
+    },
     on(channel: Channels, func: (...args: unknown[]) => void) {
       const subscription = (
         _event: Electron.IpcRendererEvent,
