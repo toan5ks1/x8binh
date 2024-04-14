@@ -39,11 +39,12 @@ export function MainNav() {
           <NavigationMenuList>
             {menuItems.map((item, i) => (
               <NavigationMenuItem key={i}>
-                <Link to={item.link}>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    {item.name}
-                  </NavigationMenuLink>
-                </Link>
+                <NavigationMenuLink
+                  className={navigationMenuTriggerStyle()}
+                  asChild
+                >
+                  <Link to={item.link}>{item.name}</Link>
+                </NavigationMenuLink>
               </NavigationMenuItem>
             ))}
           </NavigationMenuList>
