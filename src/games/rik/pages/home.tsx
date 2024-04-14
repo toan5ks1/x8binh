@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { HandCard } from '../card/handcard';
-import { MainNav } from '../layout/main-nav';
+import { HandCard } from '../../../components/card/handcard';
+import { MainNav } from '../components/layout/main-nav';
 
 export const Home: React.FC = () => {
   const [cards, setCards] = useState<number[]>([

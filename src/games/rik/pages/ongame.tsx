@@ -1,4 +1,4 @@
-import { MainNav } from '../layout/main-nav';
+import { MainNav } from '../components/layout/main-nav';
 
 export const OnGame = () => {
   return (
