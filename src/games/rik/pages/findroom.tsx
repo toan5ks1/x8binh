@@ -1,9 +1,10 @@
-import background from '../../../assets/bg/bg-poker.png';
-import { useSetupBot } from '../../hooks/useSetupBot';
-import { bots } from '../../lib/config';
-import { BotStatus } from '../bots/bot';
-import { MainNav } from '../layout/main-nav';
-import { Button } from '../ui/button';
+import background from '../../../../assets/bg/bg-poker.png';
+import BoardCard from '../../../components/card/boardCard';
+import { Button } from '../../../components/ui/button';
+import { useSetupBot } from '../../twith/hooks/useSetupBot';
+import { BotStatus } from '../components/bots/bot';
+import { MainNav } from '../components/layout/main-nav';
+import { bots } from '../config';
 
 export const FindRoom = () => {
   const {
@@ -81,6 +82,7 @@ export const FindRoom = () => {
             Ngắt kết nối
           </Button>
         </div>
+        <BoardCard />
       </div>
     </div>
   );

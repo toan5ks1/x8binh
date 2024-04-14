@@ -8,3 +8,6 @@ export const bots = [
     password: 'Matkhau123',
   },
 ];
+
+export const loginUrl = 'https://portal.twith.club/api/Account/Login';
+export const hostWSS: string = 'wss://maubinh.twith.club';

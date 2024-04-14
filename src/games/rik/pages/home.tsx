@@ -3,8 +3,8 @@ import { DotFilledIcon, HamburgerMenuIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import background from '../../../assets/bg/bg-poker.png';
 import eventBar from '../../../assets/bg/event-bxh-bar.png';
-import { HandCard } from '../card/handcard';
-import { MainNav } from '../layout/main-nav';
+import { HandCard } from '../../../components/card/handcard';
+import { MainNav } from '../components/layout/main-nav';
 
 export const Home: React.FC = () => {
   const [bookmarksChecked, setBookmarksChecked] = useState(true);

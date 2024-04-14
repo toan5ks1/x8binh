@@ -1,6 +1,6 @@
 import { DoubleArrowRightIcon, TrashIcon } from '@radix-ui/react-icons';
 import React, { useEffect, useState } from 'react';
-import { MainNav } from '../layout/main-nav';
+import { MainNav } from '../components/layout/main-nav';
 
 export const OnGame: React.FC = () => {
   const [data, setData] = useState<unknown[]>([]);
