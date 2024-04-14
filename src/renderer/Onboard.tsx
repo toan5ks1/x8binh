@@ -24,8 +24,8 @@ export const Onboard = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex justify-between space-x-2">
-          {gameList.map((item) => (
-            <Link to={item.link} className="flex-1">
+          {gameList.map((item, i) => (
+            <Link key={i} to={item.link} className="flex-1">
               <Button className="w-full">{item.name}</Button>
             </Link>
           ))}

@@ -37,8 +37,8 @@ export function MainNav() {
       <div className="flex justify-between items-center">
         <NavigationMenu>
           <NavigationMenuList>
-            {menuItems.map((item) => (
-              <NavigationMenuItem>
+            {menuItems.map((item, i) => (
+              <NavigationMenuItem key={i}>
                 <Link to={item.link}>
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                     {item.name}
