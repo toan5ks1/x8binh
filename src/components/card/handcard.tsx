@@ -3,7 +3,6 @@ import { DndProvider, DragSourceMonitor, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { getCardImageUrl } from '../../lib/card';
 import Card from '../card/card';
-
 interface DraggableCardProps {
   id: number;
   imageUrl: string;
@@ -82,45 +81,51 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="grid grid-rows-3 gap-[5px] mt-[5%] border-2">
-        <div className="grid grid-cols-5 gap-[5px]">
-          {part3.map((cardNumber) => (
-            <>
-              {cardNumber !== 0 ? (
-                <DropCard key={cardNumber} id={cardNumber} moveCard={moveCard}>
-                  <DraggableCard
+      <div className="bg-[#252425] bg-opacity-20 py-[10px] rounded-[15px] px-[7px] shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.38)]">
+        <div className="grid grid-rows-3 gap-[5px] ">
+          <div className="grid grid-cols-5 gap-[5px]">
+            {part3.map((cardNumber) => (
+              <>
+                {cardNumber !== 0 ? (
+                  <DropCard
+                    key={cardNumber}
                     id={cardNumber}
-                    imageUrl={getCardImageUrl(cardNumber)}
                     moveCard={moveCard}
-                  />
-                </DropCard>
-              ) : (
-                <div></div>
-              )}
-            </>
-          ))}
-        </div>
-        <div className="grid grid-cols-5 gap-[5px]">
-          {part2.map((cardNumber) => (
-            <DropCard key={cardNumber} id={cardNumber} moveCard={moveCard}>
-              <DraggableCard
-                id={cardNumber}
-                imageUrl={getCardImageUrl(cardNumber)}
-                moveCard={moveCard}
-              />
-            </DropCard>
-          ))}
-        </div>
-        <div className="grid grid-cols-5 gap-[5px]">
-          {part1.map((cardNumber) => (
-            <DropCard key={cardNumber} id={cardNumber} moveCard={moveCard}>
-              <DraggableCard
-                id={cardNumber}
-                imageUrl={getCardImageUrl(cardNumber)}
-                moveCard={moveCard}
-              />
-            </DropCard>
-          ))}
+                  >
+                    <DraggableCard
+                      id={cardNumber}
+                      imageUrl={getCardImageUrl(cardNumber)}
+                      moveCard={moveCard}
+                    />
+                  </DropCard>
+                ) : (
+                  <div></div>
+                )}
+              </>
+            ))}
+          </div>
+          <div className="grid grid-cols-5 gap-[5px]">
+            {part2.map((cardNumber) => (
+              <DropCard key={cardNumber} id={cardNumber} moveCard={moveCard}>
+                <DraggableCard
+                  id={cardNumber}
+                  imageUrl={getCardImageUrl(cardNumber)}
+                  moveCard={moveCard}
+                />
+              </DropCard>
+            ))}
+          </div>
+          <div className="grid grid-cols-5 gap-[5px]">
+            {part1.map((cardNumber) => (
+              <DropCard key={cardNumber} id={cardNumber} moveCard={moveCard}>
+                <DraggableCard
+                  id={cardNumber}
+                  imageUrl={getCardImageUrl(cardNumber)}
+                  moveCard={moveCard}
+                />
+              </DropCard>
+            ))}
+          </div>
         </div>
       </div>
     </DndProvider>

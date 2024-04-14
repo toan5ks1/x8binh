@@ -1,3 +1,5 @@
+import background from '../../../../assets/bg/bg-poker.png';
+import BoardCard from '../../../components/card/boardCard';
 import { Button } from '../../../components/ui/button';
 import { useSetupBot } from '../../twith/hooks/useSetupBot';
 import { BotStatus } from '../components/bots/bot';
@@ -47,7 +49,15 @@ export const FindRoom = () => {
     <div className="flex flex-col h-screen">
       <MainNav />
 
-      <div className="flex flex-col justify-center items-center bg-gray-800 text-white space-y-4 py-8 flex-1">
+      <div
+        className="flex flex-col justify-center items-center  text-white space-y-4 py-8 flex-1"
+        style={{
+          backgroundImage: `url('${background}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          height: '100vh',
+        }}
+      >
         <div className="space-y-4">
           <BotStatus
             name={'Bot 2'}
@@ -72,6 +82,7 @@ export const FindRoom = () => {
             Ngắt kết nối
           </Button>
         </div>
+        <BoardCard />
       </div>
     </div>
   );
