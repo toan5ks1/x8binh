@@ -2,7 +2,7 @@ import { ScrollArea } from '../../../../components/ui/scroll-area';
 
 interface BotStatusProps {
   name: string;
-  userId: string | null;
+  userId: string | undefined;
   connectionStatus: string;
   messageHistory: any;
 }

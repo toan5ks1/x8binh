@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { LoginParams, getConnectToken, login } from '../../../lib/login';
-import { handleMessage } from '../../rik/utils';
+import { hostWSS } from '../config';
+import {
+  LoginParams,
+  LoginResponse,
+  LoginResponseDto,
+  login,
+} from '../lib/login';
+import { handleMessage } from '../lib/utils';
 
 export function useSetupBot(bot: LoginParams) {
   const [socketUrl, setSocketUrl] = useState('');
 
-  const [token, setToken] = useState('');
+  const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
   const [connectionToken, setConnectionToken] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [roomId, setRoomId] = useState(null);
 
   const [iTime, setITime] = useState(1);
   const [messageHistory, setMessageHistory] = useState<string[]>([]);
@@ -84,17 +88,15 @@ export function useSetupBot(bot: LoginParams) {
 
   const handleLoginClick = async () => {
     login(bot)
-      .then((data: any) => {
-        const token = (data as any).Token;
-        setToken(token);
-        setUserId(data?.AccountInfo?.AccountID);
-        getConnectToken(token)
-          .then((data: any) => {
-            setConnectionToken(data.ConnectionToken);
-          })
-          .catch((err: Error) =>
-            console.error('Error when calling getConnectToken function:', err)
-          );
+      .then((data: LoginResponse | null) => {
+        setUser(data?.data[0]);
+        // getConnectToken(token)
+        //   .then((data: any) => {
+        //     setConnectionToken(data.ConnectionToken);
+        //   })
+        //   .catch((err: Error) =>
+        //     console.error('Error when calling getConnectToken function:', err)
+        //   );
       })
       .catch((err: Error) =>
         console.error('Error when calling login function:', err)
@@ -102,12 +104,12 @@ export function useSetupBot(bot: LoginParams) {
   };
 
   const handleConnectMauBinh = (): void => {
-    if (connectionToken) {
+    if (connectionToken && user?.token) {
       const encodedConnectionToken = encodeURIComponent(connectionToken);
       const encodedConnectionData = encodeURIComponent(
         JSON.stringify([{ name: 'maubinhHub' }])
       );
-      const encodedAccessToken = encodeURIComponent(token);
+      const encodedAccessToken = encodeURIComponent(user?.token);
 
       const connectURL = `${hostWSS}/signalr/connect?transport=webSockets&connectionToken=${encodedConnectionToken}&connectionData=${encodedConnectionData}&tid=${7}&access_token=${encodedAccessToken}`;
 
@@ -118,7 +120,7 @@ export function useSetupBot(bot: LoginParams) {
   };
 
   return {
-    userId,
+    user,
     messageHistory,
     handleJoinRoom,
     handleLeaveRoom,

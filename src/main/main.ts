@@ -4,7 +4,7 @@ import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-const puppeteer = require('puppeteer');
+// const puppeteer = require('puppeteer');
 
 interface WebSocketCreatedData {
   requestId: string;
@@ -71,77 +71,77 @@ export const getAssetPath = (...paths: string[]): string => {
   return path.join(RESOURCES_PATH, ...paths);
 };
 
-(async () => {
-  const userProfilePath = 'C:/Users/PC/MyPuppeteerProfile';
-  const browser = await puppeteer.launch({
-    headless: false,
-    userDataDir: userProfilePath,
-  });
-  const page = await browser.newPage();
+// (async () => {
+//   const userProfilePath = 'C:/Users/PC/MyPuppeteerProfile';
+//   const browser = await puppeteer.launch({
+//     headless: false,
+//     userDataDir: userProfilePath,
+//   });
+//   const page = await browser.newPage();
 
-  const client = await page.target().createCDPSession();
+//   const client = await page.target().createCDPSession();
 
-  await client.send('Network.enable');
+//   await client.send('Network.enable');
 
-  let specificWebSocketRequestId: any = null;
+//   let specificWebSocketRequestId: any = null;
 
-  client.on(
-    'Network.webSocketCreated',
-    ({ requestId, url }: WebSocketCreatedData) => {
-      if (url.includes('wss://cardskgw.ryksockesg.net/websocket')) {
-        console.log(`WebSocket Created to specific URL: ${url}`);
+//   client.on(
+//     'Network.webSocketCreated',
+//     ({ requestId, url }: WebSocketCreatedData) => {
+//       if (url.includes('wss://cardskgw.ryksockesg.net/websocket')) {
+//         console.log(`WebSocket Created to specific URL: ${url}`);
 
-        specificWebSocketRequestId = requestId;
-      }
-    }
-  );
+//         specificWebSocketRequestId = requestId;
+//       }
+//     }
+//   );
 
-  client.on('Network.webSocketClosed', ({ requestId }: WebSocketClosedData) => {
-    if (requestId === specificWebSocketRequestId) {
-      console.log(`WebSocket Closed: ${requestId}`);
-      specificWebSocketRequestId = null;
-    }
-  });
+//   client.on('Network.webSocketClosed', ({ requestId }: WebSocketClosedData) => {
+//     if (requestId === specificWebSocketRequestId) {
+//       console.log(`WebSocket Closed: ${requestId}`);
+//       specificWebSocketRequestId = null;
+//     }
+//   });
 
-  client.on(
-    'Network.webSocketFrameReceived',
-    ({ requestId, response }: WebSocketFrameReceivedData) => {
-      if (requestId === specificWebSocketRequestId) {
-        var receivedMessage = response.payloadData;
-        if (
-          mainWindow &&
-          !receivedMessage.includes('[6,1') &&
-          !receivedMessage.includes('[5,{"rs":[{"mM":1000000,"b')
-        ) {
-          mainWindow.webContents.send('websocket-data', response.payloadData);
-        }
-      }
-    }
-  );
+//   client.on(
+//     'Network.webSocketFrameReceived',
+//     ({ requestId, response }: WebSocketFrameReceivedData) => {
+//       if (requestId === specificWebSocketRequestId) {
+//         var receivedMessage = response.payloadData;
+//         if (
+//           mainWindow &&
+//           !receivedMessage.includes('[6,1') &&
+//           !receivedMessage.includes('[5,{"rs":[{"mM":1000000,"b')
+//         ) {
+//           mainWindow.webContents.send('websocket-data', response.payloadData);
+//         }
+//       }
+//     }
+//   );
 
-  await page.goto('https://play.rik.vip/', { waitUntil: 'networkidle2' });
+//   await page.goto('https://play.rik.vip/', { waitUntil: 'networkidle2' });
 
-  ipcMain.on('send-message', async (_event, [messageContent]) => {
-    console.log('Sendmessage');
-    try {
-      await client.send('Network.sendMessageToWebSocket', {
-        requestId: specificWebSocketRequestId,
-        message: JSON.stringify({ data: 'Hello from Puppeteer!' }),
-      });
-    } catch (error) {
-      console.error('Error sending message to WebSocket:', error);
-    }
-  });
+//   ipcMain.on('send-message', async (_event, [messageContent]) => {
+//     console.log('Sendmessage');
+//     try {
+//       await client.send('Network.sendMessageToWebSocket', {
+//         requestId: specificWebSocketRequestId,
+//         message: JSON.stringify({ data: 'Hello from Puppeteer!' }),
+//       });
+//     } catch (error) {
+//       console.error('Error sending message to WebSocket:', error);
+//     }
+//   });
 
-  ipcMain.on('execute-script', async (_event, script) => {
-    console.log('Received IPC message to execute script.');
-    try {
-      await page.evaluate(new Function(script));
-    } catch (error) {
-      console.error('Error executing script in the page:', error);
-    }
-  });
-})();
+//   ipcMain.on('execute-script', async (_event, script) => {
+//     console.log('Received IPC message to execute script.');
+//     try {
+//       await page.evaluate(new Function(script));
+//     } catch (error) {
+//       console.error('Error executing script in the page:', error);
+//     }
+//   });
+// })();
 
 const createWindow = async () => {
   if (isDebug) {

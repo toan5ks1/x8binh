@@ -1,25 +1,41 @@
 import axios from 'axios';
+import { loginUrl } from '../config';
 
-const loginUrl = 'https://portal.twith.club/api/Account/Login';
-
-interface LoginResponse {
+export interface LoginResponseDto {
+  avatar: string;
+  deposit_today: number;
+  event_deposit_max: number;
+  fullname: string;
+  is_deposit: boolean;
+  level: string;
+  main_balance: number;
+  session_id: string;
   token: string;
+  username: string;
+}
+
+export interface LoginResponse {
+  code: number;
+  message: string;
+  status: string;
+  data: Array<LoginResponseDto>;
 }
 
 export interface LoginParams {
   username: string;
   password: string;
+  app_id: string;
+  os: string;
+  device: string;
+  browser: string;
+  fg: string;
+  time: number;
+  aff_id: string;
 }
 
-const login = async ({
-  username,
-  password,
-}: LoginParams): Promise<LoginResponse | null> => {
+const login = async (botInfo: LoginParams): Promise<LoginResponse | null> => {
   const credentials = {
-    LoginType: 1,
-    UserName: username,
-    Password: password,
-    DeviceType: 1,
+    ...botInfo,
   };
 
   try {
@@ -65,7 +81,7 @@ export async function setupBot(
 ) {
   try {
     const res = await login(bot);
-    const token = res?.token;
+    const token = res?.data[0].token;
 
     const connectionToken = await getConnectToken(token);
 

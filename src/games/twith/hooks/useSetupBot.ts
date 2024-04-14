@@ -10,7 +10,6 @@ export function useSetupBot(bot: LoginParams) {
   const [token, setToken] = useState('');
   const [connectionToken, setConnectionToken] = useState(null);
   const [userId, setUserId] = useState(null);
-  const [roomId, setRoomId] = useState(null);
 
   const [iTime, setITime] = useState(1);
   const [messageHistory, setMessageHistory] = useState<string[]>([]);
