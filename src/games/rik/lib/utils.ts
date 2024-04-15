@@ -1,4 +1,5 @@
 import { Dispatch, SetStateAction } from 'react';
+import { StateProps } from '../../../renderer/providers/app';
 
 export enum ServerMessageType {
   JoinGame = 'joinGame',
@@ -70,17 +71,15 @@ export function handleStartActionTimer(message: any) {
 
 interface HandleCRMessageProps {
   message: any;
-  setState: Dispatch<SetStateAction<Object>>;
+  setState: Dispatch<SetStateAction<StateProps>>;
+  caller: string;
 }
 
-function getCreateRomMsg({ message, setState }: HandleCRMessageProps) {
-  const roomId = message[1]?.ri?.rid;
-
-  setState({ firstRoomId: roomId });
-  return roomId;
-}
-
-export function handleMessage({ message, setState }: HandleCRMessageProps) {
+export function handleMessage({
+  message,
+  setState,
+  caller,
+}: HandleCRMessageProps) {
   let returnMsg;
 
   switch (message[0]) {
@@ -88,17 +87,57 @@ export function handleMessage({ message, setState }: HandleCRMessageProps) {
       if (message[1].rs) {
         returnMsg = 'Join Maubinh sucessfully!';
       } else if (message[1].ri) {
-        returnMsg = getCreateRomMsg({ message, setState });
+        // Create room response
+        const roomId = message[1]?.ri?.rid;
+
+        setState((pre) => ({
+          ...pre,
+          initialRoom: {
+            ...pre.initialRoom,
+            id: roomId as number,
+            owner: caller,
+          },
+        }));
+        returnMsg = `Created room ${roomId}`;
+      } else if (message[1]?.cs?.length > 0) {
+        setState((pre) => ({
+          ...pre,
+          initialRoom: {
+            ...pre.initialRoom,
+            cardDesk: [...(pre.initialRoom?.cardDesk ?? []), message[1].cs],
+          },
+        }));
+        returnMsg = `Card received: ${message[1].cs}`;
       }
       break;
-
+    case 3:
+      if (message[1] === true) {
+        // Host join room response
+        let currentPlayers;
+        setState((pre) => {
+          currentPlayers = pre.initialRoom.players + 1;
+          return {
+            ...pre,
+            initialRoom: {
+              ...pre.initialRoom,
+              players: currentPlayers,
+            },
+          };
+        });
+        returnMsg = `Joined room ${message[3]} (room now has ${currentPlayers} players)`;
+      }
+      break;
+    case 4:
+      // Left room response
+      if (message[1] === true) {
+        returnMsg = 'Left room successfully!';
+      } else {
+        returnMsg = message[5] || 'Left room failed!';
+      }
+      break;
     default:
       break;
   }
-
-  if (message === ServerMessageType.RegisterLeaveRoom) {
-    returnMsg = 'Bot register leave room';
-  }
-
+  //[4,true,1,7858417,0,""][3,true,0,7862801,null][5,{"cs":[51,31,36,45,27,42,19,4,0,40,46,48,50]
   return returnMsg;
 }

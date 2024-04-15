@@ -15,19 +15,15 @@ export const FindRoom = () => {
     handleLoginClick: loginBot1,
     handleCreateRoom: handleCreateRoomBot1,
     handleConnectMauBinh: handleConnectMauBinhBot1,
-    handleHostJoinRoom: handleHostJoinRoom,
-    hanleReadyHost,
   } = useSetupBot(bots[0]);
 
   const {
     user: user2,
     messageHistory: messageHistoryBot2,
-    handleJoinRoom: handleJoinRoomBot2,
     handleLeaveRoom: handleLeaveRoomBot2,
     connectionStatus: connectionStatusBot2,
     handleLoginClick: loginBot2,
     handleConnectMauBinh: handleConnectMauBinhBot2,
-    hanleReadyGuess,
   } = useSetupBot(bots[1]);
 
   const onLogin = async () => {
@@ -42,18 +38,6 @@ export const FindRoom = () => {
 
   const onCreatRoom = () => {
     handleCreateRoomBot1();
-  };
-
-  const onHostJoinRoom = () => {
-    handleHostJoinRoom();
-  };
-  const onJoinRoom = () => {
-    handleJoinRoomBot2();
-  };
-
-  const onReady = () => {
-    hanleReadyHost();
-    hanleReadyGuess();
   };
 
   const onLeaveRoom = () => {
@@ -93,10 +77,7 @@ export const FindRoom = () => {
         <div className="flex space-x-2">
           <Button onClick={onLogin}>Đăng nhập</Button>
           <Button onClick={onJoinMauBinh}>Vào mậu binh</Button>
-          <Button onClick={onCreatRoom}>Tạo phòng</Button>
-          <Button onClick={onHostJoinRoom}>Host Vào phòng</Button>
-          <Button onClick={onJoinRoom}> Bot Vào phòng</Button>
-          <Button onClick={onReady}>San sang</Button>
+          <Button onClick={onCreatRoom}>Tạo và vào phòng</Button>
           <Button onClick={onLeaveRoom}>Rời phòng</Button>
           <Button variant="destructive" onClick={onLeaveRoom}>
             Ngắt kết nối
