@@ -22,7 +22,7 @@ export const BotStatus = ({
         </p>
 
         <div className="">
-          <ScrollArea className="h-24 w-72 rounded-md border">
+          <ScrollArea className="h-32 w-72 rounded-md border">
             <div className="p-4">
               <h4 className="mb-4 text-sm font-medium leading-none">
                 Messages:
