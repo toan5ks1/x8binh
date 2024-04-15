@@ -5,7 +5,7 @@ interface CardProps {
   altText?: string;
 }
 
-const Card: React.FC<CardProps> = ({ imageUrl, altText }) => {
+const CardGame: React.FC<CardProps> = ({ imageUrl, altText }) => {
   return (
     <div
       className="bg-white py-[4%] px-[3%] border-[#424141] border-[1px] "
@@ -24,4 +24,4 @@ const Card: React.FC<CardProps> = ({ imageUrl, altText }) => {
   );
 };
 
-export default Card;
+export default CardGame;
