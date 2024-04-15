@@ -10,7 +10,7 @@ import {
 import { handleMessage } from '../lib/utils';
 
 export function useSetupBot(bot: LoginParams) {
-  const { state, setState } = useContext<any>(AppContext);
+  const { state, setState } = useContext(AppContext);
   const [socketUrl, setSocketUrl] = useState('');
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
@@ -46,15 +46,21 @@ export function useSetupBot(bot: LoginParams) {
     iTimeRef.current = iTime;
   }, [iTime]);
 
+  // Handle message from server
   useEffect(() => {
     if (lastMessage !== null) {
       const message = JSON.parse(lastMessage.data);
-      const newMsg = handleMessage({ message, setState });
+      const newMsg = handleMessage({
+        message,
+        setState,
+        caller: bot.username,
+      });
 
-      setMessageHistory((msgs) => [...msgs, newMsg]);
+      newMsg && setMessageHistory((msgs) => [...msgs, newMsg]);
     }
   }, [lastMessage]);
 
+  // Ping pong
   useEffect(() => {
     if (wasLogin) {
       const pingPongMessage = () => ` ["7", "Simms", "1",${iTimeRef.current}]`;
@@ -68,6 +74,7 @@ export function useSetupBot(bot: LoginParams) {
     }
   }, [sendMessage]);
 
+  // Ping maubinh
   useEffect(() => {
     if (shouldPingMaubinh) {
       const maubinhPingMessage = () =>
@@ -115,41 +122,52 @@ export function useSetupBot(bot: LoginParams) {
     sendMessage(
       `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":100,"Mu":4,"iJ":true,"inc":false,"pwd":""}]`
     );
-
-    // setShouldPingMaubinh(false);
   };
 
-  const handleJoinRoom = useCallback(() => {
-    sendMessage(`[3,"Simms",${state.firstRoomId},"",true]`);
-  }, [state]);
-  const handleHostJoinRoom = useCallback(() => {
-    sendMessage(`[3,"Simms",${state.firstRoomId},""]`);
-  }, [state]);
+  useEffect(() => {
+    if (state.initialRoom.id) {
+      // Host and guess join after created room
+      if (state.initialRoom.players < 2) {
+        if (
+          bot.username === state.initialRoom.owner &&
+          state.initialRoom.players === 0
+        ) {
+          // Host
+          sendMessage(`[3,"Simms",${state.initialRoom.id},""]`);
+        } else if (
+          bot.username !== state.initialRoom.owner &&
+          state.initialRoom.players === 1
+        ) {
+          // Guess
+          sendMessage(`[3,"Simms",${state.initialRoom.id},"",true]`);
+        }
+      }
 
-  const hanleReadyGuess = useCallback(() => {
-    sendMessage(`[5,"Simms",${state.firstRoomId},{"cmd":5}]`);
-  }, [state]);
-
-  const hanleReadyHost = useCallback(() => {
-    sendMessage(`[5,"Simms",${state.firstRoomId},{"cmd":698}]`);
-  }, [state]);
+      // Host and guess ready
+      if (state.initialRoom.players === 2) {
+        if (bot.username === state.initialRoom.owner) {
+          // Host
+          sendMessage(`[5,"Simms",${state.initialRoom.id},{"cmd":698}]`);
+        } else {
+          // Guess
+          sendMessage(`[5,"Simms",${state.initialRoom.id},{"cmd":5}]`);
+        }
+      }
+    }
+  }, [state.initialRoom]);
 
   const handleLeaveRoom = useCallback(() => {
-    return sendMessage(`[4,"Simms",${state.firstRoomId}]`);
+    return sendMessage(`[4,"Simms",${state.initialRoom.id}]`);
   }, [state]);
 
   return {
     user,
     handleCreateRoom,
     messageHistory,
-    handleJoinRoom,
-    handleHostJoinRoom,
     handleLeaveRoom,
     connectionStatus,
     handleLoginClick,
     connectMainGame,
     handleConnectMauBinh,
-    hanleReadyGuess,
-    hanleReadyHost,
   };
 }

@@ -1,12 +1,16 @@
 import {
-  File,
+  Hand,
   Home,
-  ListFilter,
+  LogIn,
+  LogOut,
   PlusCircle,
+  ScreenShareOff,
   Settings,
   Terminal,
+  Unplug,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import { AppContext } from '../../../../src/renderer/providers/app';
 import { Button } from '../../../components/ui/button';
 import {
   DropdownMenu,
@@ -27,10 +31,57 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '../../../components/ui/tooltip';
+import { bots } from '../config';
+import { useSetupBot } from '../hooks/useSetupBot';
+import { FindRoom } from './findroom';
 import { HomePage } from './home';
 
 export function App() {
   const [tab, setActiveTab] = useState('all');
+  const { state } = useContext<any>(AppContext);
+  const {
+    user: user1,
+    messageHistory: messageHistoryBot1,
+    handleLeaveRoom: handleLeaveRoomBot1,
+    connectionStatus: connectionStatusBot1,
+    handleLoginClick: loginBot1,
+    handleCreateRoom: handleCreateRoomBot1,
+    handleConnectMauBinh: handleConnectMauBinhBot1,
+  } = useSetupBot(bots[0]);
+
+  const {
+    user: user2,
+    messageHistory: messageHistoryBot2,
+    handleLeaveRoom: handleLeaveRoomBot2,
+    connectionStatus: connectionStatusBot2,
+    handleLoginClick: loginBot2,
+    handleConnectMauBinh: handleConnectMauBinhBot2,
+  } = useSetupBot(bots[1]);
+
+  const onLogin = async () => {
+    loginBot1();
+    loginBot2();
+  };
+
+  const onJoinMauBinh = async () => {
+    handleConnectMauBinhBot1();
+    handleConnectMauBinhBot2();
+  };
+
+  const onCreatRoom = () => {
+    handleCreateRoomBot1();
+  };
+
+  const onLeaveRoom = () => {
+    handleLeaveRoomBot1();
+    handleLeaveRoomBot2();
+  };
+
+  const onMainJoin = () => {
+    window.electron.ipcRenderer.executeScript([
+      `__require('GamePlayManager').default.getInstance().joinRoom(${state.firstRoomId},0,'',true);`,
+    ]);
+  };
   return (
     <Tabs value={tab} onValueChange={setActiveTab} defaultValue="all">
       <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -90,34 +141,50 @@ export function App() {
                 <DropdownMenu>
                   <DropdownMenuTrigger>
                     <Button variant="outline" size="sm" className="h-8 gap-1">
-                      <ListFilter className="h-3.5 w-3.5" />
+                      <Hand className="h-3.5 w-3.5" />
                       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Filter
+                        Card deck
                       </span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+                    <DropdownMenuLabel>Card deck</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuCheckboxItem checked>
-                      Active
+                      1
                     </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem>Draft</DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem>
-                      Archived
-                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem>2</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem>3</DropdownMenuCheckboxItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <Button size="sm" variant="outline" className="h-8 gap-1">
-                  <File className="h-3.5 w-3.5" />
+                <Button onClick={onLogin} size="sm" className="h-8 gap-1">
+                  <LogIn className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Export
+                    Login
+                  </span>
+                </Button>
+                <Button onClick={onJoinMauBinh} size="sm" className="h-8 gap-1">
+                  <Unplug className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Connect ChinesePK
+                  </span>
+                </Button>
+                <Button onClick={onCreatRoom} size="sm" className="h-8 gap-1">
+                  <PlusCircle className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Create And Join
+                  </span>
+                </Button>
+                <Button onClick={onLeaveRoom} size="sm" className="h-8 gap-1">
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Quit
                   </span>
                 </Button>
                 <Button size="sm" className="h-8 gap-1">
-                  <PlusCircle className="h-3.5 w-3.5" />
+                  <ScreenShareOff className="h-3.5 w-3.5" />
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add Product
+                    Disconnect
                   </span>
                 </Button>
               </div>
@@ -131,7 +198,14 @@ export function App() {
               hidden={'terminal' !== tab}
             >
               <div>
-                asljhdasjkldhnlasjkdhasjkldhasjkldhajklsdhasjkldhasljkdhasjkld
+                <FindRoom
+                  user1={user1}
+                  messageHistoryBot1={messageHistoryBot1}
+                  connectionStatusBot1={connectionStatusBot1}
+                  user2={user2}
+                  messageHistoryBot2={messageHistoryBot2}
+                  connectionStatusBot2={connectionStatusBot2}
+                />
               </div>
             </TabsContent>
           </main>
