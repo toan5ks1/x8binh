@@ -15,6 +15,7 @@ export function useSetupBot(bot: LoginParams) {
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
   const [shouldPingMaubinh, setShouldPingMaubinh] = useState(false);
+  const [wasLogin, setWasLogin] = useState(false);
 
   const [iTime, setITime] = useState(1);
   const [messageHistory, setMessageHistory] = useState<string[]>([]);
@@ -55,14 +56,16 @@ export function useSetupBot(bot: LoginParams) {
   }, [lastMessage]);
 
   useEffect(() => {
-    const pingPongMessage = () => ` ["7", "Simms", "1",${iTimeRef.current}]`;
+    if (wasLogin) {
+      const pingPongMessage = () => ` ["7", "Simms", "1",${iTimeRef.current}]`;
 
-    const intervalId = setInterval(() => {
-      sendMessage(pingPongMessage());
-      setITime((prevITime) => prevITime + 1);
-    }, 4000);
+      const intervalId = setInterval(() => {
+        sendMessage(pingPongMessage());
+        setITime((prevITime) => prevITime + 1);
+      }, 4000);
 
-    return () => clearInterval(intervalId);
+      return () => clearInterval(intervalId);
+    }
   }, [sendMessage]);
 
   useEffect(() => {
@@ -99,11 +102,13 @@ export function useSetupBot(bot: LoginParams) {
       sendMessage(
         `[1,"Simms","","",{"agentId":"1","accessToken":"${user.token}","reconnect":false}]`
       );
+      setWasLogin(true);
     }
   };
 
   const handleConnectMauBinh = (): void => {
     setShouldPingMaubinh(true);
+    sendMessage('[6,"Simms","channelPlugin",{"cmd":300,"aid":"1","gid":4}]');
   };
 
   const handleCreateRoom = (): void => {
