@@ -4,7 +4,7 @@ declare global {
     electron: {
       ipcRenderer: {
         sendMessage(channel: string, args: unknown[]): void;
-        executeScript(channel: string, args: unknown[]): void;
+        executeScript(args: unknown[]): void;
         openPuppeteer(): void;
         on(channel: string, func: (...args: unknown[]) => void): () => void;
         once(channel: string, func: (...args: unknown[]) => void): void;

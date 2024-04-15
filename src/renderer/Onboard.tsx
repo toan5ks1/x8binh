@@ -10,7 +10,7 @@ import {
 
 const gameList = [
   { name: 'Twith', link: '/game/twith/find-room' },
-  { name: 'Rik', link: '/game/rik/find-room' },
+  { name: 'Rik', link: '/game/rik/app' },
 ];
 
 export const Onboard = () => {

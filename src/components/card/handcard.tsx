@@ -2,7 +2,8 @@ import { useCallback, useState } from 'react';
 import { DndProvider, DragSourceMonitor, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { getCardImageUrl } from '../../lib/card';
-import Card from '../card/card';
+import CardGame from '../card/card';
+import { Card } from '../ui/card';
 interface DraggableCardProps {
   id: number;
   imageUrl: string;
@@ -31,7 +32,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
 
   return (
     <div ref={drag} className="">
-      <Card imageUrl={imageUrl} />
+      <CardGame imageUrl={imageUrl} />
     </div>
   );
 };
@@ -95,7 +96,7 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="bg-[#252425] bg-opacity-20 py-[10px] rounded-[15px] px-[7px] shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.38)]">
+      <Card className="bg-[#252425] bg-opacity-20 py-[10px] rounded-[15px] px-[7px] shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.38)]">
         <div className="grid grid-rows-3 gap-[5px] ">
           <div className="grid grid-cols-5 gap-[5px]">
             {part3.map((cardNumber, index) => renderCard(cardNumber, index))}
@@ -123,7 +124,7 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
             ))}
           </div>
         </div>
-      </div>
+      </Card>
     </DndProvider>
   );
 };

@@ -326,3 +326,7 @@ button {
 .string-terminal:hover {
   color: #f7e811;
 }
+
+[aria-selected='true'] {
+  background-color: #27272a;
+}
