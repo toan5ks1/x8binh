@@ -1,3 +1,5 @@
+import { Dispatch, SetStateAction } from 'react';
+
 export enum ServerMessageType {
   JoinGame = 'joinGame',
   StartActionTimer = 'startActionTimer',
@@ -66,29 +68,32 @@ export function handleStartActionTimer(message: any) {
   return timerData;
 }
 
-export function handleMessage(message: any) {
-  const messageType = message.M?.[0]?.M;
+interface HandleCRMessageProps {
+  message: any;
+  setState: Dispatch<SetStateAction<Object>>;
+}
+
+function getCreateRomMsg({ message, setState }: HandleCRMessageProps) {
+  const roomId = message[1]?.ri?.rid;
+
+  setState({ firstRoomId: roomId });
+  return roomId;
+}
+
+export function handleMessage({ message, setState }: HandleCRMessageProps) {
   let returnMsg;
 
-  switch (messageType) {
-    case ServerMessageType.JoinGame:
-      returnMsg = handleJoinGame(message);
+  switch (message[0]) {
+    case 5:
+      if (message[1].rs) {
+        returnMsg = 'Join Maubinh sucessfully!';
+      } else if (message[1].ri) {
+        returnMsg = getCreateRomMsg({ message, setState });
+      }
       break;
 
-    case ServerMessageType.StartGame:
-      returnMsg = handleStartGame(message);
-      break;
-
-    case ServerMessageType.PlayerLeave:
-      returnMsg = handleLeaveGame(message);
-      break;
-
-    case ServerMessageType.StartActionTimer:
-      returnMsg = handleStartActionTimer(message);
-      break;
     default:
       break;
-    // console.log('Unknown message type', messageType);
   }
 
   if (message === ServerMessageType.RegisterLeaveRoom) {

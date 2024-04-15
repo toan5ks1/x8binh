@@ -2,7 +2,7 @@ import { ScrollArea } from '../../../../components/ui/scroll-area';
 
 interface BotStatusProps {
   name: string;
-  userId: string | null;
+  userId: string | undefined;
   connectionStatus: string;
   messageHistory: any;
 }
@@ -27,8 +27,8 @@ export const BotStatus = ({
               <h4 className="mb-4 text-sm font-medium leading-none">
                 Messages:
               </h4>
-              {messageHistory.map((tag: any) => (
-                <div key={tag} className="text-sm">
+              {messageHistory.map((tag: any, index: number) => (
+                <div key={index} className="text-sm">
                   {JSON.stringify(tag)}
                 </div>
               ))}

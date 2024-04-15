@@ -11,17 +11,17 @@ interface AppProviderProps {
 }
 
 interface AppContextProps {
-  state: number;
-  setState: Dispatch<SetStateAction<number>>;
+  state: Object;
+  setState: Dispatch<SetStateAction<Object>>;
 }
 
-const AppContext = createContext<AppContextProps>({
-  state: 0,
+export const AppContext = createContext<AppContextProps>({
+  state: {},
   setState: () => {},
 });
 
 const AppProvider = ({ children }: AppProviderProps) => {
-  const [state, setState] = useState(0);
+  const [state, setState] = useState({});
 
   return (
     <AppContext.Provider value={{ state, setState }}>

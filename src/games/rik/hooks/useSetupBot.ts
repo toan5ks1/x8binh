@@ -1,15 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { LoginParams, getConnectToken, login } from '../../../lib/login';
-import { handleMessage } from '../../rik/utils';
+import { AppContext } from '../../../renderer/providers/app';
+import {
+  LoginParams,
+  LoginResponse,
+  LoginResponseDto,
+  login,
+} from '../lib/login';
+import { handleMessage } from '../lib/utils';
 
 export function useSetupBot(bot: LoginParams) {
+  const { state, setState } = useContext<any>(AppContext);
   const [socketUrl, setSocketUrl] = useState('');
 
-  const [token, setToken] = useState('');
-  const [connectionToken, setConnectionToken] = useState(null);
-  const [userId, setUserId] = useState(null);
-  const [roomId, setRoomId] = useState(null);
+  const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
+  const [shouldPingMaubinh, setShouldPingMaubinh] = useState(false);
 
   const [iTime, setITime] = useState(1);
   const [messageHistory, setMessageHistory] = useState<string[]>([]);
@@ -28,28 +33,6 @@ export function useSetupBot(bot: LoginParams) {
     shouldConnect
   );
 
-  const handleEnterLobby = useCallback(
-    () =>
-      sendMessage(
-        `{"M":"EnterLobby","A":[1,1],"H":"maubinhHub","I":${iTimeRef.current}}`
-      ),
-    []
-  );
-  const handleJoinRoom = useCallback(() => {
-    sendMessage(
-      `{"M":"PlayNow","A":[1000,1,0,0],"H":"maubinhHub","I":${iTimeRef.current}}`
-    );
-    sendMessage(
-      `{"M":"UnregisterLeaveRoom","H":"maubinhHub","I":${iTimeRef.current}}`
-    );
-  }, []);
-  const handleLeaveRoom = useCallback(() => {
-    handleMessage('RegisterLeaveRoom');
-    return sendMessage(
-      `{"M":"RegisterLeaveRoom","H":"maubinhHub","I":${iTimeRef.current}}`
-    );
-  }, []);
-
   const connectionStatus = {
     [ReadyState.CONNECTING]: 'Đang kết nối',
     [ReadyState.OPEN]: 'Sẵn sàng',
@@ -65,15 +48,15 @@ export function useSetupBot(bot: LoginParams) {
   useEffect(() => {
     if (lastMessage !== null) {
       const message = JSON.parse(lastMessage.data);
-      const newMsg = handleMessage(message);
+      const newMsg = handleMessage({ message, setState });
 
       setMessageHistory((msgs) => [...msgs, newMsg]);
     }
   }, [lastMessage]);
 
   useEffect(() => {
-    const pingPongMessage = () =>
-      `{"M":"PingPong","H":"maubinhHub","I":${iTimeRef.current}}`;
+    const pingPongMessage = () => ` ["7", "Simms", "1",${iTimeRef.current}]`;
+
     const intervalId = setInterval(() => {
       sendMessage(pingPongMessage());
       setITime((prevITime) => prevITime + 1);
@@ -82,48 +65,86 @@ export function useSetupBot(bot: LoginParams) {
     return () => clearInterval(intervalId);
   }, [sendMessage]);
 
+  useEffect(() => {
+    if (shouldPingMaubinh) {
+      const maubinhPingMessage = () =>
+        `[6,"Simms","channelPlugin",{"cmd":300,"aid":"1","gid":4}]`;
+
+      const intervalId = setInterval(() => {
+        sendMessage(maubinhPingMessage());
+        setITime((prevITime) => prevITime + 1);
+      }, 6000);
+
+      return () => clearInterval(intervalId);
+    }
+  }, [shouldPingMaubinh]);
+
   const handleLoginClick = async () => {
     login(bot)
-      .then((data: any) => {
-        const token = (data as any).Token;
-        setToken(token);
-        setUserId(data?.AccountInfo?.AccountID);
-        getConnectToken(token)
-          .then((data: any) => {
-            setConnectionToken(data.ConnectionToken);
-          })
-          .catch((err: Error) =>
-            console.error('Error when calling getConnectToken function:', err)
-          );
+      .then((data: LoginResponse | null) => {
+        const user = data?.data[0];
+        setUser(user);
+        user && connectMainGame(user);
       })
       .catch((err: Error) =>
         console.error('Error when calling login function:', err)
       );
   };
 
-  const handleConnectMauBinh = (): void => {
-    if (connectionToken) {
-      const encodedConnectionToken = encodeURIComponent(connectionToken);
-      const encodedConnectionData = encodeURIComponent(
-        JSON.stringify([{ name: 'maubinhHub' }])
-      );
-      const encodedAccessToken = encodeURIComponent(token);
-
-      const connectURL = `${hostWSS}/signalr/connect?transport=webSockets&connectionToken=${encodedConnectionToken}&connectionData=${encodedConnectionData}&tid=${7}&access_token=${encodedAccessToken}`;
-
+  const connectMainGame = (user: LoginResponseDto) => {
+    if (user?.token) {
+      const connectURL = 'wss://cardskgw.ryksockesg.net/websocket';
       setSocketUrl(connectURL);
       setShouldConnect(true);
-      handleEnterLobby();
+      sendMessage(
+        `[1,"Simms","","",{"agentId":"1","accessToken":"${user.token}","reconnect":false}]`
+      );
     }
   };
 
+  const handleConnectMauBinh = (): void => {
+    setShouldPingMaubinh(true);
+  };
+
+  const handleCreateRoom = (): void => {
+    sendMessage(
+      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":100,"Mu":4,"iJ":true,"inc":false,"pwd":""}]`
+    );
+
+    // setShouldPingMaubinh(false);
+  };
+
+  const handleJoinRoom = useCallback(() => {
+    sendMessage(`[3,"Simms",${state.firstRoomId},"",true]`);
+  }, [state]);
+  const handleHostJoinRoom = useCallback(() => {
+    sendMessage(`[3,"Simms",${state.firstRoomId},""]`);
+  }, [state]);
+
+  const hanleReadyGuess = useCallback(() => {
+    sendMessage(`[5,"Simms",${state.firstRoomId},{"cmd":5}]`);
+  }, [state]);
+
+  const hanleReadyHost = useCallback(() => {
+    sendMessage(`[5,"Simms",${state.firstRoomId},{"cmd":698}]`);
+  }, [state]);
+
+  const handleLeaveRoom = useCallback(() => {
+    return sendMessage(`[4,"Simms",${state.firstRoomId}]`);
+  }, [state]);
+
   return {
-    userId,
+    user,
+    handleCreateRoom,
     messageHistory,
     handleJoinRoom,
+    handleHostJoinRoom,
     handleLeaveRoom,
     connectionStatus,
     handleLoginClick,
+    connectMainGame,
     handleConnectMauBinh,
+    hanleReadyGuess,
+    hanleReadyHost,
   };
 }

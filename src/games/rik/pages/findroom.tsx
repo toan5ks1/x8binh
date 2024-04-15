@@ -1,43 +1,59 @@
 import background from '../../../../assets/bg/bg-poker.png';
 import BoardCard from '../../../components/card/boardCard';
 import { Button } from '../../../components/ui/button';
-import { useSetupBot } from '../../twith/hooks/useSetupBot';
 import { BotStatus } from '../components/bots/bot';
 import { MainNav } from '../components/layout/main-nav';
 import { bots } from '../config';
+import { useSetupBot } from '../hooks/useSetupBot';
 
 export const FindRoom = () => {
   const {
-    userId: userId1,
+    user: user1,
     messageHistory: messageHistoryBot1,
-    handleJoinRoom: handleJoinRoomBot1,
     handleLeaveRoom: handleLeaveRoomBot1,
     connectionStatus: connectionStatusBot1,
     handleLoginClick: loginBot1,
+    handleCreateRoom: handleCreateRoomBot1,
     handleConnectMauBinh: handleConnectMauBinhBot1,
+    handleHostJoinRoom: handleHostJoinRoom,
+    hanleReadyHost,
   } = useSetupBot(bots[0]);
 
   const {
-    userId: userId2,
+    user: user2,
     messageHistory: messageHistoryBot2,
     handleJoinRoom: handleJoinRoomBot2,
     handleLeaveRoom: handleLeaveRoomBot2,
     connectionStatus: connectionStatusBot2,
     handleLoginClick: loginBot2,
     handleConnectMauBinh: handleConnectMauBinhBot2,
+    hanleReadyGuess,
   } = useSetupBot(bots[1]);
 
-  const onLogin = () => {
+  const onLogin = async () => {
     loginBot1();
     loginBot2();
   };
 
-  const onJoinRoom = () => {
+  const onJoinMauBinh = async () => {
     handleConnectMauBinhBot1();
     handleConnectMauBinhBot2();
+  };
 
-    handleJoinRoomBot1();
+  const onCreatRoom = () => {
+    handleCreateRoomBot1();
+  };
+
+  const onHostJoinRoom = () => {
+    handleHostJoinRoom();
+  };
+  const onJoinRoom = () => {
     handleJoinRoomBot2();
+  };
+
+  const onReady = () => {
+    hanleReadyHost();
+    hanleReadyGuess();
   };
 
   const onLeaveRoom = () => {
@@ -58,17 +74,17 @@ export const FindRoom = () => {
           height: '100vh',
         }}
       >
-        <div className="space-y-4">
+        <div className="flex space-x-4">
           <BotStatus
-            name={'Bot 2'}
-            userId={userId1}
+            name={'Bot 1'}
+            userId={user1?.username}
             connectionStatus={connectionStatusBot1}
             messageHistory={messageHistoryBot1}
           />
 
           <BotStatus
             name={'Bot 2'}
-            userId={userId2}
+            userId={user2?.username}
             connectionStatus={connectionStatusBot2}
             messageHistory={messageHistoryBot2}
           />
@@ -76,7 +92,11 @@ export const FindRoom = () => {
 
         <div className="flex space-x-2">
           <Button onClick={onLogin}>Đăng nhập</Button>
-          <Button onClick={onJoinRoom}>Tìm phòng</Button>
+          <Button onClick={onJoinMauBinh}>Vào mậu binh</Button>
+          <Button onClick={onCreatRoom}>Tạo phòng</Button>
+          <Button onClick={onHostJoinRoom}>Host Vào phòng</Button>
+          <Button onClick={onJoinRoom}> Bot Vào phòng</Button>
+          <Button onClick={onReady}>San sang</Button>
           <Button onClick={onLeaveRoom}>Rời phòng</Button>
           <Button variant="destructive" onClick={onLeaveRoom}>
             Ngắt kết nối
