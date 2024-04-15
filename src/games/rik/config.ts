@@ -1,6 +1,6 @@
 export const bots = [
   {
-    username: 'mnbgfjf4643',
+    username: 'nbmhkghjh456',
     password: 'zxcv123123',
     app_id: 'rik.vip',
     os: 'Windows',
@@ -11,7 +11,7 @@ export const bots = [
     aff_id: 'hit',
   },
   {
-    username: 'bvnsdgh4523',
+    username: 'mnnbktyu453',
     password: 'zxcv123123',
     app_id: 'rik.vip',
     os: 'Windows',

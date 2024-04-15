@@ -7,8 +7,8 @@ contextBridge.exposeInMainWorld('electron', {
     sendMessage(channel: Channels, args: unknown[]) {
       ipcRenderer.send(channel, args);
     },
-    executeScript(channel: Channels, args: unknown[]) {
-      ipcRenderer.send(channel, args);
+    executeScript(args: unknown[]) {
+      ipcRenderer.send('execute-script', args);
     },
     openPuppeteer() {
       ipcRenderer.send('start-puppeteer');

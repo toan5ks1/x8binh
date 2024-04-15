@@ -1,4 +1,6 @@
+import { useContext } from 'react';
 import background from '../../../../assets/bg/bg-poker.png';
+import { AppContext } from '../../../../src/renderer/providers/app';
 import BoardCard from '../../../components/card/boardCard';
 import { Button } from '../../../components/ui/button';
 import { BotStatus } from '../components/bots/bot';
@@ -7,6 +9,7 @@ import { bots } from '../config';
 import { useSetupBot } from '../hooks/useSetupBot';
 
 export const FindRoom = () => {
+  const { state } = useContext<any>(AppContext);
   const {
     user: user1,
     messageHistory: messageHistoryBot1,
@@ -61,6 +64,12 @@ export const FindRoom = () => {
     handleLeaveRoomBot2();
   };
 
+  const onMainJoin = () => {
+    window.electron.ipcRenderer.executeScript([
+      `__require('GamePlayManager').default.getInstance().joinRoom(${state.firstRoomId},0,'',true);`,
+    ]);
+  };
+
   return (
     <div className="flex flex-col h-screen">
       <MainNav />
@@ -95,6 +104,7 @@ export const FindRoom = () => {
           <Button onClick={onJoinMauBinh}>Vào mậu binh</Button>
           <Button onClick={onCreatRoom}>Tạo phòng</Button>
           <Button onClick={onHostJoinRoom}>Host Vào phòng</Button>
+          <Button onClick={onMainJoin}>Main Join</Button>
           <Button onClick={onJoinRoom}> Bot Vào phòng</Button>
           <Button onClick={onReady}>San sang</Button>
           <Button onClick={onLeaveRoom}>Rời phòng</Button>

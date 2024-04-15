@@ -1,11 +1,13 @@
 import { PaperPlaneIcon, TrashIcon } from '@radix-ui/react-icons';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { AppContext } from '../../../../src/renderer/providers/app';
 import { MainNav } from '../components/layout/main-nav';
 
 export const OnGame: React.FC = () => {
   const [data, setData] = useState<unknown[]>([]);
   const [command, setCommand] = useState('');
   const [roomId, setRoomId] = useState('');
+  const { state } = useContext<any>(AppContext);
 
   const parseData = (dataString: string) => {
     try {
@@ -16,6 +18,35 @@ export const OnGame: React.FC = () => {
       return [];
     }
   };
+
+  const sendMessage = () => {
+    window.electron.ipcRenderer.sendMessage('send-message', [
+      '[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":100,"Mu":4,"iJ":true,"inc":false,"pwd":""}]  ',
+    ]);
+  };
+  const createRoom = () => {
+    console.log('create ROom');
+    window.electron.ipcRenderer.executeScript([
+      `__require('GamePlayManager').default.getInstance().requestcreateRoom(4,100,4,)`,
+    ]);
+  };
+  // const executeCommand = (e: React.KeyboardEvent) => {
+  //   if (e.key === 'Enter') {
+  //     console.log('Executing command:', command);
+  //     window.electron.ipcRenderer.executeScript('execute-script', [command]);
+  //     setCommand('');
+  //   }
+  // };
+
+  function openPuppeteer(): void {
+    window.electron.ipcRenderer.openPuppeteer();
+  }
+
+  function joinRoom(): any {
+    window.electron.ipcRenderer.executeScript([
+      `__require('GamePlayManager').default.getInstance().joinRoom(${state.firstRoomId},0,'',true);`,
+    ]);
+  }
 
   const highlightSyntax = (jsonString: string) => {
     let escapedHtml = jsonString.replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -59,37 +90,9 @@ export const OnGame: React.FC = () => {
     };
   }, []);
 
-  const sendMessage = () => {
-    window.electron.ipcRenderer.sendMessage('send-message', [
-      '[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":100,"Mu":4,"iJ":true,"inc":false,"pwd":""}]  ',
-    ]);
-  };
-  const createRoom = () => {
-    window.electron.ipcRenderer.executeScript('execute-script', [
-      `__require('GamePlayManager').default.getInstance().requestcreateRoom(4,100,4,)`,
-    ]);
-  };
-  const executeCommand = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      console.log('Executing command:', command);
-      window.electron.ipcRenderer.executeScript('execute-script', [command]);
-      setCommand('');
-    }
-  };
-
-  const openPuppeteer = (): void => {
-    window.electron.ipcRenderer.openPuppeteer();
-  };
-
   const clearData = () => {
     setData([]);
   };
-
-  function joinRoom(roomId: string): any {
-    window.electron.ipcRenderer.executeScript('execute-script', [
-      `__require('GamePlayManager').default.getInstance().joinRoom(${roomId},0,'',true);`,
-    ]);
-  }
 
   return (
     <div className="text-center h-full">
@@ -113,20 +116,13 @@ export const OnGame: React.FC = () => {
               </div>
               <div
                 style={{ fontFamily: 'monospace' }}
-                className="rounded-[5px] flex items-center bg-[#1e1e1e]  cursor-pointer border-[2px]  "
+                className="rounded-[5px] flex items-center bg-[#1e1e1e]  cursor-pointer border-[2px]  hover:bg-slate-400"
               >
-                <input
-                  type="text"
-                  className="command-input "
-                  style={{ fontFamily: 'monospace' }}
-                  placeholder="Type messsage..."
-                  onChange={(e) => setRoomId(e.target.value)}
-                />
                 <div
                   style={{ fontFamily: 'monospace' }}
-                  className="rounded-[5px] px-[5px] flex items-center bg-[#1e1e1e] cursor-pointer hover:bg-slate-400"
+                  className="rounded-[5px] px-[5px]  flex items-center "
                 >
-                  <button onClick={joinRoom(roomId)}>Join Room</button>
+                  <button onClick={joinRoom}>Join Room</button>
                 </div>
               </div>
               <div
@@ -160,9 +156,6 @@ export const OnGame: React.FC = () => {
                   style={{ fontFamily: 'monospace' }}
                   placeholder="Type messsage..."
                   onChange={(e) => setCommand(e.target.value)}
-                  onKeyDown={() => {
-                    executeCommand;
-                  }}
                 />
                 <div
                   style={{ fontFamily: 'monospace' }}

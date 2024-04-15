@@ -146,7 +146,8 @@ async function startPuppeteer() {
   });
 
   ipcMain.on('execute-script', async (_event, script) => {
-    console.log('Received IPC message to execute script.');
+    // console.log('Received IPC message to execute script.', _event);
+    console.log('Received IPC message to execute script.', script);
     try {
       await page.evaluate(new Function(script));
     } catch (error) {
