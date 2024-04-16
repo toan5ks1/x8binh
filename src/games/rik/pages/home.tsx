@@ -69,8 +69,8 @@ export const HomePage: React.FC = () => {
               <TableBody>
                 <TableRow>
                   {playerHands.map((hand, index) => (
-                    <TableCell>
-                      <HandCard key={index} cardProp={hand} />
+                    <TableCell key={index}>
+                      <HandCard cardProp={hand} />
                     </TableCell>
                   ))}
                 </TableRow>

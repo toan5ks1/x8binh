@@ -1,9 +1,12 @@
-import { PaperPlaneIcon, TrashIcon } from '@radix-ui/react-icons';
+import { PaperPlaneIcon } from '@radix-ui/react-icons';
+import { Chrome, PlusCircle, TrashIcon, Unplug } from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react';
-import { AppContext } from '../../../../src/renderer/providers/app';
-import { MainNav } from '../components/layout/main-nav';
+import { Button } from '../../../components/ui/button';
+import { Card } from '../../../components/ui/card';
+import { Input } from '../../../components/ui/input';
+import { AppContext } from '../../../renderer/providers/app';
 
-export const OnGame: React.FC = () => {
+export const TerminalPage: React.FC = () => {
   const [data, setData] = useState<unknown[]>([]);
   const [command, setCommand] = useState('');
   const [roomId, setRoomId] = useState('');
@@ -95,42 +98,43 @@ export const OnGame: React.FC = () => {
   };
 
   return (
-    <div className="text-center h-full">
-      <MainNav />
+    <Card className="text-center h-full">
       <div className="flex flex-col">
         <div className="w-full overflow-y-scroll ">
           <div className="flex flex-col terminal relative">
             <div className="flex flex-row justify-end bg-[#1e1e1e] gap-[10px]">
-              <div
-                onClick={clearData}
-                className=" border-white bg-[#1e1e1e]  hover:bg-slate-400 rounded-[5px] border-[2px] py-[5px] px-[10px] flex justify-center items-center cursor-pointer"
+              <Button
+                onClick={createRoom}
+                style={{ fontFamily: 'monospace' }}
+                className="rounded-[5px] py-[0px] flex items-center hover:bg-slate-400 cursor-pointer gap-[2px] px-[10px]"
               >
-                <TrashIcon />
-              </div>
+                <PlusCircle />
+                <span>Create Room</span>
+              </Button>
 
-              <div
+              <Button
+                onClick={joinRoom}
                 style={{ fontFamily: 'monospace' }}
-                className="border-white rounded-[5px] px-[5px] flex items-center bg-[#1e1e1e]   border-[2px] hover:bg-slate-400 cursor-pointer"
+                className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] px-[10px] "
               >
-                <button onClick={createRoom}>Create Room</button>
-              </div>
-              <div
+                <Unplug />
+                <span>Join Room</span>
+              </Button>
+
+              <Button
+                onClick={openPuppeteer}
                 style={{ fontFamily: 'monospace' }}
-                className="rounded-[5px] flex items-center bg-[#1e1e1e]  cursor-pointer border-[2px]  hover:bg-slate-400"
+                className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 cursor-pointer"
               >
-                <div
-                  style={{ fontFamily: 'monospace' }}
-                  className="rounded-[5px] px-[5px]  flex items-center "
-                >
-                  <button onClick={joinRoom}>Join Room</button>
-                </div>
-              </div>
-              <div
-                style={{ fontFamily: 'monospace' }}
-                className="border-white rounded-[5px] px-[5px] flex items-center bg-[#1e1e1e]  border-[2px] hover:bg-slate-400 cursor-pointer"
+                <Chrome />
+                <span>Open Pupperteer</span>
+              </Button>
+              <Button
+                onClick={clearData}
+                className="  hover:bg-slate-400 rounded-[5px] p-0 border-[2px] flex justify-center items-center cursor-pointer  gap-[2px] px-[10px]"
               >
-                <button onClick={openPuppeteer}>Open Pupperteer</button>
-              </div>
+                <TrashIcon className="h-auto w-auto" />
+              </Button>
             </div>
 
             <div
@@ -149,27 +153,27 @@ export const OnGame: React.FC = () => {
               ))}
             </div>
             <div className="sticky bottom-0">
-              <div className="flex flex-row justify-between border-white border-[2px] p-[5px] bg-[#1e1e1e]">
-                <input
+              <Card className="flex flex-row justify-between p-[5px]">
+                <Input
                   type="text"
-                  className="bg-[#1e1e1e] w-full"
+                  className="!h-auto"
                   style={{ fontFamily: 'monospace' }}
                   placeholder="Type messsage..."
                   onChange={(e) => setCommand(e.target.value)}
                 />
-                <div
+                <Button
                   style={{ fontFamily: 'monospace' }}
                   onClick={sendMessage}
-                  className="border-white  rounded-[5px] px-[5px] flex justify-center gap-[3px] items-center border-[2px] hover:bg-slate-400"
+                  className="rounded-[5px] px-[25px] flex justify-center gap-[3px] items-center border-[2px] hover:bg-slate-400"
                 >
                   <PaperPlaneIcon />
                   <p>Send</p>
-                </div>
-              </div>
+                </Button>
+              </Card>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };

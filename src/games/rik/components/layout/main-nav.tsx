@@ -1,81 +1,114 @@
-import * as React from 'react';
-
-import { Link } from 'react-router-dom';
-
-import { Badge } from '../../../../components/ui/badge';
+import { AppContext } from '@/src/renderer/providers/app';
 import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  navigationMenuTriggerStyle,
-} from '../../../../components/ui/navigation-menu';
-import { cn } from '../../../../lib/utils';
+  Hand,
+  LogIn,
+  LogOut,
+  PlusCircle,
+  ScreenShareOff,
+  Unplug,
+} from 'lucide-react';
+import { useContext } from 'react';
+import { Button } from '../../../../components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../../../../components/ui/dropdown-menu';
 
-const menuItems = [
-  {
-    name: 'Home',
-    link: '/',
-  },
-  {
-    name: 'Config',
-    link: '/game/rik/config',
-  },
-  {
-    name: 'Find Room',
-    link: '/game/rik/find-room',
-  },
-  {
-    name: 'On Game',
-    link: '/game/rik/on-game',
-  },
-];
+export function MainNav(
+  loginBot1: any,
+  handleCreateRoomBot1: any,
+  handleLeaveRoomBot1: any,
+  handleConnectMauBinhBot1: any,
+  loginBot2: any,
+  handleLeaveRoomBot2: any,
+  handleConnectMauBinhBot2: any
+) {
+  const { state } = useContext<any>(AppContext);
+  const onLogin = async () => {
+    loginBot1();
+    loginBot2();
+  };
 
-export function MainNav() {
+  const onJoinMauBinh = async () => {
+    handleConnectMauBinhBot1();
+    handleConnectMauBinhBot2();
+  };
+
+  const onCreatRoom = () => {
+    handleCreateRoomBot1();
+  };
+
+  const onLeaveRoom = () => {
+    handleLeaveRoomBot1();
+    handleLeaveRoomBot2();
+  };
+
+  const onMainJoin = () => {
+    window.electron.ipcRenderer.executeScript([
+      `__require('GamePlayManager').default.getInstance().joinRoom(${state.firstRoomId},0,'',true);`,
+    ]);
+  };
   return (
-    <div className="h-min py-1 px-2">
-      <div className="flex justify-between items-center">
-        <NavigationMenu>
-          <NavigationMenuList>
-            {menuItems.map((item, i) => (
-              <NavigationMenuItem key={i}>
-                <NavigationMenuLink
-                  className={navigationMenuTriggerStyle()}
-                  asChild
-                >
-                  <Link to={item.link}>{item.name}</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-            ))}
-          </NavigationMenuList>
-        </NavigationMenu>
-        <Badge>Rik</Badge>
+    <div className="flex items-center">
+      <div className="ml-auto flex items-center gap-2">
+        <div className="h-8 gap-1 flex flex-row justify-center items-center">
+          {/* <Gamepad className="h-3.5 w-3.5" /> */}
+          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+            Room: {state.firstRoomId}
+          </span>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <Button variant="outline" size="sm" className="h-8 gap-1">
+              <Hand className="h-3.5 w-3.5" />
+              <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                Card deck
+              </span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Card deck</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuCheckboxItem checked>1</DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem>2</DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem>3</DropdownMenuCheckboxItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Button onClick={onLogin} size="sm" className="h-8 gap-1">
+          <LogIn className="h-3.5 w-3.5" />
+          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+            Login
+          </span>
+        </Button>
+        <Button onClick={onJoinMauBinh} size="sm" className="h-8 gap-1">
+          <Unplug className="h-3.5 w-3.5" />
+          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+            Connect ChinesePK
+          </span>
+        </Button>
+        <Button onClick={onCreatRoom} size="sm" className="h-8 gap-1">
+          <PlusCircle className="h-3.5 w-3.5" />
+          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+            Create And Join
+          </span>
+        </Button>
+        <Button onClick={onLeaveRoom} size="sm" className="h-8 gap-1">
+          <LogOut className="h-3.5 w-3.5" />
+          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+            Quit
+          </span>
+        </Button>
+        <Button size="sm" className="h-8 gap-1">
+          <ScreenShareOff className="h-3.5 w-3.5" />
+          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+            Disconnect
+          </span>
+        </Button>
       </div>
     </div>
   );
 }
-const ListItem = React.forwardRef<
-  React.ElementRef<'a'>,
-  React.ComponentPropsWithoutRef<'a'>
->(({ className, title, children, ...props }, ref) => {
-  return (
-    <li>
-      <NavigationMenuLink asChild>
-        <a
-          ref={ref}
-          className={cn(
-            'block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
-            className
-          )}
-          {...props}
-        >
-          <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
-          </p>
-        </a>
-      </NavigationMenuLink>
-    </li>
-  );
-});
-ListItem.displayName = 'ListItem';

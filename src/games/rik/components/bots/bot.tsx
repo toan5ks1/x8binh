@@ -1,4 +1,17 @@
-import { ScrollArea } from '../../../../components/ui/scroll-area';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../../../../components/ui/card';
+import {
+  Table,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../../../components/ui/table';
 
 interface BotStatusProps {
   name: string;
@@ -13,33 +26,43 @@ export const BotStatus = ({
   connectionStatus,
   messageHistory,
 }: BotStatusProps) => {
-  const outCmmp = userId ? (
-    <div className="flex">
-      <span className="font-bold px-4">{name}: </span>
-      <div className="px-4 space-y-4">
-        <p className="w-full truncate">
-          {connectionStatus == 'Uninstantiated' ? userId : connectionStatus}
-        </p>
+  return (
+    <Card x-chunk="dashboard-07-chunk-1">
+      <CardHeader>
+        <CardTitle>{name}</CardTitle>
+        <CardDescription>
+          {connectionStatus === 'Uninstantiated' ? userId : connectionStatus}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <CardHeader>
+          <CardTitle>Stock</CardTitle>
+          <CardDescription>
+            Lipsum dolor sit amet, consectetur adipiscing elit
+          </CardDescription>
+        </CardHeader>
 
-        <div className="">
-          <ScrollArea className="h-32 w-72 rounded-md border">
-            <div className="p-4">
-              <h4 className="mb-4 text-sm font-medium leading-none">
-                Messages:
-              </h4>
-              {messageHistory.map((tag: any, index: number) => (
-                <div key={index} className="text-sm">
-                  {JSON.stringify(tag)}
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
-        </div>
-      </div>
-    </div>
-  ) : (
-    <></>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">Message</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableRow>
+              {Array.isArray(messageHistory) ? (
+                messageHistory.map((tag: any, index: number) => (
+                  <TableCell key={index} className="font-semibold">
+                    {JSON.stringify(tag)}
+                  </TableCell>
+                ))
+              ) : (
+                <TableCell>No messages found</TableCell>
+              )}
+            </TableRow>
+          </Table>
+        </CardContent>
+      </CardContent>
+    </Card>
   );
-
-  return outCmmp;
 };
