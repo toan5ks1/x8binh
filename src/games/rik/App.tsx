@@ -24,6 +24,7 @@ import {
 } from '../../components/ui/tooltip';
 import { AppContext } from '../../renderer/providers/app';
 // import { MainNav } from './components/layout/main-nav';
+import { BotStatus } from '../../components/bots/botStatus';
 import { Button } from '../../components/ui/button';
 import {
   DropdownMenu,
@@ -35,8 +36,8 @@ import {
 } from '../../components/ui/dropdown-menu';
 import { bots } from './config';
 import { useSetupBot } from './hooks/useSetupBot';
-import { FindRoom } from './pages/findroom';
 import { HomePage } from './pages/home';
+import { SettingPage } from './pages/setting';
 import { TerminalPage } from './pages/terminal';
 
 export function App() {
@@ -50,6 +51,7 @@ export function App() {
     handleLoginClick: loginBot1,
     handleCreateRoom: handleCreateRoomBot1,
     handleConnectMauBinh: handleConnectMauBinhBot1,
+    setMessageHistory: setMessageHistoryBot1,
   } = useSetupBot(bots[0]);
 
   const {
@@ -59,6 +61,7 @@ export function App() {
     connectionStatus: connectionStatusBot2,
     handleLoginClick: loginBot2,
     handleConnectMauBinh: handleConnectMauBinhBot2,
+    setMessageHistory: setMessageHistoryBot2,
   } = useSetupBot(bots[1]);
 
   const onLogin = async () => {
@@ -159,7 +162,7 @@ export function App() {
                 <div className="h-8 gap-1 flex flex-row justify-center items-center">
                   {/* <Gamepad className="h-3.5 w-3.5" /> */}
                   <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Room: {state.firstRoomId}
+                    {state.initialRoom.id && `Room: ${state.initialRoom.id}`}
                   </span>
                 </div>
                 <DropdownMenu>
@@ -228,14 +231,34 @@ export function App() {
               value="find-room"
               hidden={'find-room' !== tab}
             >
-              <FindRoom
-                user1={user1}
-                messageHistoryBot1={messageHistoryBot1}
-                connectionStatusBot1={connectionStatusBot1}
-                user2={user2}
-                messageHistoryBot2={messageHistoryBot2}
-                connectionStatusBot2={connectionStatusBot2}
-              />
+              <div className="flex flex-col h-screen">
+                <div className="flex flex-col  text-white space-y-4 flex-1">
+                  <div className="grid grid-cols-2 gap-[20px] w-full">
+                    <BotStatus
+                      name={'Bot 1'}
+                      userId={user1?.username}
+                      connectionStatus={connectionStatusBot1}
+                      messageHistory={messageHistoryBot1}
+                      setMessageHistory={setMessageHistoryBot1}
+                    />
+
+                    <BotStatus
+                      name={'Bot 2'}
+                      userId={user2?.username}
+                      connectionStatus={connectionStatusBot2}
+                      messageHistory={messageHistoryBot2}
+                      setMessageHistory={setMessageHistoryBot2}
+                    />
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+            <TabsContent
+              forceMount={true}
+              value="setting"
+              hidden={'setting' !== tab}
+            >
+              <SettingPage />
             </TabsContent>
           </main>
         </div>

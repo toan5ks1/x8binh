@@ -1,6 +1,4 @@
 import { Route, MemoryRouter as Router, Routes } from 'react-router-dom';
-import { Config } from '../games/twith/pages/config';
-import { FindRoom } from '../games/twith/pages/findroom';
 
 import { ThemeProvider } from '../components/provider/theme-provider';
 import { TooltipProvider } from '../components/ui/tooltip';
@@ -18,11 +16,7 @@ export default function App() {
           <Router>
             <Routes>
               <Route path="/" element={<Onboard />} />
-              // Twith
-              <Route path="/game/twith/config" element={<Config />} />
-              <Route path="/game/twith/find-room" element={<FindRoom />} />
               <Route path="/game/twith/on-game" element={<TerminalPage />} />
-              // Rik
               <Route path="/game/rik/app" element={<Rik />} />
             </Routes>
           </Router>

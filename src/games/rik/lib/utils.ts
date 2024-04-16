@@ -104,10 +104,26 @@ export function handleMessage({
           ...pre,
           initialRoom: {
             ...pre.initialRoom,
-            cardDesk: [...(pre.initialRoom?.cardDesk ?? []), message[1].cs],
+            cardDesk: {
+              ...(pre.initialRoom?.cardDesk ?? {}),
+              [caller]: message[1].cs,
+            },
           },
         }));
         returnMsg = `Card received: ${message[1].cs}`;
+      } else if (message[1].cmd === 603 && message[1].iar === true) {
+        //[5,{"uid":"29_24437429","cmd":603,"iar":true}]
+        setState((pre) => ({
+          ...pre,
+          initialRoom: {
+            ...pre.initialRoom,
+            cardDesk: {
+              ...(pre.initialRoom?.cardDesk ?? {}),
+              [caller]: message[1].cs,
+            },
+          },
+        }));
+        returnMsg = 'Cards submitted!';
       }
       break;
     case 3:
@@ -138,6 +154,6 @@ export function handleMessage({
     default:
       break;
   }
-  //[4,true,1,7858417,0,""][3,true,0,7862801,null][5,{"cs":[51,31,36,45,27,42,19,4,0,40,46,48,50]
+
   return returnMsg;
 }

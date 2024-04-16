@@ -4,6 +4,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
+import { ScrollArea } from '../../../components/ui/scroll-area';
 import { AppContext } from '../../../renderer/providers/app';
 
 export const TerminalPage: React.FC = () => {
@@ -46,9 +47,11 @@ export const TerminalPage: React.FC = () => {
   }
 
   function joinRoom(): any {
-    window.electron.ipcRenderer.executeScript([
-      `__require('GamePlayManager').default.getInstance().joinRoom(${state.firstRoomId},0,'',true);`,
-    ]);
+    if (state.initialRoom.id) {
+      window.electron.ipcRenderer.executeScript([
+        `__require('GamePlayManager').default.getInstance().joinRoom(${state.initialRoom.id},0,'',true);`,
+      ]);
+    }
   }
 
   const highlightSyntax = (jsonString: string) => {
@@ -100,7 +103,7 @@ export const TerminalPage: React.FC = () => {
   return (
     <Card className="text-center h-full">
       <div className="flex flex-col">
-        <div className="w-full overflow-y-scroll ">
+        <div className="w-full">
           <div className="flex flex-col terminal relative">
             <div className="flex flex-row justify-end bg-[#1e1e1e] gap-[10px]">
               <Button
@@ -115,7 +118,7 @@ export const TerminalPage: React.FC = () => {
               <Button
                 onClick={joinRoom}
                 style={{ fontFamily: 'monospace' }}
-                className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] px-[10px] "
+                className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px]"
               >
                 <Unplug />
                 <span>Join Room</span>
@@ -137,21 +140,21 @@ export const TerminalPage: React.FC = () => {
               </Button>
             </div>
 
-            <div
+            <ScrollArea
               id="messageContainer"
-              className="flex flex-col grow h-full mb-[30px] overflow-y-scroll"
+              className="flex flex-col grow h-full max-w-screen mb-[30px]"
             >
               {data.map((item, index) => (
                 <div
                   key={index}
-                  className="flex justify-start text-left font-bold command-input"
+                  className="font-bold text-left command-input"
                   style={{ fontFamily: 'monospace' }}
                   dangerouslySetInnerHTML={{
                     __html: highlightSyntax(JSON.stringify(item, null, 2)),
                   }}
                 />
               ))}
-            </div>
+            </ScrollArea>
             <div className="sticky bottom-0">
               <Card className="flex flex-row justify-between p-[5px]">
                 <Input
