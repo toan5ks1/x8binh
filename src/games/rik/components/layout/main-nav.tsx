@@ -1,4 +1,3 @@
-import { AppContext } from '@/src/renderer/providers/app';
 import {
   Hand,
   LogIn,
@@ -17,15 +16,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../../../../components/ui/dropdown-menu';
+import { AppContext } from '../../../../renderer/providers/app';
 
 export function MainNav(
-  loginBot1: any,
-  handleCreateRoomBot1: any,
-  handleLeaveRoomBot1: any,
-  handleConnectMauBinhBot1: any,
-  loginBot2: any,
-  handleLeaveRoomBot2: any,
-  handleConnectMauBinhBot2: any
+  loginBot1: () => void,
+  handleCreateRoomBot1: () => void,
+  handleLeaveRoomBot1: () => void,
+  handleConnectMauBinhBot1: () => void,
+  loginBot2: () => void,
+  handleLeaveRoomBot2: () => void,
+  handleConnectMauBinhBot2: () => void
 ) {
   const { state } = useContext<any>(AppContext);
   const onLogin = async () => {

@@ -4,7 +4,7 @@ import { FindRoom } from '../games/twith/pages/findroom';
 
 import { ThemeProvider } from '../components/provider/theme-provider';
 import { TooltipProvider } from '../components/ui/tooltip';
-import { App as Rik } from '../games/rik/app';
+import { App as Rik } from '../games/rik/App';
 import { TerminalPage } from '../games/rik/pages/terminal';
 import './App.css';
 import { Onboard } from './Onboard';

@@ -1,4 +1,15 @@
-import { Home, SearchCheck, Settings, Terminal } from 'lucide-react';
+import {
+  Hand,
+  Home,
+  LogIn,
+  LogOut,
+  PlusCircle,
+  ScreenShareOff,
+  SearchCheck,
+  Settings,
+  Terminal,
+  Unplug,
+} from 'lucide-react';
 import { useContext, useState } from 'react';
 import {
   Tabs,
@@ -12,7 +23,16 @@ import {
   TooltipTrigger,
 } from '../../components/ui/tooltip';
 import { AppContext } from '../../renderer/providers/app';
-import { MainNav } from './components/layout/main-nav';
+// import { MainNav } from './components/layout/main-nav';
+import { Button } from '../../components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../../components/ui/dropdown-menu';
 import { bots } from './config';
 import { useSetupBot } from './hooks/useSetupBot';
 import { FindRoom } from './pages/findroom';
@@ -40,6 +60,31 @@ export function App() {
     handleLoginClick: loginBot2,
     handleConnectMauBinh: handleConnectMauBinhBot2,
   } = useSetupBot(bots[1]);
+
+  const onLogin = async () => {
+    loginBot1();
+    loginBot2();
+  };
+
+  const onJoinMauBinh = async () => {
+    handleConnectMauBinhBot1();
+    handleConnectMauBinhBot2();
+  };
+
+  const onCreatRoom = () => {
+    handleCreateRoomBot1();
+  };
+
+  const onLeaveRoom = () => {
+    handleLeaveRoomBot1();
+    handleLeaveRoomBot2();
+  };
+
+  const onMainJoin = () => {
+    window.electron.ipcRenderer.executeScript([
+      `__require('GamePlayManager').default.getInstance().joinRoom(${state.firstRoomId},0,'',true);`,
+    ]);
+  };
 
   return (
     <Tabs value={tab} onValueChange={setActiveTab} defaultValue="all">
@@ -109,15 +154,65 @@ export function App() {
         </aside>
         <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
           <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-            <MainNav
-              handleLeaveRoomBot1={handleLeaveRoomBot1}
-              handleCreateRoomBot1={handleCreateRoomBot1}
-              loginBot1={loginBot1}
-              handleConnectMauBinhBot1={handleConnectMauBinhBot1}
-              handleLeaveRoomBot2={handleLeaveRoomBot2}
-              loginBot2={loginBot2}
-              handleConnectMauBinhBot2={handleConnectMauBinhBot2}
-            />
+            <div className="flex items-center">
+              <div className="ml-auto flex items-center gap-2">
+                <div className="h-8 gap-1 flex flex-row justify-center items-center">
+                  {/* <Gamepad className="h-3.5 w-3.5" /> */}
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Room: {state.firstRoomId}
+                  </span>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <Button variant="outline" size="sm" className="h-8 gap-1">
+                      <Hand className="h-3.5 w-3.5" />
+                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Card deck
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Card deck</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuCheckboxItem checked>
+                      1
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem>2</DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem>3</DropdownMenuCheckboxItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button onClick={onLogin} size="sm" className="h-8 gap-1">
+                  <LogIn className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Login
+                  </span>
+                </Button>
+                <Button onClick={onJoinMauBinh} size="sm" className="h-8 gap-1">
+                  <Unplug className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Connect ChinesePK
+                  </span>
+                </Button>
+                <Button onClick={onCreatRoom} size="sm" className="h-8 gap-1">
+                  <PlusCircle className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Create And Join
+                  </span>
+                </Button>
+                <Button onClick={onLeaveRoom} size="sm" className="h-8 gap-1">
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Quit
+                  </span>
+                </Button>
+                <Button size="sm" className="h-8 gap-1">
+                  <ScreenShareOff className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Disconnect
+                  </span>
+                </Button>
+              </div>
+            </div>
             <TabsContent forceMount={true} value="all" hidden={'all' !== tab}>
               <HomePage />
             </TabsContent>
