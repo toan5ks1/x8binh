@@ -15,6 +15,8 @@ export function useSetupBot(bot: LoginParams) {
   const [messageHistory, setMessageHistory] = useState<string[]>([]);
   const [shouldConnect, setShouldConnect] = useState(false);
 
+  console.log('messageHistory', messageHistory);
+
   const iTimeRef = useRef(iTime);
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(
