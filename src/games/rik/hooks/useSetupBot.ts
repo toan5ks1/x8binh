@@ -169,5 +169,6 @@ export function useSetupBot(bot: LoginParams) {
     handleLoginClick,
     connectMainGame,
     handleConnectMauBinh,
+    setMessageHistory,
   };
 }

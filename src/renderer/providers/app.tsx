@@ -15,7 +15,9 @@ export interface StateProps {
     id?: number;
     owner?: string;
     players: number;
-    cardDesk?: Array<any>;
+    cardDesk: {
+      [key: string]: number[];
+    };
   };
 }
 
@@ -25,13 +27,13 @@ interface AppContextProps {
 }
 
 export const AppContext = createContext<AppContextProps>({
-  state: { initialRoom: { players: 0 } },
+  state: { initialRoom: { players: 0, cardDesk: {} } },
   setState: () => {},
 });
 
 const AppProvider = ({ children }: AppProviderProps) => {
   const [state, setState] = useState({
-    initialRoom: { players: 0 },
+    initialRoom: { players: 0, cardDesk: {} },
   });
 
   return (
