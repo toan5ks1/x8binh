@@ -1,5 +1,4 @@
 import { useContext } from 'react';
-import { Card } from '../../../../src/components/ui/card';
 import { AppContext } from '../../../../src/renderer/providers/app';
 import { BotStatus } from '../components/bots/bot';
 
@@ -15,32 +14,21 @@ export const FindRoom = (
 
   return (
     <div className="flex flex-col h-screen">
-      <div
-        className="flex flex-col justify-center items-center  text-white space-y-4 py-8 flex-1"
-        style={{
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          height: '100vh',
-        }}
-      >
-        <div className="flex space-x-4">
-          <Card>
-            <BotStatus
-              name={'Bot 1'}
-              userId={user1?.username}
-              connectionStatus={connectionStatusBot1}
-              messageHistory={messageHistoryBot1}
-            />
-          </Card>
+      <div className="flex flex-col  text-white space-y-4 flex-1">
+        <div className="grid grid-cols-2 gap-[20px] w-full">
+          <BotStatus
+            name={'Bot 1'}
+            userId={user1?.username}
+            connectionStatus={connectionStatusBot1}
+            messageHistory={messageHistoryBot1}
+          />
 
-          <Card>
-            <BotStatus
-              name={'Bot 2'}
-              userId={user2?.username}
-              connectionStatus={connectionStatusBot2}
-              messageHistory={messageHistoryBot2}
-            />
-          </Card>
+          <BotStatus
+            name={'Bot 2'}
+            userId={user2?.username}
+            connectionStatus={connectionStatusBot2}
+            messageHistory={messageHistoryBot2}
+          />
         </div>
       </div>
     </div>
