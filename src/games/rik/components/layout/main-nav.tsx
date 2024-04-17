@@ -47,11 +47,6 @@ export function MainNav(
     handleLeaveRoomBot2();
   };
 
-  const onMainJoin = () => {
-    window.electron.ipcRenderer.executeScript([
-      `__require('GamePlayManager').default.getInstance().joinRoom(${state.firstRoomId},0,'',true);`,
-    ]);
-  };
   return (
     <div className="flex items-center">
       <div className="ml-auto flex items-center gap-2">

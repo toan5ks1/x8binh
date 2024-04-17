@@ -1,42 +1,38 @@
 // preload.ts
 import { contextBridge, ipcRenderer } from 'electron';
 
-type Channels = 'ipc-example' | 'websocket-data';
-contextBridge.exposeInMainWorld('electron', {
-  ipcRenderer: {
-    sendMessage(channel: Channels, args: unknown[]) {
-      ipcRenderer.send(channel, args);
-    },
-    executeScript(args: unknown[]) {
-      ipcRenderer.send('execute-script', args);
-    },
-    openPuppeteer() {
-      ipcRenderer.send('start-puppeteer');
-    },
-    on(channel: Channels, func: (...args: unknown[]) => void) {
-      const subscription = (
-        _event: Electron.IpcRendererEvent,
-        ...args: unknown[]
-      ) => func(...args);
-      ipcRenderer.on(channel, subscription);
+const validChannels: string[] = [
+  'ipc-example',
+  'websocket-data',
+  'execute-script',
+  'start-puppeteer',
+  'read-file',
+  'update-file',
+];
 
-      return () => ipcRenderer.removeListener(channel, subscription);
-    },
-    once(channel: Channels, func: (...args: unknown[]) => void) {
-      ipcRenderer.once(
-        channel,
-        (_event: Electron.IpcRendererEvent, ...args: unknown[]) => func(...args)
-      );
-    },
+contextBridge.exposeInMainWorld('backend', {
+  // Gửi yêu cầu IPC
+  sendMessage: (channel: string, args?: unknown[]) => {
+    if (validChannels.includes(channel)) {
+      ipcRenderer.send(channel, args);
+    }
   },
-  onWebSocketData: (func: (data: unknown) => void) => {
-    ipcRenderer.on(
-      'websocket-data',
-      (_event: Electron.IpcRendererEvent, data: unknown) => func(data)
-    );
+  // Lắng nghe sự kiện IPC
+  on: (channel: string, func: (...args: unknown[]) => void) => {
+    if (validChannels.includes(channel)) {
+      ipcRenderer.on(channel, (_event, ...args) => func(...args));
+    }
   },
-  removeWebSocketData: (channel: Channels) => {
-    ipcRenderer.removeAllListeners(channel);
+  // Lắng nghe một lần sự kiện IPC
+  once: (channel: string, func: (...args: unknown[]) => void) => {
+    if (validChannels.includes(channel)) {
+      ipcRenderer.once(channel, (_event, ...args) => func(...args));
+    }
   },
-  sendMessage: (channel: string, args: any) => ipcRenderer.send(channel, args),
+  // Gỡ bỏ listener
+  removeListener: (channel: string, func: (...args: unknown[]) => void) => {
+    if (validChannels.includes(channel)) {
+      ipcRenderer.removeListener(channel, func);
+    }
+  },
 });
