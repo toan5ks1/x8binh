@@ -168,7 +168,7 @@ ipcMain.on('start-puppeteer', async (event) => {
   event.reply('start-puppeteer', true);
 });
 
-ipcMain.on('read-file', (event, filePath) => {
+ipcMain.on('read-file', (event, filePath, accountType) => {
   fs.readFile(
     filePath[0],
     { encoding: 'utf-8' },
@@ -178,8 +178,9 @@ ipcMain.on('read-file', (event, filePath) => {
         event.reply('file-read-error', err.message);
         return;
       }
-      event.reply('read-file', data);
-      console.log('file-path', data);
+      event.reply('read-file', data, accountType);
+      console.log('Readed File:', data);
+      // console.log('accountType-path', accountType);
     }
   );
 });

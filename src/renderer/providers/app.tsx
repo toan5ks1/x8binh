@@ -5,8 +5,7 @@ import {
   SetStateAction,
   useState,
 } from 'react';
-import { BotProvider } from '../../context/BotContext';
-
+import { AccountProvider } from '../../context/AccountContext';
 interface AppProviderProps {
   children: ReactNode;
 }
@@ -39,7 +38,7 @@ const AppProvider = ({ children }: AppProviderProps) => {
 
   return (
     <AppContext.Provider value={{ state, setState }}>
-      <BotProvider>{children}</BotProvider>
+      <AccountProvider>{children}</AccountProvider>
     </AppContext.Provider>
   );
 };

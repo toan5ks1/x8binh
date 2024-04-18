@@ -24,7 +24,7 @@ import {
 } from '../../components/ui/tooltip';
 import { AppContext } from '../../renderer/providers/app';
 // import { MainNav } from './components/layout/main-nav';
-import { BotStatus } from '../../components/bots/botStatus';
+import { BotStatus } from '../../components/account/botStatus';
 import { Button } from '../../components/ui/button';
 import {
   DropdownMenu,
@@ -37,7 +37,7 @@ import {
 import { bots } from './config';
 import { useSetupBot } from './hooks/useSetupBot';
 import { HomePage } from './pages/home';
-import { SettingPage } from './pages/setting';
+import { SettingPageNew } from './pages/setting';
 import { TerminalPage } from './pages/terminal';
 
 export function App() {
@@ -258,7 +258,7 @@ export function App() {
               value="setting"
               hidden={'setting' !== tab}
             >
-              <SettingPage />
+              <SettingPageNew />
             </TabsContent>
           </main>
         </div>
