@@ -1,14 +1,35 @@
+import { debounce } from 'lodash';
 import { Paperclip, Share } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { Badge } from '../../../components/ui/badge';
 import { Button } from '../../../components/ui/button';
 import { Label } from '../../../components/ui/label';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '../../../components/ui/table';
 import { Textarea } from '../../../components/ui/textarea';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '../../../components/ui/tooltip';
+import { BotContext } from '../../../context/BotContext';
+
+type Account = {
+  account: string;
+  password: string;
+};
 
 export const SettingPage: React.FC = () => {
   const [accountDetails, setAccountDetails] = useState({
@@ -17,29 +38,49 @@ export const SettingPage: React.FC = () => {
   });
 
   const mainAccountFileInputRef = useRef(null);
-  const subAccountFileInputRef = useRef(null);
 
-  const handleFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    accountType: 'main' | 'sub'
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const { dispatch, state: bots } = useContext(BotContext);
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result;
-      if (typeof text === 'string') {
-        const [username, password] = text.split('|');
-        setAccountDetails(
-          (prevDetails: { mainAccount: string; subAccount: string }) => ({
-            ...prevDetails,
-            [accountType + 'Account']: username + ' | ' + password,
-          })
-        );
+  const readValidAccount = (input: any): Account[] => {
+    const lines = input.split('\n');
+
+    const accounts = lines.map(
+      (line: { split: (arg0: string) => [any, any] }) => {
+        const [account, password] = line.split('|');
+        return { account, password };
       }
-    };
-    reader.readAsText(file);
+    );
+
+    return accounts;
+  };
+
+  const updateFileDebounced = useCallback(
+    debounce((newText) => {
+      console.log('Update');
+      window.backend.sendMessage('update-file', newText);
+    }, 1000),
+    []
+  );
+
+  const updateMainAccount = useCallback(
+    debounce((text) => {
+      console.log('Updating main account with:', text);
+      window.backend.sendMessage('update-file', text, [
+        'account/mainAccount.txt',
+      ]);
+    }, 1500),
+    []
+  );
+
+  const handleMainAccountChange = (e: { target: { value: any } }) => {
+    const text = e.target.value;
+    setAccountDetails({ ...accountDetails, mainAccount: text });
+    updateMainAccount(text);
+    updateFileDebounced(text);
+    dispatch({
+      type: 'UPDATE_BOTS',
+      payload: readValidAccount(text),
+    });
   };
 
   const triggerFileInputClick = (ref: any) => {
@@ -47,8 +88,34 @@ export const SettingPage: React.FC = () => {
   };
 
   useEffect(() => {
+    const handleFileUpdated = (message: any) => {
+      console.log(message);
+    };
+
+    const handleFileError = (error: any) => {
+      console.error('Error updating file:', error);
+    };
+
+    window.backend.on('file-updated', handleFileUpdated);
+    window.backend.on('file-write-error', handleFileError);
+
+    return () => {
+      window.backend.removeListener('file-updated', handleFileUpdated);
+      window.backend.removeListener('file-write-error', handleFileError);
+    };
+  }, []);
+
+  useEffect(() => {
     const handleFileData = (_: any, data: any) => {
-      console.log('File data received:', data);
+      console.log('File data received:', readValidAccount(_));
+      dispatch({
+        type: 'UPDATE_BOTS',
+        payload: readValidAccount(_),
+      });
+      setAccountDetails((prevDetails) => ({
+        ...prevDetails,
+        mainAccount: _,
+      }));
     };
 
     const handleFileError = (_: any, error: any) => {
@@ -66,6 +133,8 @@ export const SettingPage: React.FC = () => {
     };
   }, []);
 
+  console.log(bots);
+
   return (
     <div className="flex flex-col">
       <header className="flex h-[57px] items-center gap-1 border-b bg-background px-4">
@@ -78,37 +147,124 @@ export const SettingPage: React.FC = () => {
         >
           <form className="grid w-full items-start gap-6">
             <fieldset className="grid gap-6 rounded-lg border p-4">
-              {/* Other inputs omitted for brevity */}
-              <Textarea
-                id="main-account"
-                placeholder="Main account here..."
-                className="min-h-[9.5rem]"
-                value={accountDetails.mainAccount}
-                onChange={(e) =>
-                  setAccountDetails({
-                    ...accountDetails,
-                    mainAccount: e.target.value,
-                  })
-                }
-              />
-              <div className="flex items-center p-3 pt-0">
-                {/* Hidden File Input for Main Account */}
-                <input
-                  type="file"
-                  accept=".txt"
-                  ref={mainAccountFileInputRef}
-                  onChange={(e) => handleFileChange(e, 'main')}
-                  style={{ display: 'none' }}
+              <legend className="-ml-1 px-1 text-sm font-medium">
+                Sub account
+              </legend>
+              <div className="grid gap-3">
+                <Label htmlFor="sub-account">Accounts</Label>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      {bots
+                        .getHeaderGroups()
+                        .map((headerGroup: { id: any; headers: any[] }) => (
+                          <TableRow key={headerGroup.id}>
+                            {headerGroup.headers.map((header) => {
+                              return (
+                                <TableHead key={header.id}>
+                                  {header.id}
+                                  {/* {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )} */}
+                                </TableHead>
+                              );
+                            })}
+                          </TableRow>
+                        ))}
+                    </TableHeader>
+                    <TableBody>
+                      {bots.getRowModel().rows?.length ? (
+                        bots
+                          .getRowModel()
+                          .rows.map(
+                            (row: {
+                              id: React.Key | null | undefined;
+                              getIsSelected: () => any;
+                              getVisibleCells: () => any[];
+                            }) => (
+                              <TableRow
+                                key={row.id}
+                                data-state={row.getIsSelected() && 'selected'}
+                              >
+                                {row.getVisibleCells().map((cell) => (
+                                  <TableCell key={cell.id}>
+                                    {/* {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )} */}
+                                  </TableCell>
+                                ))}
+                              </TableRow>
+                            )
+                          )
+                      ) : (
+                        <TableRow>
+                          <TableCell
+                            // colSpan={columns.length}
+                            className="h-24 text-center"
+                          >
+                            No results.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+                <ul>
+                  {bots.map(
+                    (bot: { account: any; password: any }, index: any) => (
+                      <li key={index}>
+                        Tài khoản: {bot.account} - Mật khẩu: {bot.password}
+                      </li>
+                    )
+                  )}
+                </ul>
+                <Textarea
+                  id="main-account"
+                  placeholder="Main account here..."
+                  className="min-h-[9.5rem]"
+                  value={accountDetails.mainAccount}
+                  onChange={(e) => handleMainAccountChange(e)}
                 />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => triggerFileInputClick(mainAccountFileInputRef)}
-                >
-                  <Paperclip className="size-4" />
-                  <span className="sr-only">Attach file</span>
-                </Button>
-                {/* Other buttons */}
+                <div className="flex items-center p-3 pt-0">
+                  {/* Hidden File Input for Main Account */}
+                  <input
+                    type="file"
+                    accept=".txt"
+                    ref={mainAccountFileInputRef}
+                    onChange={(e) => handleMainAccountChange(e)}
+                    style={{ display: 'none' }}
+                  />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          triggerFileInputClick(mainAccountFileInputRef)
+                        }
+                      >
+                        <Paperclip className="size-4" />
+                        <span className="sr-only">Attach file</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      Upload file for Main account
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <Share className="size-4" />
+                        <span className="sr-only">Use Microphone</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">Use Microphone</TooltipContent>
+                  </Tooltip>
+                </div>
               </div>
             </fieldset>
             <fieldset className="grid gap-6 rounded-lg border p-4">
@@ -116,7 +272,7 @@ export const SettingPage: React.FC = () => {
                 Sub account
               </legend>
               <div className="grid gap-3">
-                <Label htmlFor="sub-account">Account</Label>
+                <Label htmlFor="sub-account">Accounts</Label>
                 <Textarea
                   id="sub-account"
                   placeholder="Sub account here..."

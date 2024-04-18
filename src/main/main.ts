@@ -184,15 +184,19 @@ ipcMain.on('read-file', (event, filePath) => {
   );
 });
 
-ipcMain.on('update-file', (event, data) => {
-  fs.writeFile(filePath, data, (err: { message: any }) => {
-    if (err) {
-      console.log('Error writing file:', err);
-      event.reply('file-write-error', err.message);
-      return;
-    }
-    event.reply('file-updated', 'File has been updated successfully.');
-  });
+ipcMain.on('update-file', (event, data, filePath) => {
+  console.log('data', data);
+  console.log('filePath', filePath);
+  if (filePath && typeof filePath[0] === 'string') {
+    fs.writeFile(filePath[0], data, (err: { message: any }) => {
+      if (err) {
+        console.log('Error writing file:', err);
+        event.reply('file-write-error', err.message);
+        return;
+      }
+      event.reply('file-updated', 'File has been updated successfully.');
+    });
+  }
 });
 
 const createWindow = async () => {
