@@ -5,6 +5,7 @@ const validChannels: string[] = [
   'ipc-example',
   'websocket-data',
   'execute-script',
+  'open-accounts',
   'start-puppeteer',
   'read-file',
   'update-file',

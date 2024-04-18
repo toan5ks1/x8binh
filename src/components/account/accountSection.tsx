@@ -2,6 +2,7 @@ import { debounce, now } from 'lodash';
 import { Paperclip, Share } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AccountDetails, useAccounts } from '../../context/AccountContext';
+import { accountLogin } from '../../games/rik/lib/login';
 import { AccountTable } from '../account/accountTable';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
@@ -28,12 +29,13 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
   const [textareaValue, setTextareaValue] = useState('');
   const { dispatch, state: accounts } = useAccounts();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const readValidAccount = (input: string): AccountDetails[] => {
     return input
       .split('\n')
       .map((line) => {
-        const [username, password] = line.split('|');
+        const [username, password, IsSelected] = line.split('|');
         return {
           username,
           password: password || '',
@@ -44,26 +46,10 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
           fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
           time: now(),
           aff_id: 'hit',
+          isSelected: IsSelected === 'true',
         };
       })
       .filter((account) => account.username);
-  };
-
-  const handleFileChange = (event: any) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        const text = e.target.result;
-        const accounts = readValidAccount(text.toString());
-        dispatch({
-          type: 'UPDATE_ACCOUNTS',
-          accountType: accountType,
-          payload: accounts,
-        });
-      };
-      reader.readAsText(file);
-    }
   };
 
   const updateAccount = useCallback(
@@ -82,26 +68,45 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
     const text = e.target.value;
     setTextareaValue(text);
     updateAccount(text);
-    dispatch({
-      type: 'UPDATE_ACCOUNTS',
-      accountType: accountType,
-      payload: readValidAccount(text),
-    });
   };
+
+  const handleSelectionChange = (updatedAccounts: any[]) => {
+    if (!isEditing) {
+      const newTextareaValue = updatedAccounts
+        .map((account: { username: any; password: any; isSelected: any }) => {
+          return `${account.username}|${account.password}|${account.isSelected}`;
+        })
+        .join('\n');
+
+      setTextareaValue(newTextareaValue);
+    }
+  };
+
+  useEffect(() => {
+    try {
+      if (accounts) {
+        const accountsFind = accounts[accountType]
+          ? accounts[accountType]
+          : undefined;
+        const selectedAccount = accountsFind?.find(
+          (account) => account.isSelected
+        );
+        if (selectedAccount) {
+          accountLogin(selectedAccount)
+            .then((data) => console.log(data))
+            .catch((err) => console.error('Setup bot failed:', err));
+        }
+      }
+    } catch (error) {}
+  }, [accounts, accountType]);
 
   useEffect(() => {
     const handleFileData = (data: any, accountTypeReceived: any) => {
       const newAccounts = readValidAccount(data);
 
       if (accountTypeReceived == accountType) {
-        setTextareaValue(data);
-
         if (JSON.stringify(accountType) !== JSON.stringify(newAccounts)) {
-          dispatch({
-            type: 'UPDATE_ACCOUNTS',
-            accountType: accountType,
-            payload: newAccounts,
-          });
+          setTextareaValue(data);
         }
       }
     };
@@ -125,29 +130,52 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
     };
   }, []);
 
+  useEffect(() => {
+    const text = textareaValue;
+    if (text) {
+      updateAccount(text);
+      dispatch({
+        type: 'UPDATE_ACCOUNTS',
+        accountType: accountType,
+        payload: readValidAccount(text),
+      });
+    }
+  }, [textareaValue]);
+
   return (
-    <div className="relative hidden flex-col items-start gap-8 md:flex">
-      <form className="grid w-full items-start gap-6">
-        <fieldset className="grid gap-6 rounded-lg border p-4">
+    <div className="relative hidden flex-col items-start gap-8 md:flex h-full">
+      <form className="grid w-full h-full items-start gap-6">
+        <fieldset className="grid gap-6 rounded-lg border p-4 h-full">
           <legend className="-ml-1 px-1 text-sm font-medium">
             {accountType} account
           </legend>
           <div className="grid gap-3">
             <Label htmlFor={`${accountType}-account`}>Accounts</Label>
-            <AccountTable accounts={accounts} accountType={accountType} />
+            <AccountTable
+              accounts={accounts}
+              accountType={accountType}
+              onSelectionChange={(updatedAccounts: any[]) =>
+                handleSelectionChange(updatedAccounts)
+              }
+              updateAccounts={updateAccount}
+            />
             <Textarea
               id={`${accountType}-account`}
               placeholder={placeholder}
               className="min-h-[9.5rem]"
               value={textareaValue}
-              onChange={(e) => handleTextAreaChange(e)}
+              onChange={(e) => {
+                setIsEditing(true);
+                handleTextAreaChange(e);
+              }}
+              onBlur={() => setIsEditing(false)}
             />
             <div className="flex items-center p-3 pt-0">
               <input
                 type="file"
                 accept=".txt"
                 ref={fileInputRef}
-                onChange={handleFileChange}
+                // onChange={handleFileChange}
                 style={{ display: 'none' }}
               />
               <Tooltip>

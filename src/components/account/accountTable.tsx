@@ -15,6 +15,7 @@ import {
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-react';
 import * as React from 'react';
 
+import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import {
@@ -36,101 +37,137 @@ import {
   TableRow,
 } from '../ui/table';
 
-export const columns: ColumnDef<unknown, any>[] = [
-  {
-    id: 'select',
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && 'indeterminate')
-        }
-        onCheckedChange={(value: any) =>
-          table.toggleAllPageRowsSelected(!!value)
-        }
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value: any) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: 'username',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Username
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => (
-      <div className="lowercase">{row.getValue('username')}</div>
-    ),
-  },
-  {
-    accessorKey: 'password',
-    header: () => <div className="text-right">Password</div>,
-    cell: ({ row }) => {
-      return (
-        <div className="text-right font-medium">{row.getValue('password')}</div>
-      );
-    },
-  },
-  {
-    id: 'actions',
-    enableHiding: false,
-    cell: ({ row }) => {
-      const payment = row.original;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            {/* <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
-            >
-              Copy payment ID
-            </DropdownMenuItem> */}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
-  },
-];
-
-export const AccountTable: React.FC<any> = ({ accounts, accountType }) => {
+export const AccountTable: React.FC<any> = ({
+  accounts,
+  accountType,
+  onSelectionChange,
+  updateAccounts,
+}) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  const [rowSelection, setRowSelection] = useState<Record<number, boolean>>({
+    0: true,
+  });
 
-  const datatable = accounts[accountType];
+  const dataTable = accounts[accountType];
+
+  useEffect(() => {
+    const updatedAccounts = dataTable.map((account: any, index: any) => {
+      return {
+        ...account,
+        isSelected: rowSelection[index] || false,
+      };
+    });
+
+    onSelectionChange(updatedAccounts);
+  }, [rowSelection]);
+
+  useEffect(() => {
+    const newRowSelection: Record<number, boolean> = {};
+
+    dataTable.forEach((account: { isSelected: boolean }, index: number) => {
+      newRowSelection[index] = account.isSelected;
+    });
+    setRowSelection(newRowSelection as any);
+  }, [dataTable]);
+
+  const handleDeleteRow = (rowId: string) => {
+    const updatedAccounts = dataTable.filter(
+      (_: any, rowIndex: { toString: () => string }) =>
+        rowIndex.toString() !== rowId
+    );
+
+    updateAccounts(accountType, updatedAccounts);
+
+    onSelectionChange(updatedAccounts);
+  };
+
+  const columns: ColumnDef<unknown, any>[] = [
+    {
+      id: 'select',
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && 'indeterminate')
+          }
+          onCheckedChange={(value: any) =>
+            table.toggleAllPageRowsSelected(!!value)
+          }
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value: any) => row.toggleSelected(!!value)}
+          aria-label="Select row border border-white"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: 'username',
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Username
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => (
+        <div className="lowercase">{row.getValue('username')}</div>
+      ),
+    },
+    {
+      accessorKey: 'password',
+      header: () => <div className="text-right">Password</div>,
+      cell: ({ row }) => {
+        return (
+          <div className="text-right font-medium">
+            {row.getValue('password')}
+          </div>
+        );
+      },
+    },
+    {
+      id: 'actions',
+      enableHiding: false,
+      cell: ({ row }) => {
+        const payment = row.original;
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handleDeleteRow(row.id)}>
+                Delete account
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ];
 
   const table = useReactTable({
-    data: datatable,
+    data: dataTable,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -139,7 +176,7 @@ export const AccountTable: React.FC<any> = ({ accounts, accountType }) => {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange: setRowSelection as any,
     state: {
       sorting,
       columnFilters,

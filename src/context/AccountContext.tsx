@@ -16,6 +16,7 @@ export type AccountDetails = {
   fg: string;
   time: number;
   aff_id: string;
+  isSelected: boolean;
 };
 
 type Action = {
