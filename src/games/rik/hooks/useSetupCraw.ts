@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { AppContext, BotStatus } from '../../../renderer/providers/app';
 import {
@@ -7,9 +7,13 @@ import {
   LoginResponseDto,
   login,
 } from '../lib/login';
-import { handleMessage } from '../lib/utils';
+import { handleMessageCrawing, isFoundCards } from '../lib/utils';
 
-export function useSetupBot(bot: LoginParams) {
+export function useSetupCraw(
+  bot: LoginParams,
+  coupleId: string,
+  isHost: boolean
+) {
   const { state, setState } = useContext(AppContext);
   const [socketUrl, setSocketUrl] = useState('');
 
@@ -49,10 +53,11 @@ export function useSetupBot(bot: LoginParams) {
   useEffect(() => {
     if (lastMessage !== null) {
       const message = JSON.parse(lastMessage.data);
-      const newMsg = handleMessage({
+      const newMsg = handleMessageCrawing({
         message,
         setState,
         caller: bot.username,
+        coupleId,
       });
 
       newMsg && setMessageHistory((msgs) => [...msgs, newMsg]);
@@ -119,14 +124,36 @@ export function useSetupBot(bot: LoginParams) {
     );
   };
 
+  // useEffect(() => {
+  //   if (
+  //     Object.keys(state.initialRoom.cardDesk).length &&
+  //     isHost &&
+  //     state.crawingBots[bot.username]?.status === BotStatus.Connected
+  //   ) {
+  //     handleCreateRoom();
+  //     setState((pre) => {
+  //       const newStatus = {
+  //         status: BotStatus.Finding,
+  //       };
+  //       return {
+  //         ...pre,
+  //         crawingBots: {
+  //           ...pre.crawingBots,
+  //           [bot.username]: newStatus,
+  //         },
+  //       };
+  //     });
+  //   }
+  // }, [state.crawingBots]);
+
   // Bot join initial room
   useEffect(() => {
+    const room = state.crawingRoom[coupleId];
     if (
-      state.initialRoom.id &&
-      Object.keys(state.initialRoom.cardDesk).length === 0 // Make sure cards isn't received
+      room &&
+      room.id &&
+      Object.keys(room.cardDesk).length === 0 // Make sure cards isn't received
     ) {
-      const room = state.initialRoom;
-
       // Host and guess join after created room
       if (room.players < 2) {
         if (bot.username === room.owner && room.players === 0) {
@@ -149,47 +176,52 @@ export function useSetupBot(bot: LoginParams) {
         }
       }
     }
-  }, [state.initialRoom]);
+  }, [state.crawingRoom[coupleId]]);
 
-  // Submit
+  // Check cards
   useEffect(() => {
-    const room = state.initialRoom;
-    const me = state.mainBots[bot.username];
-    // const numOfCrawer = Object.keys(state.crawingBots).length;
+    if (!state.foundAt) {
+      const initRoom = state.initialRoom;
+      const room = state.crawingRoom[coupleId];
+      if (
+        room &&
+        Object.keys(room.cardDesk).length === 2 &&
+        initRoom &&
+        Object.keys(initRoom.cardDesk).length === 2
+      ) {
+        if (isFoundCards(room.cardDesk, initRoom.cardDesk)) {
+          setState((pre) => ({ ...pre, foundAt: room.id }));
+        } else {
+          console.log('Not match!');
 
-    if (me?.status === BotStatus.Received && room?.shouldOutVote > 0) {
-      // // Submit cards
-      sendMessage(
-        `[5,"Simms",${room.id},{"cmd":603,"cs":[${
-          room.cardDesk[bot.username]
-        }]}]`
-      );
-      console.log(room.shouldOutVote);
+          // Submit cards
+          sendMessage(
+            `[5,"Simms",${room.id},{"cmd":603,"cs":[${
+              room.cardDesk[bot.username]
+            }]}]`
+          );
+        }
+      }
+    } else {
+      console.log('Found: ', state.foundAt);
     }
-  }, [state.initialRoom]);
+  }, [state.crawingRoom[coupleId], state.initialRoom]);
 
-  // Leave room
   useEffect(() => {
-    const room = state.initialRoom;
-    const me = state.mainBots[bot.username];
-
+    const room = state.crawingRoom[coupleId];
+    const me = state.crawingBots[bot.username];
+    // Leave room
     if (me?.status === BotStatus.Submitted) {
       sendMessage(`[4,"Simms",${room.id}]`);
     }
-  }, [state.mainBots[bot.username]]);
-
-  const handleLeaveRoom = useCallback(() => {
-    return sendMessage(`[4,"Simms",${state.initialRoom.id}]`);
-  }, [state.initialRoom.id]);
+  }, [state.crawingBots[bot.username]]);
 
   return {
     user,
+    handleLoginClick,
+    handleConnectMauBinh,
     handleCreateRoom,
     messageHistory,
-    handleLeaveRoom,
     connectionStatus,
-    handleLoginClick,
-    connectMainGame,
-    handleConnectMauBinh,
   };
 }

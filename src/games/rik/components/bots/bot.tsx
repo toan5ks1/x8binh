@@ -7,7 +7,7 @@ interface BotStatusProps {
   messageHistory: any;
 }
 
-export const BotStatus = ({
+export const BotStatusMessage = ({
   name,
   userId,
   connectionStatus,
@@ -15,11 +15,13 @@ export const BotStatus = ({
 }: BotStatusProps) => {
   const outCmmp = userId ? (
     <div className="flex">
-      <span className="font-bold px-4">{name}: </span>
       <div className="px-4 space-y-4">
-        <p className="w-full truncate">
-          {connectionStatus == 'Uninstantiated' ? userId : connectionStatus}
-        </p>
+        <div className="flex">
+          <p className="w-full truncate">
+            {name}:{' '}
+            {connectionStatus == 'Uninstantiated' ? userId : connectionStatus}
+          </p>
+        </div>
 
         <div className="">
           <ScrollArea className="h-32 w-72 rounded-md border">

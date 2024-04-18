@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from 'react';
-import { StateProps } from '../../../renderer/providers/app';
+import { BotStatus, StateProps } from '../../../renderer/providers/app';
 
 export enum ServerMessageType {
   JoinGame = 'joinGame',
@@ -85,6 +85,19 @@ export function handleMessage({
   switch (message[0]) {
     case 5:
       if (message[1].rs) {
+        setState((pre) => {
+          const curStatus = pre.mainBots[caller]?.status;
+          const newStatus = {
+            status: !curStatus ? BotStatus.Connected : curStatus,
+          };
+          return {
+            ...pre,
+            mainBots: {
+              ...pre.mainBots,
+              [caller]: newStatus,
+            },
+          };
+        });
         returnMsg = 'Join Maubinh sucessfully!';
       } else if (message[1].ri) {
         // Create room response
@@ -100,36 +113,77 @@ export function handleMessage({
         }));
         returnMsg = `Created room ${roomId}`;
       } else if (message[1]?.cs?.length > 0) {
-        setState((pre) => ({
-          ...pre,
-          initialRoom: {
-            ...pre.initialRoom,
-            cardDesk: [...(pre.initialRoom?.cardDesk ?? []), message[1].cs],
-          },
-        }));
+        setState((pre) => {
+          const newStatus = { status: BotStatus.Received };
+          return {
+            ...pre,
+            initialRoom: {
+              ...pre.initialRoom,
+              cardDesk: {
+                ...(pre.initialRoom?.cardDesk ?? {}),
+                [caller]: message[1].cs,
+              },
+            },
+            mainBots: {
+              ...pre.mainBots,
+              [caller]: newStatus,
+            },
+          };
+        });
         returnMsg = `Card received: ${message[1].cs}`;
+      } else if (message[1].cmd === 603 && message[1].iar === true) {
+        setState((pre) => {
+          const newStatus = {
+            status: BotStatus.Submitted,
+          };
+          return {
+            ...pre,
+            mainBots: {
+              ...pre.mainBots,
+              [caller]: newStatus,
+            },
+          };
+        });
+        returnMsg = 'Cards submitted!';
       }
       break;
     case 3:
       if (message[1] === true) {
         // Host join room response
         let currentPlayers;
+        const newStatus = { status: BotStatus.Joined };
         setState((pre) => {
           currentPlayers = pre.initialRoom.players + 1;
+          returnMsg = `Joined room ${message[3]} (room now has ${currentPlayers} players)`;
           return {
             ...pre,
+            mainBots: {
+              ...pre.mainBots,
+              [caller]: newStatus,
+            },
             initialRoom: {
               ...pre.initialRoom,
               players: currentPlayers,
             },
           };
         });
-        returnMsg = `Joined room ${message[3]} (room now has ${currentPlayers} players)`;
       }
       break;
     case 4:
       // Left room response
       if (message[1] === true) {
+        setState((pre) => {
+          const newStatus = {
+            status: BotStatus.Left,
+          };
+          return {
+            ...pre,
+            mainBots: {
+              ...pre.mainBots,
+              [caller]: newStatus,
+            },
+          };
+        });
         returnMsg = 'Left room successfully!';
       } else {
         returnMsg = message[5] || 'Left room failed!';
@@ -138,6 +192,186 @@ export function handleMessage({
     default:
       break;
   }
-  //[4,true,1,7858417,0,""][3,true,0,7862801,null][5,{"cs":[51,31,36,45,27,42,19,4,0,40,46,48,50]
+
   return returnMsg;
 }
+
+const defaultRoom = {
+  hostStatus: BotStatus.Connected,
+  guessStatus: BotStatus.Connected,
+  players: 0,
+  cardDesk: {},
+  shouldOutVote: 0,
+};
+
+interface HandleCRMessageCrawingProps {
+  message: any;
+  setState: Dispatch<SetStateAction<StateProps>>;
+  caller: string;
+  coupleId: string;
+}
+
+export function handleMessageCrawing({
+  message,
+  setState,
+  caller,
+  coupleId,
+}: HandleCRMessageCrawingProps) {
+  let returnMsg;
+
+  switch (message[0]) {
+    case 5:
+      if (message[1].rs) {
+        setState((pre) => {
+          const curStatus = pre.crawingBots[caller]?.status;
+          const newStatus = {
+            status: !curStatus ? BotStatus.Connected : curStatus,
+          };
+          return {
+            ...pre,
+            crawingBots: {
+              ...pre.crawingBots,
+              [caller]: newStatus,
+            },
+          };
+        });
+        returnMsg = 'Join Maubinh sucessfully!';
+      } else if (message[1].ri) {
+        // Create room response
+        const roomId = message[1]?.ri?.rid;
+
+        setState((pre) => {
+          const newRoom = {
+            id: roomId as number,
+            owner: caller,
+            ...defaultRoom,
+          };
+          return {
+            ...pre,
+            crawingRoom: {
+              ...pre.crawingRoom,
+              [coupleId]: newRoom,
+            },
+          };
+        });
+        returnMsg = `Created room ${roomId}`;
+      } else if (message[1]?.cs?.length > 0) {
+        setState((pre) => {
+          const currentRoom = pre.crawingRoom[coupleId];
+          const newStatus = {
+            status: BotStatus.Received,
+          };
+          return {
+            ...pre,
+            crawingRoom: {
+              ...pre.crawingRoom,
+              [coupleId]: {
+                ...currentRoom,
+                cardDesk: {
+                  ...(currentRoom.cardDesk ?? {}),
+                  [caller]: message[1].cs,
+                },
+              },
+            },
+            crawingBots: {
+              ...pre.crawingBots,
+              [caller]: newStatus,
+            },
+          };
+        });
+
+        returnMsg = `Card received: ${message[1].cs}`;
+      } else if (message[1].cmd === 603 && message[1].iar === true) {
+        //[5,{"uid":"29_24437429","cmd":603,"iar":true}]
+        setState((pre) => {
+          const newStatus = {
+            status: BotStatus.Submitted,
+          };
+          return {
+            ...pre,
+            crawingBots: {
+              ...pre.crawingBots,
+              [caller]: newStatus,
+            },
+          };
+        });
+        returnMsg = 'Cards submitted!';
+      }
+      break;
+    case 3:
+      if (message[1] === true) {
+        // Host join room response
+        let currentPlayers;
+        setState((pre) => {
+          const newStatus = { status: BotStatus.Joined };
+          const currentRoom = pre.crawingRoom[coupleId];
+          currentPlayers = currentRoom.players + 1;
+          returnMsg = `Joined room ${message[3]} (room now has ${currentPlayers} players)`;
+          return {
+            ...pre,
+            crawingBots: {
+              ...pre.crawingBots,
+              [caller]: newStatus,
+            },
+            crawingRoom: {
+              ...pre.crawingRoom,
+              [coupleId]: {
+                ...currentRoom,
+                players: currentPlayers,
+              },
+            },
+          };
+        });
+      }
+      break;
+    case 4:
+      // Left room response
+      if (message[1] === true) {
+        setState((pre) => {
+          const newStatus = {
+            status: BotStatus.Left,
+          };
+          const initRoom = pre.initialRoom;
+          const outVote = initRoom.shouldOutVote + 1;
+          return {
+            ...pre,
+            crawingBots: {
+              ...pre.crawingBots,
+              [caller]: newStatus,
+            },
+            initialRoom: {
+              ...initRoom,
+              shouldOutVote: outVote,
+            },
+          };
+        });
+        returnMsg = 'Left room successfully!';
+      } else {
+        returnMsg = message[5] || 'Left room failed!';
+      }
+      break;
+    default:
+      break;
+  }
+
+  return returnMsg;
+}
+
+export const isFoundCards = (
+  desk1: { [key: string]: number[] },
+  desk2: { [key: string]: number[] }
+) => {
+  const cardDesk1 = Object.values(desk1);
+  const cardDesk2 = Object.values(desk2);
+  if (cardDesk1.length < 2 || cardDesk2.length < 2) {
+    return false;
+  }
+
+  const isFound1 =
+    JSON.stringify(cardDesk1[0]) === JSON.stringify(cardDesk2[0]) ||
+    JSON.stringify(cardDesk1[0]) === JSON.stringify(cardDesk2[1]);
+  const isFound2 =
+    JSON.stringify(cardDesk1[1]) === JSON.stringify(cardDesk2[0]) ||
+    JSON.stringify(cardDesk1[1]) === JSON.stringify(cardDesk2[1]);
+  return isFound1 && isFound2;
+};
