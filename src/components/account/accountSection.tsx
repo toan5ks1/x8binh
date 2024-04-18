@@ -68,9 +68,12 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
 
   const updateAccount = useCallback(
     debounce((text) => {
-      window.backend.sendMessage('update-file', text, [
-        'account/mainAccount.txt',
-      ]);
+      window.backend.sendMessage(
+        'update-file',
+        text,
+        [`account/${accountType.toLowerCase()}Account.txt`],
+        accountType
+      );
     }, 1500),
     []
   );

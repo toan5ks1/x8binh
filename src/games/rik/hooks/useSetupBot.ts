@@ -1,15 +1,10 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { AppContext } from '../../../renderer/providers/app';
-import {
-  LoginParams,
-  LoginResponse,
-  LoginResponseDto,
-  login,
-} from '../lib/login';
+import { LoginResponse, LoginResponseDto, login } from '../lib/login';
 import { handleMessage } from '../lib/utils';
 
-export function useSetupBot(bot: LoginParams) {
+export function useSetupBot(bot: any) {
   const { state, setState } = useContext(AppContext);
   const [socketUrl, setSocketUrl] = useState('');
 
