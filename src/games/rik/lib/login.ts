@@ -94,17 +94,11 @@ export async function setupBot(
 }
 export async function accountLogin(account: LoginParams) {
   try {
-    console.log('álkdhaslkdhjaskldjaskl', account);
     const res = await login(account);
     const token = res?.data[0].token;
 
-    const connectionTokenResponse = await getConnectToken(token);
-    const connectionToken = connectionTokenResponse?.connectionToken;
-
     const data = {
-      loginResponse: res,
-      token,
-      connectionToken,
+      res,
     };
 
     return data;

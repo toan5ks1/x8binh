@@ -42,6 +42,7 @@ export const AccountTable: React.FC<any> = ({
   accountType,
   onSelectionChange,
   updateAccounts,
+  handleUpdateSelection,
 }) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -62,7 +63,7 @@ export const AccountTable: React.FC<any> = ({
         isSelected: rowSelection[index] || false,
       };
     });
-
+    handleUpdateSelection();
     onSelectionChange(updatedAccounts);
   }, [rowSelection]);
 

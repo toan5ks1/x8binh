@@ -9,6 +9,7 @@ const validChannels: string[] = [
   'start-puppeteer',
   'read-file',
   'update-file',
+  'send-message',
 ];
 
 contextBridge.exposeInMainWorld('backend', {

@@ -71,6 +71,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
   };
 
   const handleSelectionChange = (updatedAccounts: any[]) => {
+    console.log('handleSelectionChange', isEditing);
     if (!isEditing) {
       const newTextareaValue = updatedAccounts
         .map((account: { username: any; password: any; isSelected: any }) => {
@@ -82,7 +83,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
     }
   };
 
-  useEffect(() => {
+  const handleUpdateSelection = () => {
     try {
       if (accounts) {
         const accountsFind = accounts[accountType]
@@ -98,7 +99,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
         }
       }
     } catch (error) {}
-  }, [accounts, accountType]);
+  };
 
   useEffect(() => {
     const handleFileData = (data: any, accountTypeReceived: any) => {
@@ -157,6 +158,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
               onSelectionChange={(updatedAccounts: any[]) =>
                 handleSelectionChange(updatedAccounts)
               }
+              handleUpdateSelection={handleUpdateSelection}
               updateAccounts={updateAccount}
             />
             <Textarea

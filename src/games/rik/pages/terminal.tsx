@@ -5,6 +5,7 @@ import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
 import { ScrollArea } from '../../../components/ui/scroll-area';
+import { useAccounts } from '../../../context/AccountContext';
 import { AppContext } from '../../../renderer/providers/app';
 
 export const TerminalPage: React.FC = () => {
@@ -12,6 +13,7 @@ export const TerminalPage: React.FC = () => {
   const [command, setCommand] = useState('');
   const [roomId, setRoomId] = useState('');
   const { state } = useContext<any>(AppContext);
+  const { dispatch, state: accounts } = useAccounts();
 
   const parseData = (dataString: string) => {
     try {
@@ -24,8 +26,9 @@ export const TerminalPage: React.FC = () => {
   };
 
   const sendMessage = () => {
+    console.log('create ROom');
     window.backend.sendMessage('send-message', [
-      '[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":100,"Mu":4,"iJ":true,"inc":false,"pwd":""}]  ',
+      '[6,"Simms","channelPlugin",{"cmd":300,"aid":"1","gid":4}]',
     ]);
   };
   const createRoom = () => {
@@ -44,6 +47,13 @@ export const TerminalPage: React.FC = () => {
 
   function openPuppeteer(): void {
     window.backend.sendMessage('start-puppeteer');
+  }
+  function openAccounts(): void {
+    const selectedAccounts = accounts['MAIN']?.filter(
+      (account) => account.isSelected === true
+    );
+
+    window.backend.sendMessage('open-accounts', selectedAccounts);
   }
 
   function joinRoom(): any {
@@ -131,6 +141,14 @@ export const TerminalPage: React.FC = () => {
               >
                 <Chrome />
                 <span>Open Pupperteer</span>
+              </Button>
+              <Button
+                onClick={openAccounts}
+                style={{ fontFamily: 'monospace' }}
+                className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 cursor-pointer"
+              >
+                <Chrome />
+                <span>Open Profiles</span>
               </Button>
               <Button
                 onClick={clearData}

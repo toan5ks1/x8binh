@@ -19,11 +19,21 @@ export type AccountDetails = {
   isSelected: boolean;
 };
 
-type Action = {
-  type: 'UPDATE_ACCOUNTS';
-  accountType: keyof typeof AccountType;
-  payload: AccountDetails[];
-};
+type Action =
+  | {
+      type: 'UPDATE_ACCOUNTS';
+      accountType: keyof typeof AccountType;
+      payload: AccountDetails[];
+    }
+  | {
+      type: 'UPDATE_ACCOUNT_INFO';
+      accountType: keyof typeof AccountType;
+      username: string;
+      info: {
+        fullname: string;
+        main_balance: number;
+      };
+    };
 
 type State = {
   [K in keyof typeof AccountType]?: AccountDetails[];
@@ -47,6 +57,16 @@ function accountReducer(state: State, action: Action): State {
       return {
         ...state,
         [action.accountType]: action.payload,
+      };
+    case 'UPDATE_ACCOUNT_INFO':
+      const updatedAccounts = state[action.accountType]?.map((account) =>
+        account.username === action.username
+          ? { ...account, ...action.info }
+          : account
+      );
+      return {
+        ...state,
+        [action.accountType]: updatedAccounts,
       };
     default:
       return state;

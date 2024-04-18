@@ -1,33 +1,18 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, shell } from 'electron';
 import log from 'electron-log';
 import { autoUpdater } from 'electron-updater';
-import os from 'os';
 import path from 'path';
+import { setupAccountHandlers } from './handler/accountsHandlers';
+import { setupFileHandlers } from './handler/fileHandlers';
+import { setupPuppeteerHandlers } from './handler/puppeteerHandlers';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-const puppeteer = require('puppeteer');
 const fs = require('fs');
 const filePath = path.join(__dirname, '../../account/mainAccount.txt');
 
 const dirPath = path.dirname(filePath);
 if (!fs.existsSync(dirPath)) {
   fs.mkdirSync(dirPath, { recursive: true });
-}
-
-interface WebSocketCreatedData {
-  requestId: string;
-  url: string;
-}
-
-interface WebSocketClosedData {
-  requestId: string;
-}
-
-interface WebSocketFrameReceivedData {
-  requestId: string;
-  response: {
-    payloadData: string;
-  };
 }
 
 export default class AppUpdater {
@@ -39,12 +24,6 @@ export default class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
-
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
-});
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -78,127 +57,6 @@ const RESOURCES_PATH = app.isPackaged
 export const getAssetPath = (...paths: string[]): string => {
   return path.join(RESOURCES_PATH, ...paths);
 };
-
-async function startPuppeteer() {
-  let userProfilePath;
-
-  const username = os.userInfo().username;
-
-  if (os.platform() === 'win32') {
-    userProfilePath = path.join('C:/Users', username, 'MyPuppeteerProfile');
-  } else if (os.platform() === 'darwin') {
-    userProfilePath = path.join('/Users', username, 'MyPuppeteerProfile');
-  } else {
-    userProfilePath = path.join('/home', username, 'MyPuppeteerProfile');
-  }
-  const browser = await puppeteer.launch({
-    headless: false,
-    defaultViewport: null,
-    userDataDir: userProfilePath,
-  });
-  const page = await browser.newPage();
-
-  const client = await page.target().createCDPSession();
-
-  await client.send('Network.enable');
-
-  let specificWebSocketRequestId: any = null;
-
-  client.on(
-    'Network.webSocketCreated',
-    ({ requestId, url }: WebSocketCreatedData) => {
-      if (url.includes('wss://cardskgw.ryksockesg.net/websocket')) {
-        console.log(`WebSocket Created to specific URL: ${url}`);
-
-        specificWebSocketRequestId = requestId;
-      }
-    }
-  );
-
-  client.on('Network.webSocketClosed', ({ requestId }: WebSocketClosedData) => {
-    if (requestId === specificWebSocketRequestId) {
-      console.log(`WebSocket Closed: ${requestId}`);
-      specificWebSocketRequestId = null;
-    }
-  });
-
-  client.on(
-    'Network.webSocketFrameReceived',
-    ({ requestId, response }: WebSocketFrameReceivedData) => {
-      if (requestId === specificWebSocketRequestId) {
-        var receivedMessage = response.payloadData;
-        if (
-          mainWindow &&
-          !receivedMessage.includes('[6,1') &&
-          !receivedMessage.includes('[5,{"rs":[{"mM":1000000,"b')
-        ) {
-          mainWindow.webContents.send('websocket-data', response.payloadData);
-        }
-      }
-    }
-  );
-
-  await page.goto('https://play.rik.vip/', { waitUntil: 'networkidle2' });
-
-  ipcMain.on('send-message', async (_event, [messageContent]) => {
-    console.log('Sendmessage');
-    try {
-      await client.send('Network.sendMessageToWebSocket', {
-        requestId: specificWebSocketRequestId,
-        message: JSON.stringify({ data: 'Hello from Puppeteer!' }),
-      });
-    } catch (error) {
-      console.error('Error sending message to WebSocket:', error);
-    }
-  });
-
-  ipcMain.on('execute-script', async (_event, script) => {
-    // console.log('Received IPC message to execute script.', _event);
-    console.log('Received IPC message to execute script.', script);
-    try {
-      await page.evaluate(new Function(script));
-    } catch (error) {
-      console.error('Error executing script in the page:', error);
-    }
-  });
-}
-
-ipcMain.on('start-puppeteer', async (event) => {
-  await startPuppeteer();
-  event.reply('start-puppeteer', true);
-});
-
-ipcMain.on('read-file', (event, filePath, accountType) => {
-  fs.readFile(
-    filePath[0],
-    { encoding: 'utf-8' },
-    (err: { message: any }, data: any) => {
-      if (err) {
-        console.log('Error reading file:', err);
-        event.reply('file-read-error', err.message);
-        return;
-      }
-      event.reply('read-file', data, accountType);
-      console.log('Readed File:', data);
-      // console.log('accountType-path', accountType);
-    }
-  );
-});
-
-ipcMain.on('update-file', (event, data, filePath) => {
-  console.log('data', data);
-  console.log('filePath', filePath);
-  if (filePath && typeof filePath[0] === 'string') {
-    fs.writeFile(filePath[0], data, (err: { message: any }) => {
-      if (err) {
-        console.log('Error writing file:', err);
-        event.reply('file-write-error', err.message);
-        return;
-      }
-      event.reply('file-updated', 'File has been updated successfully.');
-    });
-  }
-});
 
 const createWindow = async () => {
   if (isDebug) {
@@ -243,6 +101,10 @@ const createWindow = async () => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
+
+  setupFileHandlers();
+  setupPuppeteerHandlers(mainWindow);
+  setupAccountHandlers(mainWindow);
 
   new AppUpdater();
 };
