@@ -30,6 +30,14 @@ cd your-project-name
 npm install
 ```
 
+## Build App
+
+Use this to build Exe:
+
+```bash
+electron-packager C:\Users\PC\Documents\Projects\x10binh\ rikmaubinh --platform=win32 --arch=x64
+```
+
 **Having issues installing? See our [debugging guide](https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues/400)**
 
 ## Starting Development

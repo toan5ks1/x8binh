@@ -24,13 +24,13 @@ export const TerminalPage: React.FC = () => {
   };
 
   const sendMessage = () => {
-    window.electron.ipcRenderer.sendMessage('send-message', [
+    window.backend.sendMessage('send-message', [
       '[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":100,"Mu":4,"iJ":true,"inc":false,"pwd":""}]  ',
     ]);
   };
   const createRoom = () => {
     console.log('create ROom');
-    window.electron.ipcRenderer.executeScript([
+    window.backend.sendMessage('execute-script', [
       `__require('GamePlayManager').default.getInstance().requestcreateRoom(4,100,4,)`,
     ]);
   };
@@ -43,12 +43,12 @@ export const TerminalPage: React.FC = () => {
   // };
 
   function openPuppeteer(): void {
-    window.electron.ipcRenderer.openPuppeteer();
+    window.backend.sendMessage('start-puppeteer');
   }
 
   function joinRoom(): any {
     if (state.initialRoom.id) {
-      window.electron.ipcRenderer.executeScript([
+      window.backend.sendMessage('execute-script', [
         `__require('GamePlayManager').default.getInstance().joinRoom(${state.initialRoom.id},0,'',true);`,
       ]);
     }
@@ -89,10 +89,10 @@ export const TerminalPage: React.FC = () => {
       setData((currentData) => [...currentData, parsedData]);
     };
 
-    window.electron.onWebSocketData(handleData);
+    window.backend.on('websocket-data', handleData);
 
     return () => {
-      window.electron.removeWebSocketData('websocket-data');
+      window.backend.removeListener('websocket-data', handleData);
     };
   }, []);
 

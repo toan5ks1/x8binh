@@ -6,6 +6,13 @@ import path from 'path';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 const puppeteer = require('puppeteer');
+const fs = require('fs');
+const filePath = path.join(__dirname, '../../account/mainAccount.txt');
+
+const dirPath = path.dirname(filePath);
+if (!fs.existsSync(dirPath)) {
+  fs.mkdirSync(dirPath, { recursive: true });
+}
 
 interface WebSocketCreatedData {
   requestId: string;
@@ -156,8 +163,40 @@ async function startPuppeteer() {
   });
 }
 
-ipcMain.on('start-puppeteer', async () => {
+ipcMain.on('start-puppeteer', async (event) => {
   await startPuppeteer();
+  event.reply('start-puppeteer', true);
+});
+
+ipcMain.on('read-file', (event, filePath) => {
+  fs.readFile(
+    filePath[0],
+    { encoding: 'utf-8' },
+    (err: { message: any }, data: any) => {
+      if (err) {
+        console.log('Error reading file:', err);
+        event.reply('file-read-error', err.message);
+        return;
+      }
+      event.reply('read-file', data);
+      console.log('file-path', data);
+    }
+  );
+});
+
+ipcMain.on('update-file', (event, data, filePath) => {
+  console.log('data', data);
+  console.log('filePath', filePath);
+  if (filePath && typeof filePath[0] === 'string') {
+    fs.writeFile(filePath[0], data, (err: { message: any }) => {
+      if (err) {
+        console.log('Error writing file:', err);
+        event.reply('file-write-error', err.message);
+        return;
+      }
+      event.reply('file-updated', 'File has been updated successfully.');
+    });
+  }
 });
 
 const createWindow = async () => {

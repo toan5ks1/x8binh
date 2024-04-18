@@ -84,7 +84,7 @@ export function App() {
   };
 
   const onMainJoin = () => {
-    window.electron.ipcRenderer.executeScript([
+    window.backend.sendMessage('execute-script', [
       `__require('GamePlayManager').default.getInstance().joinRoom(${state.firstRoomId},0,'',true);`,
     ]);
   };
@@ -157,7 +157,7 @@ export function App() {
         </aside>
         <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
           <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-            <div className="flex items-center">
+            <div className="flex items-center sticky top-[15px] z-10">
               <div className="ml-auto flex items-center gap-2">
                 <div className="h-8 gap-1 flex flex-row justify-center items-center">
                   {/* <Gamepad className="h-3.5 w-3.5" /> */}
