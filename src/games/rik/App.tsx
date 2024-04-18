@@ -34,7 +34,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../../components/ui/dropdown-menu';
-import { bots } from './config';
+import { useAccounts } from '../../context/AccountContext';
+// import { bots } from './config';
 import { useSetupBot } from './hooks/useSetupBot';
 import { HomePage } from './pages/home';
 import { SettingPageNew } from './pages/setting';
@@ -43,6 +44,9 @@ import { TerminalPage } from './pages/terminal';
 export function App() {
   const [tab, setActiveTab] = useState('all');
   const { state } = useContext<any>(AppContext);
+  const { dispatch, state: accounts } = useAccounts();
+  const bot1Account = accounts['BOT']?.[0] ?? {};
+  const bot2Account = accounts['BOT']?.[1] ?? {};
   const {
     user: user1,
     messageHistory: messageHistoryBot1,
@@ -52,7 +56,7 @@ export function App() {
     handleCreateRoom: handleCreateRoomBot1,
     handleConnectMauBinh: handleConnectMauBinhBot1,
     setMessageHistory: setMessageHistoryBot1,
-  } = useSetupBot(bots[0]);
+  } = useSetupBot(bot1Account);
 
   const {
     user: user2,
@@ -62,7 +66,7 @@ export function App() {
     handleLoginClick: loginBot2,
     handleConnectMauBinh: handleConnectMauBinhBot2,
     setMessageHistory: setMessageHistoryBot2,
-  } = useSetupBot(bots[1]);
+  } = useSetupBot(bot2Account);
 
   const onLogin = async () => {
     loginBot1();
