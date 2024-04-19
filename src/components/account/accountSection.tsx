@@ -2,7 +2,7 @@ import { debounce, now } from 'lodash';
 import { Paperclip, Share } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AccountDetails, useAccounts } from '../../context/AccountContext';
-import { accountLogin } from '../../games/rik/lib/login';
+import { LoginParams, accountLogin } from '../../games/rik/lib/login';
 import { AccountTable } from '../account/accountTable';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
@@ -30,6 +30,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
   const { dispatch, state: accounts } = useAccounts();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const hasLoggedInRef = useRef(false);
 
   const readValidAccount = (input: string): AccountDetails[] => {
     return input
@@ -71,7 +72,6 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
   };
 
   const handleSelectionChange = (updatedAccounts: any[]) => {
-    console.log('handleSelectionChange', isEditing);
     if (!isEditing) {
       const newTextareaValue = updatedAccounts
         .map((account: { username: any; password: any; isSelected: any }) => {
@@ -83,28 +83,30 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
     }
   };
 
-  const handleUpdateSelection = () => {
-    try {
-      if (accounts) {
-        const accountsFind = accounts[accountType]
-          ? accounts[accountType]
-          : undefined;
-        const selectedAccount = accountsFind?.find(
-          (account) => account.isSelected
-        );
-        if (selectedAccount) {
-          accountLogin(selectedAccount)
-            .then((data) => console.log(data))
-            .catch((err) => console.error('Setup bot failed:', err));
-        }
-      }
-    } catch (error) {}
-  };
-
   useEffect(() => {
     const handleFileData = (data: any, accountTypeReceived: any) => {
       const newAccounts = readValidAccount(data);
+      const selectedAccounts = newAccounts.filter(
+        (account) => account.isSelected
+      );
 
+      selectedAccounts.map(async (account: LoginParams) => {
+        try {
+          const data = (await accountLogin(account)) as any;
+          const cash = Array.isArray(data?.data)
+            ? data?.data[0].main_balance
+            : 0;
+          dispatch({
+            type: 'UPDATE_ACCOUNT_INFO',
+            accountType: accountType,
+            username: data?.data[0].username,
+            main_balance: cash,
+          });
+        } catch (err) {
+          console.error('Setup bot failed:', err);
+          return account;
+        }
+      });
       if (accountTypeReceived == accountType) {
         if (JSON.stringify(accountType) !== JSON.stringify(newAccounts)) {
           setTextareaValue(data);
@@ -112,12 +114,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
       }
     };
 
-    const handleFileUpdated = (message: any) => {
-      console.log(message);
-    };
-
     window.backend.on('read-file', handleFileData);
-    window.backend.on('file-updated', handleFileUpdated);
 
     window.backend.sendMessage(
       'read-file',
@@ -127,7 +124,6 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
 
     return () => {
       window.backend.removeListener('read-file', handleFileData);
-      window.backend.removeListener('file-updated', handleFileUpdated);
     };
   }, []);
 
@@ -153,12 +149,12 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
           <div className="grid gap-3">
             <Label htmlFor={`${accountType}-account`}>Accounts</Label>
             <AccountTable
-              accounts={accounts}
+              accountsProps={accounts}
+              isEditing={isEditing}
               accountType={accountType}
               onSelectionChange={(updatedAccounts: any[]) =>
                 handleSelectionChange(updatedAccounts)
               }
-              handleUpdateSelection={handleUpdateSelection}
               updateAccounts={updateAccount}
             />
             <Textarea

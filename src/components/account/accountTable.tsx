@@ -3,6 +3,7 @@
 import {
   ColumnDef,
   ColumnFiltersState,
+  Row,
   SortingState,
   VisibilityState,
   flexRender,
@@ -12,10 +13,17 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-react';
+import {
+  ArrowUpDown,
+  ChevronDown,
+  DollarSign,
+  MoreHorizontal,
+} from 'lucide-react';
 import * as React from 'react';
 
 import { useEffect, useState } from 'react';
+import { useAccounts } from '../../context/AccountContext';
+import { accountLogin } from '../../games/rik/lib/login';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import {
@@ -38,11 +46,9 @@ import {
 } from '../ui/table';
 
 export const AccountTable: React.FC<any> = ({
-  accounts,
   accountType,
   onSelectionChange,
-  updateAccounts,
-  handleUpdateSelection,
+  accountsProps,
 }) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -53,38 +59,32 @@ export const AccountTable: React.FC<any> = ({
   const [rowSelection, setRowSelection] = useState<Record<number, boolean>>({
     0: true,
   });
-
-  const dataTable = accounts[accountType];
+  const { dispatch, state: accounts } = useAccounts();
 
   useEffect(() => {
-    const updatedAccounts = dataTable.map((account: any, index: any) => {
-      return {
-        ...account,
-        isSelected: rowSelection[index] || false,
-      };
-    });
-    handleUpdateSelection();
+    const updatedAccounts = accounts[accountType].map(
+      (account: any, index: any) => {
+        return {
+          ...account,
+          isSelected: rowSelection[index] || false,
+        };
+      }
+    );
     onSelectionChange(updatedAccounts);
   }, [rowSelection]);
 
-  useEffect(() => {
-    const newRowSelection: Record<number, boolean> = {};
-
-    dataTable.forEach((account: { isSelected: boolean }, index: number) => {
-      newRowSelection[index] = account.isSelected;
-    });
-    setRowSelection(newRowSelection as any);
-  }, [dataTable]);
-
   const handleDeleteRow = (rowId: string) => {
-    const updatedAccounts = dataTable.filter(
-      (_: any, rowIndex: { toString: () => string }) =>
-        rowIndex.toString() !== rowId
+    const indexToDelete = accounts[accountType].findIndex(
+      (_: any, index: { toString: () => string }) => index.toString() === rowId
     );
 
-    updateAccounts(accountType, updatedAccounts);
-
-    onSelectionChange(updatedAccounts);
+    if (indexToDelete !== -1) {
+      dispatch({
+        type: 'DELETE_ACCOUNT',
+        accountType: accountType,
+        index: indexToDelete,
+      });
+    }
   };
 
   const columns: ColumnDef<unknown, any>[] = [
@@ -105,8 +105,11 @@ export const AccountTable: React.FC<any> = ({
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
-          onCheckedChange={(value: any) => row.toggleSelected(!!value)}
-          aria-label="Select row border border-white"
+          onCheckedChange={(value: any) => {
+            row.toggleSelected(!!value);
+            handleRowSelect(row, value);
+          }}
+          aria-label="Select row"
         />
       ),
       enableSorting: false,
@@ -127,6 +130,24 @@ export const AccountTable: React.FC<any> = ({
       },
       cell: ({ row }) => (
         <div className="lowercase">{row.getValue('username')}</div>
+      ),
+    },
+    {
+      accessorKey: 'main_balance',
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            <DollarSign />
+            Cash
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => (
+        <div className="lowercase">{row.getValue('main_balance')}</div>
       ),
     },
     {
@@ -167,8 +188,26 @@ export const AccountTable: React.FC<any> = ({
     },
   ];
 
+  async function handleRowSelect(row: Row<any>, value: any) {
+    if (value) {
+      try {
+        const data = (await accountLogin(row.original)) as any;
+
+        const cash = Array.isArray(data?.data) ? data?.data[0].main_balance : 0;
+        dispatch({
+          type: 'UPDATE_ACCOUNT_INFO',
+          accountType: accountType,
+          username: data?.data[0].username,
+          main_balance: cash,
+        });
+      } catch (err) {
+        console.error('Setup bot failed:', err);
+      }
+    }
+  }
+
   const table = useReactTable({
-    data: dataTable,
+    data: accounts[accountType],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,

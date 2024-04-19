@@ -22,6 +22,7 @@ export interface LoginResponse {
 }
 
 export interface LoginParams {
+  isSelected?: any;
   username: string;
   password: string;
   app_id: string;
@@ -95,15 +96,9 @@ export async function setupBot(
 export async function accountLogin(account: LoginParams) {
   try {
     const res = await login(account);
-    const token = res?.data[0].token;
-
-    const data = {
-      res,
-    };
-
-    return data;
+    return res;
   } catch (err) {
     console.error('Error when calling accountLogin:', err);
-    return null;
+    return { error: true, message: 'An error occurred during login.' };
   }
 }

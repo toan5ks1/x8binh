@@ -17,6 +17,8 @@ export type AccountDetails = {
   time: number;
   aff_id: string;
   isSelected: boolean;
+  info?: any;
+  main_balance?: any;
 };
 
 type Action =
@@ -29,10 +31,12 @@ type Action =
       type: 'UPDATE_ACCOUNT_INFO';
       accountType: keyof typeof AccountType;
       username: string;
-      info: {
-        fullname: string;
-        main_balance: number;
-      };
+      main_balance?: number;
+    }
+  | {
+      type: 'DELETE_ACCOUNT';
+      accountType: keyof typeof AccountType;
+      index: number;
     };
 
 type State = {
@@ -48,7 +52,7 @@ const initialState: State = {
 };
 
 const AccountContext = createContext<
-  { state: State; dispatch: Dispatch } | undefined
+  { state: any; dispatch: Dispatch } | undefined
 >(undefined);
 
 function accountReducer(state: State, action: Action): State {
@@ -59,14 +63,22 @@ function accountReducer(state: State, action: Action): State {
         [action.accountType]: action.payload,
       };
     case 'UPDATE_ACCOUNT_INFO':
-      const updatedAccounts = state[action.accountType]?.map((account) =>
+      const updatedAccountsInfo = state[action.accountType]?.map((account) =>
         account.username === action.username
-          ? { ...account, ...action.info }
+          ? { ...account, main_balance: action?.main_balance }
           : account
       );
       return {
         ...state,
-        [action.accountType]: updatedAccounts,
+        [action.accountType]: updatedAccountsInfo,
+      };
+    case 'DELETE_ACCOUNT':
+      const remainingAccounts = state[action.accountType]?.filter(
+        (_, index) => index !== action.index
+      );
+      return {
+        ...state,
+        [action.accountType]: remainingAccounts,
       };
     default:
       return state;
