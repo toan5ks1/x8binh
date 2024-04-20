@@ -1,19 +1,18 @@
 import { ScrollArea } from '../../../../components/ui/scroll-area';
 
-interface BotStatusProps {
+interface BotCmpProps {
   name: string;
   userId: string | undefined;
   connectionStatus: string;
   messageHistory: any;
 }
-
-export const BotStatusMessage = ({
+export const BotCmp = ({
   name,
   userId,
   connectionStatus,
   messageHistory,
-}: BotStatusProps) => {
-  const outCmmp = userId ? (
+}: BotCmpProps) => {
+  return (
     <div className="flex">
       <div className="px-4 space-y-4">
         <div className="flex">
@@ -39,9 +38,5 @@ export const BotStatusMessage = ({
         </div>
       </div>
     </div>
-  ) : (
-    <></>
   );
-
-  return outCmmp;
 };

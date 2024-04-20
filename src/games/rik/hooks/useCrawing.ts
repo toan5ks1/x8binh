@@ -11,6 +11,7 @@ export function useCrawing(bot1: LoginParams, bot2: LoginParams) {
     messageHistory: messageHistoryBot1,
     connectionStatus: connectionStatusBot1,
     handleCreateRoom: hostCreateRoom,
+    handleLeaveRoom: hostLeaveRoom,
   } = useSetupCraw(bot1, coupleId, true);
 
   const {
@@ -19,6 +20,7 @@ export function useCrawing(bot1: LoginParams, bot2: LoginParams) {
     handleConnectMauBinh: connectMbGuess,
     messageHistory: messageHistoryBot2,
     connectionStatus: connectionStatusBot2,
+    handleLeaveRoom: guessLeaveRoom,
   } = useSetupCraw(bot2, coupleId, false);
 
   return {
@@ -34,5 +36,7 @@ export function useCrawing(bot1: LoginParams, bot2: LoginParams) {
     connectionStatusHost: connectionStatusBot1,
     connectionStatusGuess: connectionStatusBot2,
     hostCreateRoom,
+    hostLeaveRoom,
+    guessLeaveRoom,
   };
 }

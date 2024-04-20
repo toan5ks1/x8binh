@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { AppContext, BotStatus } from '../../../renderer/providers/app';
 import {
@@ -7,9 +7,9 @@ import {
   LoginResponseDto,
   login,
 } from '../lib/login';
-import { handleMessage } from '../lib/utils';
+import { handleMessage, isAllHostReady } from '../lib/utils';
 
-export function useSetupBot(bot: LoginParams) {
+export function useSetupBot(bot: LoginParams, isHost: boolean) {
   const { state, setState } = useContext(AppContext);
   const [socketUrl, setSocketUrl] = useState('');
 
@@ -77,6 +77,8 @@ export function useSetupBot(bot: LoginParams) {
       const maubinhPingMessage = () =>
         `[6,"Simms","channelPlugin",{"cmd":300,"aid":"1","gid":4}]`;
 
+      sendMessage(maubinhPingMessage());
+
       const intervalId = setInterval(() => {
         sendMessage(maubinhPingMessage());
         setITime((prevITime) => prevITime + 1);
@@ -109,11 +111,11 @@ export function useSetupBot(bot: LoginParams) {
     }
   };
 
-  const handleConnectMauBinh = (): void => {
+  const handleConnectMauBinh = () => {
     setShouldPingMaubinh(true);
   };
 
-  const handleCreateRoom = (): void => {
+  const handleCreateRoom = () => {
     sendMessage(
       `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":100,"Mu":4,"iJ":true,"inc":false,"pwd":""}]`
     );
@@ -138,33 +140,39 @@ export function useSetupBot(bot: LoginParams) {
         }
       }
 
-      // Host and guess ready
+      // Host ready
       if (room.players === 2) {
         if (bot.username === room.owner) {
-          // Host
           sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
-        } else {
-          // Guess
-          sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
         }
       }
     }
   }, [state.initialRoom]);
 
+  // Guess ready
+  useEffect(() => {
+    const room = state.initialRoom;
+    if (room.owner && isAllHostReady(state)) {
+      sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
+    }
+  }, [state.mainBots, state.crawingBots]);
+
   // Submit
   useEffect(() => {
     const room = state.initialRoom;
     const me = state.mainBots[bot.username];
-    // const numOfCrawer = Object.keys(state.crawingBots).length;
+    const numOfCrawer = Object.keys(state.crawingBots).length;
 
-    if (me?.status === BotStatus.Received && room?.shouldOutVote > 0) {
+    if (
+      me?.status === BotStatus.Received &&
+      room?.shouldOutVote === numOfCrawer
+    ) {
       // // Submit cards
       sendMessage(
         `[5,"Simms",${room.id},{"cmd":603,"cs":[${
           room.cardDesk[bot.username]
         }]}]`
       );
-      console.log(room.shouldOutVote);
     }
   }, [state.initialRoom]);
 
@@ -178,9 +186,24 @@ export function useSetupBot(bot: LoginParams) {
     }
   }, [state.mainBots[bot.username]]);
 
-  const handleLeaveRoom = useCallback(() => {
+  const handleLeaveRoom = () => {
     return sendMessage(`[4,"Simms",${state.initialRoom.id}]`);
-  }, [state.initialRoom.id]);
+  };
+
+  // Recreate room
+  useEffect(() => {
+    const me = state.mainBots[bot.username];
+    if (state.shouldRecreateRoom && isHost && me.status !== BotStatus.Finding) {
+      handleCreateRoom();
+      setState((pre) => ({
+        ...pre,
+        mainBots: {
+          ...pre.mainBots,
+          [bot.username]: { ...me, status: BotStatus.Finding },
+        },
+      }));
+    }
+  }, [state.shouldRecreateRoom]);
 
   return {
     user,

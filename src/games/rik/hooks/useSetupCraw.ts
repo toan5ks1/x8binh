@@ -7,7 +7,11 @@ import {
   LoginResponseDto,
   login,
 } from '../lib/login';
-import { handleMessageCrawing, isFoundCards } from '../lib/utils';
+import {
+  handleMessageCrawing,
+  isAllHostReady,
+  isFoundCards,
+} from '../lib/utils';
 
 export function useSetupCraw(
   bot: LoginParams,
@@ -82,6 +86,8 @@ export function useSetupCraw(
       const maubinhPingMessage = () =>
         `[6,"Simms","channelPlugin",{"cmd":300,"aid":"1","gid":4}]`;
 
+      sendMessage(maubinhPingMessage());
+
       const intervalId = setInterval(() => {
         sendMessage(maubinhPingMessage());
         setITime((prevITime) => prevITime + 1);
@@ -124,28 +130,6 @@ export function useSetupCraw(
     );
   };
 
-  // useEffect(() => {
-  //   if (
-  //     Object.keys(state.initialRoom.cardDesk).length &&
-  //     isHost &&
-  //     state.crawingBots[bot.username]?.status === BotStatus.Connected
-  //   ) {
-  //     handleCreateRoom();
-  //     setState((pre) => {
-  //       const newStatus = {
-  //         status: BotStatus.Finding,
-  //       };
-  //       return {
-  //         ...pre,
-  //         crawingBots: {
-  //           ...pre.crawingBots,
-  //           [bot.username]: newStatus,
-  //         },
-  //       };
-  //     });
-  //   }
-  // }, [state.crawingBots]);
-
   // Bot join initial room
   useEffect(() => {
     const room = state.crawingRoom[coupleId];
@@ -170,13 +154,18 @@ export function useSetupCraw(
         if (bot.username === room.owner) {
           // Host
           sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
-        } else {
-          // Guess
-          sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
         }
       }
     }
   }, [state.crawingRoom[coupleId]]);
+
+  // Guess ready
+  useEffect(() => {
+    const room = state.crawingRoom[coupleId];
+    if (room && isAllHostReady(state)) {
+      sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
+    }
+  }, [state.mainBots, state.crawingBots]);
 
   // Check cards
   useEffect(() => {
@@ -216,6 +205,25 @@ export function useSetupCraw(
     }
   }, [state.crawingBots[bot.username]]);
 
+  const handleLeaveRoom = () => {
+    return sendMessage(`[4,"Simms",${state.crawingRoom[coupleId].id}]`);
+  };
+
+  // Recreate room
+  useEffect(() => {
+    const me = state.crawingBots[bot.username];
+    if (state.shouldRecreateRoom && isHost && me.status !== BotStatus.Finding) {
+      handleCreateRoom();
+      setState((pre) => ({
+        ...pre,
+        crawingBots: {
+          ...pre.crawingBots,
+          [bot.username]: { ...me, status: BotStatus.Finding },
+        },
+      }));
+    }
+  }, [state.shouldRecreateRoom]);
+
   return {
     user,
     handleLoginClick,
@@ -223,5 +231,6 @@ export function useSetupCraw(
     handleCreateRoom,
     messageHistory,
     connectionStatus,
+    handleLeaveRoom,
   };
 }

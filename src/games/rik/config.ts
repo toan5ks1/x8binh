@@ -1,6 +1,7 @@
 export const bots = [
   {
-    username: 'mnbgfjf4643',
+    // username: 'mnbgfjf4643',
+    username: 'bvnsdgh4523',
     password: 'zxcv123123',
     app_id: 'rik.vip',
     os: 'Windows',

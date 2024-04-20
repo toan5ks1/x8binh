@@ -87,14 +87,13 @@ export function handleMessage({
       if (message[1].rs) {
         setState((pre) => {
           const curStatus = pre.mainBots[caller]?.status;
-          const newStatus = {
-            status: !curStatus ? BotStatus.Connected : curStatus,
-          };
           return {
             ...pre,
             mainBots: {
               ...pre.mainBots,
-              [caller]: newStatus,
+              [caller]: {
+                status: !curStatus ? BotStatus.Connected : curStatus,
+              },
             },
           };
         });
@@ -106,15 +105,22 @@ export function handleMessage({
         setState((pre) => ({
           ...pre,
           initialRoom: {
-            ...pre.initialRoom,
+            ...defaultRoom,
             id: roomId as number,
             owner: caller,
           },
         }));
         returnMsg = `Created room ${roomId}`;
+      } else if (message[1]?.c === 100) {
+        setState((pre) => ({
+          ...pre,
+          mainBots: {
+            ...pre.mainBots,
+            [caller]: { status: BotStatus.Ready },
+          },
+        }));
       } else if (message[1]?.cs?.length > 0) {
         setState((pre) => {
-          const newStatus = { status: BotStatus.Received };
           return {
             ...pre,
             initialRoom: {
@@ -126,21 +132,20 @@ export function handleMessage({
             },
             mainBots: {
               ...pre.mainBots,
-              [caller]: newStatus,
+              [caller]: { status: BotStatus.Received },
             },
           };
         });
         returnMsg = `Card received: ${message[1].cs}`;
       } else if (message[1].cmd === 603 && message[1].iar === true) {
         setState((pre) => {
-          const newStatus = {
-            status: BotStatus.Submitted,
-          };
           return {
             ...pre,
             mainBots: {
               ...pre.mainBots,
-              [caller]: newStatus,
+              [caller]: {
+                status: BotStatus.Submitted,
+              },
             },
           };
         });
@@ -151,7 +156,6 @@ export function handleMessage({
       if (message[1] === true) {
         // Host join room response
         let currentPlayers;
-        const newStatus = { status: BotStatus.Joined };
         setState((pre) => {
           currentPlayers = pre.initialRoom.players + 1;
           returnMsg = `Joined room ${message[3]} (room now has ${currentPlayers} players)`;
@@ -159,7 +163,7 @@ export function handleMessage({
             ...pre,
             mainBots: {
               ...pre.mainBots,
-              [caller]: newStatus,
+              [caller]: { status: BotStatus.Joined },
             },
             initialRoom: {
               ...pre.initialRoom,
@@ -173,15 +177,15 @@ export function handleMessage({
       // Left room response
       if (message[1] === true) {
         setState((pre) => {
-          const newStatus = {
-            status: BotStatus.Left,
-          };
           return {
             ...pre,
             mainBots: {
               ...pre.mainBots,
-              [caller]: newStatus,
+              [caller]: {
+                status: BotStatus.Left,
+              },
             },
+            shouldRecreateRoom: true,
           };
         });
         returnMsg = 'Left room successfully!';
@@ -197,8 +201,6 @@ export function handleMessage({
 }
 
 const defaultRoom = {
-  hostStatus: BotStatus.Connected,
-  guessStatus: BotStatus.Connected,
   players: 0,
   cardDesk: {},
   shouldOutVote: 0,
@@ -224,14 +226,13 @@ export function handleMessageCrawing({
       if (message[1].rs) {
         setState((pre) => {
           const curStatus = pre.crawingBots[caller]?.status;
-          const newStatus = {
-            status: !curStatus ? BotStatus.Connected : curStatus,
-          };
           return {
             ...pre,
             crawingBots: {
               ...pre.crawingBots,
-              [caller]: newStatus,
+              [caller]: {
+                status: !curStatus ? BotStatus.Connected : curStatus,
+              },
             },
           };
         });
@@ -255,12 +256,17 @@ export function handleMessageCrawing({
           };
         });
         returnMsg = `Created room ${roomId}`;
+      } else if (message[1]?.c === 100) {
+        setState((pre) => ({
+          ...pre,
+          crawingBots: {
+            ...pre.crawingBots,
+            [caller]: { status: BotStatus.Ready },
+          },
+        }));
       } else if (message[1]?.cs?.length > 0) {
         setState((pre) => {
           const currentRoom = pre.crawingRoom[coupleId];
-          const newStatus = {
-            status: BotStatus.Received,
-          };
           return {
             ...pre,
             crawingRoom: {
@@ -275,7 +281,9 @@ export function handleMessageCrawing({
             },
             crawingBots: {
               ...pre.crawingBots,
-              [caller]: newStatus,
+              [caller]: {
+                status: BotStatus.Received,
+              },
             },
           };
         });
@@ -284,14 +292,13 @@ export function handleMessageCrawing({
       } else if (message[1].cmd === 603 && message[1].iar === true) {
         //[5,{"uid":"29_24437429","cmd":603,"iar":true}]
         setState((pre) => {
-          const newStatus = {
-            status: BotStatus.Submitted,
-          };
           return {
             ...pre,
             crawingBots: {
               ...pre.crawingBots,
-              [caller]: newStatus,
+              [caller]: {
+                status: BotStatus.Submitted,
+              },
             },
           };
         });
@@ -303,7 +310,6 @@ export function handleMessageCrawing({
         // Host join room response
         let currentPlayers;
         setState((pre) => {
-          const newStatus = { status: BotStatus.Joined };
           const currentRoom = pre.crawingRoom[coupleId];
           currentPlayers = currentRoom.players + 1;
           returnMsg = `Joined room ${message[3]} (room now has ${currentPlayers} players)`;
@@ -311,7 +317,7 @@ export function handleMessageCrawing({
             ...pre,
             crawingBots: {
               ...pre.crawingBots,
-              [caller]: newStatus,
+              [caller]: { status: BotStatus.Joined },
             },
             crawingRoom: {
               ...pre.crawingRoom,
@@ -328,21 +334,21 @@ export function handleMessageCrawing({
       // Left room response
       if (message[1] === true) {
         setState((pre) => {
-          const newStatus = {
-            status: BotStatus.Left,
-          };
           const initRoom = pre.initialRoom;
           const outVote = initRoom.shouldOutVote + 1;
           return {
             ...pre,
             crawingBots: {
               ...pre.crawingBots,
-              [caller]: newStatus,
+              [caller]: {
+                status: BotStatus.Left,
+              },
             },
             initialRoom: {
               ...initRoom,
               shouldOutVote: outVote,
             },
+            shouldRecreateRoom: false,
           };
         });
         returnMsg = 'Left room successfully!';
@@ -374,4 +380,25 @@ export const isFoundCards = (
     JSON.stringify(cardDesk1[1]) === JSON.stringify(cardDesk2[0]) ||
     JSON.stringify(cardDesk1[1]) === JSON.stringify(cardDesk2[1]);
   return isFound1 && isFound2;
+};
+
+export const isAllHostReady = (state: StateProps) => {
+  let isMainHostReady = true;
+  let isCrawingHostReady = true;
+  const allCrawingHost = Object.values(state.crawingRoom).map(
+    (room) => room.owner
+  );
+
+  Object.entries(state.mainBots).forEach(([botId, bot]) => {
+    if (botId === state.initialRoom.owner && bot.status !== BotStatus.Ready) {
+      isMainHostReady = false;
+    }
+  });
+  Object.entries(state.crawingBots).forEach(([botId, bot]) => {
+    if (allCrawingHost.includes(botId) && bot.status !== BotStatus.Ready) {
+      isCrawingHostReady = false;
+    }
+  });
+
+  return isMainHostReady && isCrawingHostReady;
 };

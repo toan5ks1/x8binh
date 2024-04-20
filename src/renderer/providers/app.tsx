@@ -25,8 +25,6 @@ interface Room {
   id?: number;
   owner?: string;
   players: number;
-  hostStatus: BotStatus;
-  guessStatus: BotStatus;
   cardDesk: {
     [key: string]: number[];
   };
@@ -49,6 +47,7 @@ export interface StateProps {
     };
   };
   foundAt?: number;
+  shouldRecreateRoom: boolean;
 }
 
 interface AppContextProps {
@@ -60,14 +59,13 @@ export const AppContext = createContext<AppContextProps>({
   state: {
     initialRoom: {
       players: 0,
-      hostStatus: BotStatus.Initialized,
-      guessStatus: BotStatus.Initialized,
       cardDesk: {},
       shouldOutVote: 0,
     },
     mainBots: {},
     crawingRoom: {},
     crawingBots: {},
+    shouldRecreateRoom: false,
   },
   setState: () => {},
 });
@@ -76,14 +74,13 @@ const AppProvider = ({ children }: AppProviderProps) => {
   const [state, setState] = useState({
     initialRoom: {
       players: 0,
-      hostStatus: BotStatus.Initialized,
-      guessStatus: BotStatus.Initialized,
       cardDesk: {},
       shouldOutVote: 0,
     },
     mainBots: {},
     crawingRoom: {},
     crawingBots: {},
+    shouldRecreateRoom: false,
   });
 
   return (
