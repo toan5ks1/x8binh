@@ -3,7 +3,6 @@
 import {
   ColumnDef,
   ColumnFiltersState,
-  Row,
   SortingState,
   VisibilityState,
   flexRender,
@@ -22,15 +21,13 @@ import {
 import * as React from 'react';
 
 import { useEffect, useState } from 'react';
-import { useAccounts } from '../../context/AccountContext';
-import { accountLogin } from '../../lib/login';
+import useAccountStore from '../../store/accountStore';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -48,7 +45,6 @@ import {
 export const AccountTable: React.FC<any> = ({
   accountType,
   onSelectionChange,
-  accountsProps,
 }) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -59,33 +55,21 @@ export const AccountTable: React.FC<any> = ({
   const [rowSelection, setRowSelection] = useState<Record<number, boolean>>({
     0: true,
   });
-  const { dispatch, state: accounts } = useAccounts();
+  const { accounts, updateAccount } = useAccountStore();
 
-  useEffect(() => {
-    const updatedAccounts = accounts[accountType].map(
-      (account: any, index: any) => {
-        return {
-          ...account,
-          isSelected: rowSelection[index] || false,
-        };
-      }
-    );
-    onSelectionChange(updatedAccounts);
-  }, [rowSelection]);
+  // const handleDeleteRow = (rowId: string) => {
+  //   const indexToDelete = accounts[accountType].findIndex(
+  //     (_: any, index: { toString: () => string }) => index.toString() === rowId
+  //   );
 
-  const handleDeleteRow = (rowId: string) => {
-    const indexToDelete = accounts[accountType].findIndex(
-      (_: any, index: { toString: () => string }) => index.toString() === rowId
-    );
-
-    if (indexToDelete !== -1) {
-      dispatch({
-        type: 'DELETE_ACCOUNT',
-        accountType: accountType,
-        index: indexToDelete,
-      });
-    }
-  };
+  //   if (indexToDelete !== -1) {
+  //     dispatch({
+  //       type: 'DELETE_ACCOUNT',
+  //       accountType: accountType,
+  //       index: indexToDelete,
+  //     });
+  //   }
+  // };
 
   const columns: ColumnDef<unknown, any>[] = [
     {
@@ -107,7 +91,7 @@ export const AccountTable: React.FC<any> = ({
           checked={row.getIsSelected()}
           onCheckedChange={(value: any) => {
             row.toggleSelected(!!value);
-            handleRowSelect(row, value);
+            // handleRowSelect(row, value);
           }}
           aria-label="Select row"
         />
@@ -178,9 +162,9 @@ export const AccountTable: React.FC<any> = ({
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleDeleteRow(row.id)}>
+              {/* <DropdownMenuItem onClick={() => handleDeleteRow(row.id)}>
                 Delete account
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -188,23 +172,32 @@ export const AccountTable: React.FC<any> = ({
     },
   ];
 
-  async function handleRowSelect(row: Row<any>, value: any) {
-    if (value) {
-      try {
-        const data = (await accountLogin(row.original)) as any;
+  // async function handleRowSelect(row: Row<any>, value: any) {
+  //   const dataRow = row.original;
+  //   if (value) {
+  //     try {
+  //       const data = (await accountLogin(dataRow)) as any;
 
-        const cash = Array.isArray(data?.data) ? data?.data[0].main_balance : 0;
-        dispatch({
-          type: 'UPDATE_ACCOUNT_INFO',
-          accountType: accountType,
-          username: data?.data[0].username,
-          main_balance: cash,
-        });
-      } catch (err) {
-        console.error('Setup bot failed:', err);
+  //       const cash = Array.isArray(data?.data) ? data?.data[0].main_balance : 0;
+  //       updateAccount(accountType, data.username, { main_balance: cash });
+  //     } catch (err) {
+  //       console.error('Setup bot failed:', err);
+  //     }
+  //   }
+  //   onSelectionChange(dataRow);
+  // }
+
+  useEffect(() => {
+    const updatedAccounts = accounts[accountType].map(
+      (account: any, index: any) => {
+        return {
+          ...account,
+          isSelected: rowSelection[index] || false,
+        };
       }
-    }
-  }
+    );
+    onSelectionChange(updatedAccounts);
+  }, [rowSelection]);
 
   const table = useReactTable({
     data: accounts[accountType],

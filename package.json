@@ -117,6 +117,7 @@
     "@radix-ui/react-select": "^2.0.0",
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-tabs": "^1.0.4",
+    "@radix-ui/react-toast": "^1.1.5",
     "@radix-ui/react-tooltip": "^1.0.7",
     "@tanstack/react-table": "^8.16.0",
     "class-variance-authority": "^0.7.0",
@@ -134,9 +135,11 @@
     "react-dom": "^18.1.0",
     "react-router-dom": "^6.3.0",
     "tailwind-merge": "^2.2.2",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@locator/runtime": "^0.4.3",
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.5",
     "@teamsupercell/typings-for-css-modules-loader": "^2.5.1",
     "@testing-library/jest-dom": "^5.16.4",

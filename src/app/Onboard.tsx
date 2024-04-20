@@ -37,7 +37,7 @@ export const Onboard = () => {
               </div>
               <Input id="password" type="password" required />
             </div>
-            <Link to={'/game/rik/app'} className="flex">
+            <Link to={'/app'} className="flex">
               <Button type="submit" className="w-full">
                 Login
               </Button>

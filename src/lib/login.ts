@@ -25,13 +25,13 @@ export interface LoginParams {
   isSelected?: any;
   username: string;
   password: string;
-  app_id: string;
-  os: string;
-  device: string;
-  browser: string;
-  fg: string;
-  time: number;
-  aff_id: string;
+  app_id?: string;
+  os?: string;
+  device?: string;
+  browser?: string;
+  fg?: string;
+  time?: number;
+  aff_id?: string;
 }
 
 interface ConnectTokenResponse {

@@ -5,7 +5,6 @@ import {
   SetStateAction,
   useState,
 } from 'react';
-import { AccountProvider } from '../../context/AccountContext';
 interface AppProviderProps {
   children: ReactNode;
 }
@@ -38,7 +37,7 @@ const AppProvider = ({ children }: AppProviderProps) => {
 
   return (
     <AppContext.Provider value={{ state, setState }}>
-      <AccountProvider>{children}</AccountProvider>
+      {children}
     </AppContext.Provider>
   );
 };
