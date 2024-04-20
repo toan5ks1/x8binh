@@ -19,7 +19,7 @@ export const setupFileHandlers = () => {
     );
   });
 
-  ipcMain.on('update-file', (event, data, filePath) => {
+  ipcMain.on('update-file', (event, data, filePath, accountType) => {
     if (filePath && typeof filePath[0] === 'string') {
       fs.writeFile(filePath[0], data, (err: { message: any }) => {
         if (err) {
@@ -27,7 +27,7 @@ export const setupFileHandlers = () => {
           event.reply('file-write-error', err.message);
           return;
         }
-        event.reply('file-updated', 'File has been updated successfully.');
+        event.reply('file-updated', data, accountType);
       });
     }
   });

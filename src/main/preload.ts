@@ -10,6 +10,7 @@ const validChannels: string[] = [
   'read-file',
   'update-file',
   'send-message',
+  'file-updated',
 ];
 
 contextBridge.exposeInMainWorld('backend', {

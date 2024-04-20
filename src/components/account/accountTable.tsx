@@ -20,7 +20,8 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { accountLogin } from '../../lib/login';
 import useAccountStore from '../../store/accountStore';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
@@ -28,6 +29,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -42,34 +44,26 @@ import {
   TableRow,
 } from '../ui/table';
 
-export const AccountTable: React.FC<any> = ({
-  accountType,
-  onSelectionChange,
-}) => {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState<Record<number, boolean>>({
-    0: true,
-  });
-  const { accounts, updateAccount } = useAccountStore();
+export const AccountTable: React.FC<any> = ({ accountType }) => {
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const { accounts, updateAccount, removeAccount } = useAccountStore();
 
-  // const handleDeleteRow = (rowId: string) => {
-  //   const indexToDelete = accounts[accountType].findIndex(
-  //     (_: any, index: { toString: () => string }) => index.toString() === rowId
-  //   );
+  const handleDeleteRow = (rowData: any) => {
+    removeAccount(accountType, rowData.username);
+  };
 
-  //   if (indexToDelete !== -1) {
-  //     dispatch({
-  //       type: 'DELETE_ACCOUNT',
-  //       accountType: accountType,
-  //       index: indexToDelete,
-  //     });
-  //   }
-  // };
+  const checkBalance = async (rowData: any) => {
+    var mainBalance = rowData.main_balance ? rowData.main_balance : 0;
+    const data = (await accountLogin(rowData)) as any;
+    const cash = Array.isArray(data?.data) ? data?.data[0].main_balance : 0;
+    mainBalance = cash;
+
+    updateAccount(accountType, rowData.username, {
+      main_balance: mainBalance,
+    });
+  };
 
   const columns: ColumnDef<unknown, any>[] = [
     {
@@ -80,18 +74,28 @@ export const AccountTable: React.FC<any> = ({
             table.getIsAllPageRowsSelected() ||
             (table.getIsSomePageRowsSelected() && 'indeterminate')
           }
-          onCheckedChange={(value: any) =>
-            table.toggleAllPageRowsSelected(!!value)
-          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
         />
       ),
-      cell: ({ row }) => (
+      cell: ({ row }: any) => (
         <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value: any) => {
+          checked={row?.original.isSelected || row.getIsSelected()}
+          onCheckedChange={async (value) => {
             row.toggleSelected(!!value);
-            // handleRowSelect(row, value);
+            var mainBalance = row.original.main_balance;
+            if (value) {
+              const data = (await accountLogin(row.original)) as any;
+              const cash = Array.isArray(data?.data)
+                ? data?.data[0].main_balance
+                : 0;
+              mainBalance = cash;
+            }
+
+            updateAccount(accountType, row?.original.username, {
+              isSelected: value,
+              main_balance: mainBalance,
+            });
           }}
           aria-label="Select row"
         />
@@ -149,7 +153,7 @@ export const AccountTable: React.FC<any> = ({
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const payment = row.original;
+        const rowData = row.original;
 
         return (
           <DropdownMenu>
@@ -162,42 +166,18 @@ export const AccountTable: React.FC<any> = ({
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {/* <DropdownMenuItem onClick={() => handleDeleteRow(row.id)}>
+              <DropdownMenuItem onClick={() => handleDeleteRow(rowData)}>
                 Delete account
-              </DropdownMenuItem> */}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => checkBalance(rowData)}>
+                Check balance
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         );
       },
     },
   ];
-
-  // async function handleRowSelect(row: Row<any>, value: any) {
-  //   const dataRow = row.original;
-  //   if (value) {
-  //     try {
-  //       const data = (await accountLogin(dataRow)) as any;
-
-  //       const cash = Array.isArray(data?.data) ? data?.data[0].main_balance : 0;
-  //       updateAccount(accountType, data.username, { main_balance: cash });
-  //     } catch (err) {
-  //       console.error('Setup bot failed:', err);
-  //     }
-  //   }
-  //   onSelectionChange(dataRow);
-  // }
-
-  useEffect(() => {
-    const updatedAccounts = accounts[accountType].map(
-      (account: any, index: any) => {
-        return {
-          ...account,
-          isSelected: rowSelection[index] || false,
-        };
-      }
-    );
-    onSelectionChange(updatedAccounts);
-  }, [rowSelection]);
 
   const table = useReactTable({
     data: accounts[accountType],
@@ -209,12 +189,10 @@ export const AccountTable: React.FC<any> = ({
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection as any,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
-      rowSelection,
     },
   });
 
