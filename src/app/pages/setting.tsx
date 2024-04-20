@@ -1,5 +1,5 @@
 import React from 'react';
-import { AccountSection } from '../../../components/account/accountSection';
+import { AccountSection } from '../../components/account/accountSection';
 
 export const SettingPageNew: React.FC = () => {
   return (

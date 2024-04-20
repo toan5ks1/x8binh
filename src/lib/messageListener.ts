@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from 'react';
-import { StateProps } from '../../../renderer/providers/app';
+import { StateProps } from '../renderer/providers/app';
 
 export enum ServerMessageType {
   JoinGame = 'joinGame',

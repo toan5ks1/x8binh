@@ -2,7 +2,7 @@ import { debounce, now } from 'lodash';
 import { Paperclip, Share } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AccountDetails, useAccounts } from '../../context/AccountContext';
-import { LoginParams, accountLogin } from '../../games/rik/lib/login';
+import { LoginParams, accountLogin } from '../../lib/login';
 import { AccountTable } from '../account/accountTable';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';

@@ -16,16 +16,16 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '../../components/ui/tabs';
+} from '../components/ui/tabs';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '../../components/ui/tooltip';
-import { AppContext } from '../../renderer/providers/app';
+} from '../components/ui/tooltip';
+import { AppContext } from '../renderer/providers/app';
 // import { MainNav } from './components/layout/main-nav';
-import { BotStatus } from '../../components/account/botStatus';
-import { Button } from '../../components/ui/button';
+import { BotStatus } from '../components/account/botStatus';
+import { Button } from '../components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -33,10 +33,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '../../components/ui/dropdown-menu';
-import { useAccounts } from '../../context/AccountContext';
+} from '../components/ui/dropdown-menu';
+import { useAccounts } from '../context/AccountContext';
 // import { bots } from './config';
-import { useSetupBot } from './hooks/useSetupBot';
+import { useSetupBot } from '../hooks/useSetupBot';
 import { HomePage } from './pages/home';
 import { SettingPageNew } from './pages/setting';
 import { TerminalPage } from './pages/terminal';
@@ -170,7 +170,7 @@ export function App() {
                   </span>
                 </div>
                 <DropdownMenu>
-                  <DropdownMenuTrigger>
+                  <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="h-8 gap-1">
                       <Hand className="h-3.5 w-3.5" />
                       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">

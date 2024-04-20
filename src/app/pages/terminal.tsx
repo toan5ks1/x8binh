@@ -1,12 +1,12 @@
 import { PaperPlaneIcon } from '@radix-ui/react-icons';
 import { Chrome, PlusCircle, TrashIcon, Unplug } from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react';
-import { Button } from '../../../components/ui/button';
-import { Card } from '../../../components/ui/card';
-import { Input } from '../../../components/ui/input';
-import { ScrollArea } from '../../../components/ui/scroll-area';
-import { useAccounts } from '../../../context/AccountContext';
-import { AppContext } from '../../../renderer/providers/app';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
+import { Input } from '../../components/ui/input';
+import { ScrollArea } from '../../components/ui/scroll-area';
+import { useAccounts } from '../../context/AccountContext';
+import { AppContext } from '../../renderer/providers/app';
 
 export const TerminalPage: React.FC = () => {
   const [data, setData] = useState<unknown[]>([]);
@@ -50,7 +50,7 @@ export const TerminalPage: React.FC = () => {
   }
   function openAccounts(): void {
     const selectedAccounts = accounts['MAIN']?.filter(
-      (account) => account.isSelected === true
+      (account: { isSelected: boolean }) => account.isSelected === true
     );
 
     window.backend.sendMessage('open-accounts', selectedAccounts);

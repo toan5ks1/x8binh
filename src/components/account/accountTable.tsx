@@ -23,7 +23,7 @@ import * as React from 'react';
 
 import { useEffect, useState } from 'react';
 import { useAccounts } from '../../context/AccountContext';
-import { accountLogin } from '../../games/rik/lib/login';
+import { accountLogin } from '../../lib/login';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import {

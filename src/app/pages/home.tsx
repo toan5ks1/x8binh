@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HandCard } from '../../../components/card/handcard';
+import { HandCard } from '../../components/card/handcard';
 import {
   Card,
   CardContent,
@@ -7,7 +7,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '../../../components/ui/card';
+} from '../../components/ui/card';
 import {
   Table,
   TableBody,
@@ -15,7 +15,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../../../components/ui/table';
+} from '../../components/ui/table';
 
 export const HomePage: React.FC = () => {
   const [handType, setHandType] = useState('4');

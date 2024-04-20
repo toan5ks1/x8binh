@@ -1,8 +1,8 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { AppContext } from '../../../renderer/providers/app';
 import { LoginResponse, LoginResponseDto, login } from '../lib/login';
-import { handleMessage } from '../lib/utils';
+import { handleMessage } from '../lib/messageListener';
+import { AppContext } from '../renderer/providers/app';
 
 export function useSetupBot(bot: any) {
   const { state, setState } = useContext(AppContext);

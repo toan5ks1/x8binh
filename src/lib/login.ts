@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { loginUrl } from '../config';
+import { loginUrl } from './site';
 
 export interface LoginResponseDto {
   avatar: string;
@@ -34,6 +34,10 @@ export interface LoginParams {
   aff_id: string;
 }
 
+interface ConnectTokenResponse {
+  connectionToken: string;
+}
+
 const login = async (botInfo: LoginParams): Promise<LoginResponse | null> => {
   const credentials = {
     ...botInfo,
@@ -50,10 +54,6 @@ const login = async (botInfo: LoginParams): Promise<LoginResponse | null> => {
     return null;
   }
 };
-
-interface ConnectTokenResponse {
-  connectionToken: string;
-}
 
 const getConnectToken = async (
   token?: string
@@ -93,6 +93,7 @@ export async function setupBot(
     console.error('Error when calling setup bot:', err);
   }
 }
+
 export async function accountLogin(account: LoginParams) {
   try {
     const res = await login(account);

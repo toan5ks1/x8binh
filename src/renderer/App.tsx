@@ -1,11 +1,11 @@
 import { Route, MemoryRouter as Router, Routes } from 'react-router-dom';
 
+import { App as Rik } from '../app/App';
+import { Onboard } from '../app/Onboard';
+import { TerminalPage } from '../app/pages/terminal';
 import { ThemeProvider } from '../components/provider/theme-provider';
 import { TooltipProvider } from '../components/ui/tooltip';
-import { App as Rik } from '../games/rik/App';
-import { TerminalPage } from '../games/rik/pages/terminal';
 import './App.css';
-import { Onboard } from './Onboard';
 import AppProvider from './providers/app';
 
 export default function App() {
