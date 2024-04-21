@@ -3,13 +3,11 @@
 import {
   ColumnDef,
   ColumnFiltersState,
-  Row,
   SortingState,
   VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
@@ -21,9 +19,9 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
-import { useEffect, useState } from 'react';
-import { useAccounts } from '../../context/AccountContext';
+import { useState } from 'react';
 import { accountLogin } from '../../lib/login';
+import useAccountStore from '../../store/accountStore';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import {
@@ -45,46 +43,25 @@ import {
   TableRow,
 } from '../ui/table';
 
-export const AccountTable: React.FC<any> = ({
-  accountType,
-  onSelectionChange,
-  accountsProps,
-}) => {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = useState<Record<number, boolean>>({
-    0: true,
-  });
-  const { dispatch, state: accounts } = useAccounts();
+export const AccountTable: React.FC<any> = ({ accountType }) => {
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const { accounts, updateAccount, removeAccount } = useAccountStore();
 
-  useEffect(() => {
-    const updatedAccounts = accounts[accountType].map(
-      (account: any, index: any) => {
-        return {
-          ...account,
-          isSelected: rowSelection[index] || false,
-        };
-      }
-    );
-    onSelectionChange(updatedAccounts);
-  }, [rowSelection]);
+  const handleDeleteRow = (rowData: any) => {
+    removeAccount(accountType, rowData.username);
+  };
 
-  const handleDeleteRow = (rowId: string) => {
-    const indexToDelete = accounts[accountType].findIndex(
-      (_: any, index: { toString: () => string }) => index.toString() === rowId
-    );
+  const checkBalance = async (rowData: any) => {
+    var mainBalance = rowData.main_balance ? rowData.main_balance : 0;
+    const data = (await accountLogin(rowData)) as any;
+    const cash = Array.isArray(data?.data) ? data?.data[0].main_balance : 0;
+    mainBalance = cash;
 
-    if (indexToDelete !== -1) {
-      dispatch({
-        type: 'DELETE_ACCOUNT',
-        accountType: accountType,
-        index: indexToDelete,
-      });
-    }
+    updateAccount(accountType, rowData.username, {
+      main_balance: mainBalance,
+    });
   };
 
   const columns: ColumnDef<unknown, any>[] = [
@@ -96,18 +73,30 @@ export const AccountTable: React.FC<any> = ({
             table.getIsAllPageRowsSelected() ||
             (table.getIsSomePageRowsSelected() && 'indeterminate')
           }
-          onCheckedChange={(value: any) =>
-            table.toggleAllPageRowsSelected(!!value)
-          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
         />
       ),
-      cell: ({ row }) => (
+      cell: ({ row }: any) => (
         <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value: any) => {
+          className="!border-[#fff] !border"
+          style={{ background: '#fff' }}
+          checked={row?.original.isSelected || row.getIsSelected()}
+          onCheckedChange={async (value) => {
             row.toggleSelected(!!value);
-            handleRowSelect(row, value);
+            var mainBalance = row.original.main_balance;
+            if (value) {
+              const data = (await accountLogin(row.original)) as any;
+              const cash = Array.isArray(data?.data)
+                ? data?.data[0].main_balance
+                : 0;
+              mainBalance = cash;
+            }
+
+            updateAccount(accountType, row?.original.username, {
+              isSelected: value,
+              main_balance: mainBalance,
+            });
           }}
           aria-label="Select row"
         />
@@ -121,6 +110,7 @@ export const AccountTable: React.FC<any> = ({
         return (
           <Button
             variant="ghost"
+            className="px-0"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
             Username
@@ -138,9 +128,10 @@ export const AccountTable: React.FC<any> = ({
         return (
           <Button
             variant="ghost"
+            className="px-0"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
-            <DollarSign />
+            <DollarSign className="h-4 w-4" />
             Cash
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
@@ -152,10 +143,10 @@ export const AccountTable: React.FC<any> = ({
     },
     {
       accessorKey: 'password',
-      header: () => <div className="text-right">Password</div>,
+      header: () => <div className="text-center">Password</div>,
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">
+          <div className="text-center font-medium px-0">
             {row.getValue('password')}
           </div>
         );
@@ -165,7 +156,7 @@ export const AccountTable: React.FC<any> = ({
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const payment = row.original;
+        const rowData = row.original;
 
         return (
           <DropdownMenu>
@@ -178,8 +169,11 @@ export const AccountTable: React.FC<any> = ({
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleDeleteRow(row.id)}>
+              <DropdownMenuItem onClick={() => handleDeleteRow(rowData)}>
                 Delete account
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => checkBalance(rowData)}>
+                Check balance
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -188,40 +182,20 @@ export const AccountTable: React.FC<any> = ({
     },
   ];
 
-  async function handleRowSelect(row: Row<any>, value: any) {
-    if (value) {
-      try {
-        const data = (await accountLogin(row.original)) as any;
-
-        const cash = Array.isArray(data?.data) ? data?.data[0].main_balance : 0;
-        dispatch({
-          type: 'UPDATE_ACCOUNT_INFO',
-          accountType: accountType,
-          username: data?.data[0].username,
-          main_balance: cash,
-        });
-      } catch (err) {
-        console.error('Setup bot failed:', err);
-      }
-    }
-  }
-
   const table = useReactTable({
     data: accounts[accountType],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    // getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection as any,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
-      rowSelection,
     },
   });
 
@@ -289,11 +263,12 @@ export const AccountTable: React.FC<any> = ({
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
+                  className="px-0"
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell className="text-center px-0" key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -319,24 +294,6 @@ export const AccountTable: React.FC<any> = ({
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{' '}
           {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
         </div>
       </div>
     </div>

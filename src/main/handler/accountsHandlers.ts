@@ -97,11 +97,9 @@ export const setupAccountHandlers = (
     } catch (error) {}
   }
 
-  ipcMain.on('open-accounts', async (event, accounts) => {
-    console.log('open-accounts', accounts);
-    for (let account of accounts) {
-      await startPuppeteerForAccount(account);
-    }
+  ipcMain.on('open-accounts', async (event, account) => {
+    await startPuppeteerForAccount(account);
+
     event.reply('open-accounts-reply', 'All accounts have been opened.');
   });
 

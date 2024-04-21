@@ -1,19 +1,13 @@
-import { app, BrowserWindow, shell } from 'electron';
+import { BrowserWindow, app, shell } from 'electron';
 import log from 'electron-log';
 import { autoUpdater } from 'electron-updater';
 import path from 'path';
+import { loadExtensions } from './extension/installer';
 import { setupAccountHandlers } from './handler/accountsHandlers';
 import { setupFileHandlers } from './handler/fileHandlers';
 import { setupPuppeteerHandlers } from './handler/puppeteerHandlers';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-const fs = require('fs');
-const filePath = path.join(__dirname, '../../account/mainAccount.txt');
-
-const dirPath = path.dirname(filePath);
-if (!fs.existsSync(dirPath)) {
-  fs.mkdirSync(dirPath, { recursive: true });
-}
 
 export default class AppUpdater {
   constructor() {
@@ -37,19 +31,6 @@ if (isDebug) {
   require('electron-debug')();
 }
 
-const installExtensions = async () => {
-  const installer = require('electron-devtools-installer');
-  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-  const extensions = ['REACT_DEVELOPER_TOOLS'];
-
-  return installer
-    .default(
-      extensions.map((name) => installer[name]),
-      forceDownload
-    )
-    .catch(console.log);
-};
-
 const RESOURCES_PATH = app.isPackaged
   ? path.join(process.resourcesPath, 'assets')
   : path.join(__dirname, '../../assets');
@@ -59,14 +40,10 @@ export const getAssetPath = (...paths: string[]): string => {
 };
 
 const createWindow = async () => {
-  if (isDebug) {
-    await installExtensions();
-  }
-
   mainWindow = new BrowserWindow({
     show: false,
     width: 1440,
-    height: 900,
+    height: 1280,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       webSecurity: false,
@@ -115,9 +92,21 @@ app.on('window-all-closed', () => {
   }
 });
 
+const extensions = [
+  {
+    id: 'lmhkpmbekcpmknklioeibfkpmmfibljd', // React DevTools ID
+    version: '3.1.6_0',
+  },
+  {
+    id: 'npbfdllefekhdplbkdigpncggmojpefi',
+    version: '1.3.1_0',
+  },
+];
+
 app
   .whenReady()
-  .then(() => {
+  .then(async () => {
+    await loadExtensions(extensions);
     createWindow();
     app.on('activate', () => {
       if (mainWindow === null) createWindow();

@@ -1,6 +1,6 @@
 {
   "name": "electron-react-boilerplate",
-  "description": "Electron application boilerplate based on React, React Router, Webpack, React Fast Refresh for rapid application development",
+  "description": "Mau Binh helper app",
   "keywords": [
     "electron",
     "boilerplate",
@@ -22,15 +22,15 @@
   },
   "license": "MIT",
   "author": {
-    "name": "Electron React Boilerplate Maintainers",
-    "email": "electronreactboilerplate@gmail.com",
+    "name": "Mau Binh Helper App",
+    "email": "phsntridungdz@gmail.com",
     "url": "https://electron-react-boilerplate.js.org"
   },
   "contributors": [
     {
-      "name": "Amila Welihinda",
-      "email": "amilajack@gmail.com",
-      "url": "https://github.com/amilajack"
+      "name": "Phant Chase and Toan5ks1",
+      "email": "phantridungdz@gmail.com",
+      "url": "https://github.com/phanntridungdz"
     }
   ],
   "main": "./src/main/main.ts",
@@ -117,6 +117,7 @@
     "@radix-ui/react-select": "^2.0.0",
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-tabs": "^1.0.4",
+    "@radix-ui/react-toast": "^1.1.5",
     "@radix-ui/react-tooltip": "^1.0.7",
     "@tanstack/react-table": "^8.16.0",
     "class-variance-authority": "^0.7.0",
@@ -134,9 +135,11 @@
     "react-dom": "^18.1.0",
     "react-router-dom": "^6.3.0",
     "tailwind-merge": "^2.2.2",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@locator/runtime": "^0.4.3",
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.5",
     "@teamsupercell/typings-for-css-modules-loader": "^2.5.1",
     "@testing-library/jest-dom": "^5.16.4",
@@ -211,8 +214,8 @@
     "webpack-merge": "^5.8.0"
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "MauBinhHelper",
+    "appId": "org.erb.maubinhhelper",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
@@ -266,7 +269,8 @@
       "output": "release/build"
     },
     "extraResources": [
-      "./assets/**"
+      "./assets/**",
+      "./account/**"
     ],
     "publish": {
       "provider": "github",
