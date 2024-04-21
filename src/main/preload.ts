@@ -11,6 +11,7 @@ const validChannels: string[] = [
   'update-file',
   'send-message',
   'file-updated',
+  'get-hardware-info',
 ];
 
 contextBridge.exposeInMainWorld('backend', {
@@ -34,4 +35,5 @@ contextBridge.exposeInMainWorld('backend', {
       ipcRenderer.removeListener(channel, func);
     }
   },
+  getHardwareInfo: () => ipcRenderer.invoke('get-hardware-info'),
 });

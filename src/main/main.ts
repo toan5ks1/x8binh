@@ -6,6 +6,7 @@ import { loadExtensions } from './extension/installer';
 import { setupAccountHandlers } from './handler/accountsHandlers';
 import { setupFileHandlers } from './handler/fileHandlers';
 import { setupPuppeteerHandlers } from './handler/puppeteerHandlers';
+import { setupReadHardwareHandlers } from './handler/readHardwareHandler';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -78,7 +79,7 @@ const createWindow = async () => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
-
+  setupReadHardwareHandlers();
   setupFileHandlers();
   setupPuppeteerHandlers(mainWindow);
   setupAccountHandlers(mainWindow);

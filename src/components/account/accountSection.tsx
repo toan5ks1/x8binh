@@ -152,7 +152,6 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
             });
           } catch (err) {
             console.error('Setup bot failed:', err);
-            return account;
           }
         });
         if (JSON.stringify(accountType) !== JSON.stringify(newAccounts)) {

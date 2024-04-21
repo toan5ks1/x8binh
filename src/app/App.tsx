@@ -75,11 +75,6 @@ export function App() {
     handleLeaveRoomBot2();
   };
 
-  const onMainJoin = () => {
-    window.backend.sendMessage('execute-script', [
-      `__require('GamePlayManager').default.getInstance().joinRoom(${state.firstRoomId},0,'',true);`,
-    ]);
-  };
   useEffect(() => {
     const today = new Date();
     const dateString = today.toLocaleDateString('en-US', {
@@ -89,10 +84,10 @@ export function App() {
       day: 'numeric',
     });
 
-    toast({
-      title: 'Welcome to MauBinh App',
-      description: `Today is ${dateString}`,
-    });
+    // toast({
+    //   title: 'Welcome to MauBinh App',
+    //   description: `Today is ${dateString}`,
+    // });
   }, []);
 
   const handleCardDeckChange = (deckValue: string) => {
