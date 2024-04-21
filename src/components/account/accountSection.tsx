@@ -1,10 +1,12 @@
-import { debounce, now } from 'lodash';
-import { Paperclip, Share } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { now } from 'lodash';
+import { Paperclip, Save } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { LoginParams, accountLogin } from '../../lib/login';
 import useAccountStore from '../../store/accountStore';
+import { useToast } from '../toast/use-toast';
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
+import { ScrollArea } from '../ui/scroll-area';
 import { Textarea } from '../ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { AccountTable } from './accountTable';
@@ -44,7 +46,8 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
   const [textareaValue, setTextareaValue] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const { accounts, addAccount, updateAccount } = useAccountStore();
+  const { accounts, addAccount, clearAccounts } = useAccountStore();
+  const { toast } = useToast();
 
   const readValidAccount = (input: string): AccountDetails[] => {
     return input
@@ -67,43 +70,42 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
       .filter((account) => account.username);
   };
 
-  const updateFile = useCallback(
-    debounce((text) => {
-      console.log('update file');
-      window.backend.sendMessage(
-        'update-file',
-        text,
-        [`account/${accountType.toLowerCase()}Account.txt`],
-        accountType
-      );
-      const accountsAfterRead = readValidAccount(text);
-      accountsAfterRead.forEach(async (newAccount) => {
-        const existingAccountIndex = accounts[accountType].findIndex(
-          (acc: { username: string }) => acc.username === newAccount.username
-        );
+  const updateFile = async (text: string) => {
+    window.backend.sendMessage(
+      'update-file',
+      text,
+      [`account/${accountType.toLowerCase()}Account.txt`],
+      accountType
+    );
+    await clearAccounts();
+    const accountsAfterRead = readValidAccount(text);
+    accountsAfterRead.forEach(async (account) => {
+      var cash = 0;
+      if (account.isSelected) {
+        const data = (await accountLogin(account)) as any;
+        cash = Array.isArray(data?.data) ? data?.data[0].main_balance : 0;
+      }
 
-        if (existingAccountIndex !== -1) {
-          updateAccount(accountType, newAccount.username, {
-            isSelected: newAccount.isSelected,
-          });
-        } else {
-          let additionalData = {};
-          if (newAccount.isSelected) {
-            const data = (await accountLogin(newAccount)) as any;
-            const cash = Array.isArray(data?.data)
-              ? data?.data[0].main_balance
-              : 0;
-            additionalData = { main_balance: cash };
-          }
-          addAccount(accountType, {
-            ...newAccount,
-            ...additionalData,
-          });
-        }
+      addAccount(accountType, {
+        username: account.username,
+        password: account.password,
+        isSelected: account.isSelected,
+        app_id: 'rik.vip',
+        os: 'Windows',
+        device: 'Computer',
+        browser: 'chrome',
+        fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
+        time: now(),
+        aff_id: 'hit',
+        main_balance: cash,
       });
-    }, 1500),
-    [accountType, accounts, addAccount, updateAccount]
-  );
+    });
+    setIsEditing(false);
+    toast({
+      title: 'Updated account',
+      description: `All task done for ${accountType.toLowerCase()} account`,
+    });
+  };
 
   const handleTextAreaChange = (e: { target: { value: any } }) => {
     const text = e.target.value;
@@ -170,20 +172,22 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
     };
   }, []);
 
-  useEffect(() => {
-    updateFile(textareaValue);
-  }, [textareaValue]);
-
   return (
     <div className="relative hidden flex-col items-start gap-8 md:flex h-full">
       <form className="grid w-full h-full items-start gap-6">
         <fieldset className="grid gap-6 rounded-lg border p-4 h-full">
           <legend className="-ml-1 px-1 text-sm font-medium">
-            {accountType} account
+            {accountType} ACCOUNT
           </legend>
           <div className="grid gap-3">
             <Label htmlFor={`${accountType}-account`}>Accounts</Label>
-            <AccountTable accountType={accountType} />
+            <ScrollArea
+              className={` ${
+                accountType == 'MAIN' ? '' : 'h-[450px]'
+              } border-t`}
+            >
+              <AccountTable accountType={accountType} />
+            </ScrollArea>
             <Textarea
               id={`${accountType}-account`}
               placeholder={placeholder}
@@ -193,7 +197,6 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
                 setIsEditing(true);
                 handleTextAreaChange(e);
               }}
-              onBlur={() => setIsEditing(false)}
             />
             <div className="flex items-center p-3 pt-0">
               <input
@@ -218,18 +221,21 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
                     <span className="sr-only">Attach file</span>
                   </Button>
                 </TooltipTrigger>
+                {isEditing && (
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => updateFile(textareaValue)}
+                    >
+                      <Save className="h-3.5 w-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                )}
+
                 <TooltipContent side="top">
                   Upload file for {accountType} account
                 </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Share className="size-4" />
-                    <span className="sr-only">Use Microphone</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top">Use Microphone</TooltipContent>
               </Tooltip>
             </div>
           </div>

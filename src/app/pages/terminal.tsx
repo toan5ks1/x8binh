@@ -1,19 +1,21 @@
 import { PaperPlaneIcon } from '@radix-ui/react-icons';
 import { Chrome, PlusCircle, TrashIcon, Unplug } from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react';
+import { AccountSection } from '../../components/account/accountSection';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
+import { Label } from '../../components/ui/label';
 import { ScrollArea } from '../../components/ui/scroll-area';
-import { useAccounts } from '../../context/AccountContext';
 import { AppContext } from '../../renderer/providers/app';
+import useAccountStore from '../../store/accountStore';
 
 export const TerminalPage: React.FC = () => {
   const [data, setData] = useState<unknown[]>([]);
   const [command, setCommand] = useState('');
   const [roomId, setRoomId] = useState('');
   const { state } = useContext<any>(AppContext);
-  const { dispatch, state: accounts } = useAccounts();
+  const { accounts } = useAccountStore();
 
   const parseData = (dataString: string) => {
     try {
@@ -37,23 +39,12 @@ export const TerminalPage: React.FC = () => {
       `__require('GamePlayManager').default.getInstance().requestcreateRoom(4,100,4,)`,
     ]);
   };
-  // const executeCommand = (e: React.KeyboardEvent) => {
-  //   if (e.key === 'Enter') {
-  //     console.log('Executing command:', command);
-  //     window.electron.ipcRenderer.executeScript('execute-script', [command]);
-  //     setCommand('');
-  //   }
-  // };
 
   function openPuppeteer(): void {
     window.backend.sendMessage('start-puppeteer');
   }
-  function openAccounts(): void {
-    const selectedAccounts = accounts['MAIN']?.filter(
-      (account: { isSelected: boolean }) => account.isSelected === true
-    );
-
-    window.backend.sendMessage('open-accounts', selectedAccounts);
+  function openAccounts(account: any): void {
+    window.backend.sendMessage('open-accounts', account);
   }
 
   function joinRoom(): any {
@@ -109,92 +100,112 @@ export const TerminalPage: React.FC = () => {
   const clearData = () => {
     setData([]);
   };
+  useEffect(() => {
+    console.log('account main:', accounts['MAIN']);
+  }, [accounts]);
 
   return (
-    <Card className="text-center h-full">
-      <div className="flex flex-col">
-        <div className="w-full">
-          <div className="flex flex-col terminal relative">
-            <div className="flex flex-row justify-end bg-[#1e1e1e] gap-[10px]">
-              <Button
-                onClick={createRoom}
-                style={{ fontFamily: 'monospace' }}
-                className="rounded-[5px] py-[0px] flex items-center hover:bg-slate-400 cursor-pointer gap-[2px] px-[10px]"
-              >
-                <PlusCircle />
-                <span>Create Room</span>
-              </Button>
-
-              <Button
-                onClick={joinRoom}
-                style={{ fontFamily: 'monospace' }}
-                className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px]"
-              >
-                <Unplug />
-                <span>Join Room</span>
-              </Button>
-
-              <Button
-                onClick={openPuppeteer}
-                style={{ fontFamily: 'monospace' }}
-                className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 cursor-pointer"
-              >
-                <Chrome />
-                <span>Open Pupperteer</span>
-              </Button>
-              <Button
-                onClick={openAccounts}
-                style={{ fontFamily: 'monospace' }}
-                className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 cursor-pointer"
-              >
-                <Chrome />
-                <span>Open Profiles</span>
-              </Button>
-              <Button
-                onClick={clearData}
-                className="  hover:bg-slate-400 rounded-[5px] p-0 border-[2px] flex justify-center items-center cursor-pointer  gap-[2px] px-[10px]"
-              >
-                <TrashIcon className="h-auto w-auto" />
-              </Button>
-            </div>
-
-            <ScrollArea
-              id="messageContainer"
-              className="flex flex-col grow h-full max-w-screen mb-[30px]"
-            >
-              {data.map((item, index) => (
+    <div className="text-center h-full">
+      <div className="flex flex-row gap-4">
+        <div className="w-[50%]">
+          <AccountSection
+            accountType="MAIN"
+            placeholder="Main account here..."
+          />
+        </div>
+        <Card className="w-full flex flex-col gap-4">
+          {accounts['MAIN'].map(
+            (main: any, index: any) =>
+              main.isSelected && (
                 <div
                   key={index}
-                  className="font-bold text-left command-input"
-                  style={{ fontFamily: 'monospace' }}
-                  dangerouslySetInnerHTML={{
-                    __html: highlightSyntax(JSON.stringify(item, null, 2)),
-                  }}
-                />
-              ))}
-            </ScrollArea>
-            <div className="sticky bottom-0">
-              <Card className="flex flex-row justify-between p-[5px]">
-                <Input
-                  type="text"
-                  className="!h-auto"
-                  style={{ fontFamily: 'monospace' }}
-                  placeholder="Type messsage..."
-                  onChange={(e) => setCommand(e.target.value)}
-                />
-                <Button
-                  style={{ fontFamily: 'monospace' }}
-                  onClick={sendMessage}
-                  className="rounded-[5px] px-[25px] flex justify-center gap-[3px] items-center border-[2px] hover:bg-slate-400"
+                  className="flex flex-col terminal relative rounded-md border"
                 >
-                  <PaperPlaneIcon />
-                  <p>Send</p>
-                </Button>
-              </Card>
-            </div>
-          </div>
-        </div>
+                  <div className="flex flex-row justify-end bg-[#141414] gap-[10px]">
+                    <Label>{main.username}</Label>
+                    <Button
+                      onClick={createRoom}
+                      style={{ fontFamily: 'monospace' }}
+                      className="rounded-[5px] py-[0px] flex items-center hover:bg-slate-400 cursor-pointer gap-[2px] px-[10px]"
+                    >
+                      <PlusCircle className="h-3.5 w-3.5" />
+                      <span>Create Room</span>
+                    </Button>
+
+                    <Button
+                      onClick={joinRoom}
+                      style={{ fontFamily: 'monospace' }}
+                      className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px]"
+                    >
+                      <Unplug className="h-3.5 w-3.5" />
+                      <span>Join Room</span>
+                    </Button>
+
+                    <Button
+                      onClick={openPuppeteer}
+                      style={{ fontFamily: 'monospace' }}
+                      className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 cursor-pointer"
+                    >
+                      <Chrome className="h-3.5 w-3.5" />
+                      <span>Pupperteer</span>
+                    </Button>
+                    <Button
+                      onClick={() => openAccounts(main)}
+                      style={{ fontFamily: 'monospace' }}
+                      className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 cursor-pointer"
+                    >
+                      <Chrome className="h-3.5 w-3.5" />
+                      <span>Profiles</span>
+                    </Button>
+                    <Button
+                      onClick={clearData}
+                      className="  hover:bg-slate-400 rounded-[5px] p-0 border-[2px] flex justify-center items-center cursor-pointer  gap-[2px] px-[10px]"
+                    >
+                      <TrashIcon className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+
+                  <ScrollArea
+                    id="messageContainer"
+                    className="flex flex-col grow h-full max-w-screen mb-[30px]"
+                  >
+                    {data.map((item, index) => (
+                      <div
+                        key={index}
+                        className="font-bold text-left command-input"
+                        style={{ fontFamily: 'monospace' }}
+                        dangerouslySetInnerHTML={{
+                          __html: highlightSyntax(
+                            JSON.stringify(item, null, 2)
+                          ),
+                        }}
+                      />
+                    ))}
+                  </ScrollArea>
+                  <div className="sticky bottom-0">
+                    <Card className="flex flex-row justify-between p-[5px]">
+                      <Input
+                        type="text"
+                        className="!h-auto"
+                        style={{ fontFamily: 'monospace' }}
+                        placeholder="Type messsage..."
+                        onChange={(e) => setCommand(e.target.value)}
+                      />
+                      <Button
+                        style={{ fontFamily: 'monospace' }}
+                        onClick={sendMessage}
+                        className="rounded-[5px] px-[25px] flex justify-center gap-[3px] items-center border-[2px] hover:bg-slate-400"
+                      >
+                        <PaperPlaneIcon />
+                        <p>Send</p>
+                      </Button>
+                    </Card>
+                  </div>
+                </div>
+              )
+          )}
+        </Card>
       </div>
-    </Card>
+    </div>
   );
 };

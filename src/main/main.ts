@@ -8,14 +8,6 @@ import { setupFileHandlers } from './handler/fileHandlers';
 import { setupPuppeteerHandlers } from './handler/puppeteerHandlers';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-const fs = require('fs');
-const os = require('os');
-const filePath = path.join(__dirname, '../../account/mainAccount.txt');
-
-const dirPath = path.dirname(filePath);
-if (!fs.existsSync(dirPath)) {
-  fs.mkdirSync(dirPath, { recursive: true });
-}
 
 export default class AppUpdater {
   constructor() {

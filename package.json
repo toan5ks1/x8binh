@@ -1,6 +1,6 @@
 {
   "name": "electron-react-boilerplate",
-  "description": "Electron application boilerplate based on React, React Router, Webpack, React Fast Refresh for rapid application development",
+  "description": "Mau Binh helper app",
   "keywords": [
     "electron",
     "boilerplate",
@@ -22,15 +22,15 @@
   },
   "license": "MIT",
   "author": {
-    "name": "Electron React Boilerplate Maintainers",
-    "email": "electronreactboilerplate@gmail.com",
+    "name": "Mau Binh Helper App",
+    "email": "phsntridungdz@gmail.com",
     "url": "https://electron-react-boilerplate.js.org"
   },
   "contributors": [
     {
-      "name": "Amila Welihinda",
-      "email": "amilajack@gmail.com",
-      "url": "https://github.com/amilajack"
+      "name": "Phant Chase and Toan5ks1",
+      "email": "phantridungdz@gmail.com",
+      "url": "https://github.com/phanntridungdz"
     }
   ],
   "main": "./src/main/main.ts",
@@ -214,8 +214,8 @@
     "webpack-merge": "^5.8.0"
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "MauBinhHelper",
+    "appId": "org.erb.maubinhhelper",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
@@ -269,7 +269,8 @@
       "output": "release/build"
     },
     "extraResources": [
-      "./assets/**"
+      "./assets/**",
+      "./account/**"
     ],
     "publish": {
       "provider": "github",

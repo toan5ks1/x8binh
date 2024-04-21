@@ -278,15 +278,15 @@ button {
 }
 
 .terminal {
-  background-color: #1e1e1e;
+  background-color: #141414;
   color: #dcdcdc;
   font-family: 'monospace';
   padding: 10px;
-  height: 500px;
+  height: 400px;
 }
 
 .command-input {
-  background-color: #1e1e1e;
+  background-color: #141414;
   color: #dcdcdc;
   border: none;
   width: 100%;

@@ -8,7 +8,6 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
@@ -80,6 +79,8 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
       ),
       cell: ({ row }: any) => (
         <Checkbox
+          className="!border-[#fff] !border"
+          style={{ background: '#fff' }}
           checked={row?.original.isSelected || row.getIsSelected()}
           onCheckedChange={async (value) => {
             row.toggleSelected(!!value);
@@ -109,6 +110,7 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
         return (
           <Button
             variant="ghost"
+            className="px-0"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
             Username
@@ -126,9 +128,10 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
         return (
           <Button
             variant="ghost"
+            className="px-0"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
-            <DollarSign />
+            <DollarSign className="h-4 w-4" />
             Cash
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
@@ -140,10 +143,10 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
     },
     {
       accessorKey: 'password',
-      header: () => <div className="text-right">Password</div>,
+      header: () => <div className="text-center">Password</div>,
       cell: ({ row }) => {
         return (
-          <div className="text-right font-medium">
+          <div className="text-center font-medium px-0">
             {row.getValue('password')}
           </div>
         );
@@ -185,7 +188,7 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    // getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
@@ -260,11 +263,12 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
+                  className="px-0"
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell className="text-center px-0" key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -290,24 +294,6 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{' '}
           {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
         </div>
       </div>
     </div>
