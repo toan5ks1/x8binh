@@ -106,8 +106,8 @@ export const TerminalPage: React.FC = () => {
 
   return (
     <div className="text-center h-full">
-      <div className="flex flex-row gap-4">
-        <div className="w-[50%]">
+      <div className="grid grid-rows-2 laptop:grid-cols-2 gap-4">
+        <div className="">
           <AccountSection
             accountType="MAIN"
             placeholder="Main account here..."
@@ -122,44 +122,35 @@ export const TerminalPage: React.FC = () => {
                   className="flex flex-col terminal relative rounded-md border"
                 >
                   <div className="flex flex-row justify-end bg-[#141414] gap-[10px]">
-                    <Label>{main.username}</Label>
+                    <Label className="flex items-center">{main.username}</Label>
                     <Button
                       onClick={createRoom}
                       style={{ fontFamily: 'monospace' }}
-                      className="rounded-[5px] py-[0px] flex items-center hover:bg-slate-400 cursor-pointer gap-[2px] px-[10px]"
+                      className="rounded-[5px] py-[0px] flex items-center hover:bg-slate-400 cursor-pointer gap-[2px] px-[5px] h-[30px]"
                     >
                       <PlusCircle className="h-3.5 w-3.5" />
-                      <span>Create Room</span>
+                      <span>Create</span>
                     </Button>
 
                     <Button
                       onClick={joinRoom}
                       style={{ fontFamily: 'monospace' }}
-                      className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px]"
+                      className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
                     >
                       <Unplug className="h-3.5 w-3.5" />
-                      <span>Join Room</span>
-                    </Button>
-
-                    <Button
-                      onClick={openPuppeteer}
-                      style={{ fontFamily: 'monospace' }}
-                      className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 cursor-pointer"
-                    >
-                      <Chrome className="h-3.5 w-3.5" />
-                      <span>Pupperteer</span>
+                      <span>Join</span>
                     </Button>
                     <Button
                       onClick={() => openAccounts(main)}
                       style={{ fontFamily: 'monospace' }}
-                      className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 cursor-pointer"
+                      className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 cursor-pointer h-[30px]"
                     >
-                      <Chrome className="h-3.5 w-3.5" />
-                      <span>Profiles</span>
+                      <Chrome className="h-3.5 w-3.5 ml-[3px]" />
+                      <span>Open</span>
                     </Button>
                     <Button
                       onClick={clearData}
-                      className="  hover:bg-slate-400 rounded-[5px] p-0 border-[2px] flex justify-center items-center cursor-pointer  gap-[2px] px-[10px]"
+                      className="  hover:bg-slate-400 rounded-[5px] p-0 border-[2px] flex justify-center items-center cursor-pointer  gap-[2px] px-[7px] h-[30px]"
                     >
                       <TrashIcon className="h-3.5 w-3.5" />
                     </Button>

@@ -1,5 +1,5 @@
 {
-  "name": "electron-react-boilerplate",
+  "name": "mau-binh-helper",
   "description": "Mau Binh helper app",
   "keywords": [
     "electron",
@@ -12,25 +12,25 @@
     "hot",
     "reload"
   ],
-  "homepage": "https://github.com/electron-react-boilerplate/electron-react-boilerplate#readme",
+  "homepage": "https://github.com/toan5ks1/x8binh#readme",
   "bugs": {
-    "url": "https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues"
+    "url": "https://github.com/toan5ks1/x8binh/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/electron-react-boilerplate/electron-react-boilerplate.git"
+    "url": "git+https://github.com/toan5ks1/x8binh.git"
   },
   "license": "MIT",
   "author": {
     "name": "Mau Binh Helper App",
     "email": "phsntridungdz@gmail.com",
-    "url": "https://electron-react-boilerplate.js.org"
+    "url": "https://www.facebook.com/phantridungdz/"
   },
   "contributors": [
     {
       "name": "Phant Chase and Toan5ks1",
       "email": "phantridungdz@gmail.com",
-      "url": "https://github.com/phanntridungdz"
+      "url": "https://github.com/phantridungdz"
     }
   ],
   "main": "./src/main/main.ts",
@@ -120,6 +120,7 @@
     "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-toast": "^1.1.5",
     "@radix-ui/react-tooltip": "^1.0.7",
+    "@supabase/supabase-js": "^2.42.5",
     "@tanstack/react-table": "^8.16.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
@@ -129,6 +130,7 @@
     "electron-updater": "^5.0.1",
     "lodash": "^4.17.21",
     "lucide-react": "^0.367.0",
+    "process": "^0.11.10",
     "puppeteer": "^22.6.4",
     "react": "^18.1.0",
     "react-dnd": "^16.0.1",
@@ -276,8 +278,8 @@
     ],
     "publish": {
       "provider": "github",
-      "owner": "electron-react-boilerplate",
-      "repo": "electron-react-boilerplate"
+      "owner": "mau-binh-helper",
+      "repo": "mau-binh-helper"
     }
   },
   "devEngines": {
@@ -285,7 +287,7 @@
     "npm": ">=7.x"
   },
   "collective": {
-    "url": "https://opencollective.com/electron-react-boilerplate-594"
+    "url": "https://opencollective.com/mau-binh-helper-594"
   },
   "electronmon": {
     "patterns": [

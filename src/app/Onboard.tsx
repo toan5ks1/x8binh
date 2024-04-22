@@ -1,56 +1,34 @@
+import { Loader } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import backgound from '../../assets/bg/bg-poker.png';
+import { Link, useNavigate } from 'react-router-dom';
+import backgound from '../../assets/bg/bg-hepler.png';
 import { useToast } from '../components/toast/use-toast';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Progress } from '../components/ui/progress';
+import { validateLicense } from '../lib/supabase';
 
 export const Onboard = () => {
   const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
-  const [progress, setProgress] = useState(0);
-
-  const fetchHardwareInfo = async () => {
-    setLoading(true);
-    setProgress(0);
-
-    const interval = setInterval(() => {
-      setProgress((prevProgress) => {
-        if (prevProgress < 100) {
-          return prevProgress + 10;
-        }
-        clearInterval(interval);
-        return 100;
-      });
-    }, 400);
-
-    try {
-      const hardwareInfo = (await window.backend.getHardwareInfo()) as any;
-      toast({
-        title: `Welcome ${hardwareInfo.hostname} - ${hardwareInfo.cpu.brand}`,
-        description: `You are using: ${hardwareInfo.system.model}\n
-        Location: ${hardwareInfo.location.ip}, ${hardwareInfo.location.region}`,
-      });
-      console.log(hardwareInfo);
-    } catch (error) {
-      console.error('Failed to fetch hardware info:', error);
-      toast({ title: 'Error', description: 'Failed to fetch hardware info.' });
-    } finally {
-      setLoading(false);
-      clearInterval(interval);
-    }
-  };
+  const [loading, setLoading] = useState(false);
+  const [hardwareInfo, setHardwareInfo] = useState<any>();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchHardwareInfo();
+    if (
+      process.env.NODE_ENV != 'development' &&
+      localStorage.getItem('license-key')
+    ) {
+      setHardwareInfo(validateLicense(setLoading, toast, navigate));
+    }
+    if (process.env.NODE_ENV == 'development') {
+      navigate('/app');
+    }
   }, []);
 
   if (loading) {
     return (
       <div className="h-screen w-screen flex justify-center items-center">
-        <Progress value={progress} max={100} className="w-[60%]" />
+        <Loader className="w-6.5 h-6.5 animate-spin"></Loader>
+        <Label>Loading your license</Label>
       </div>
     );
   }
@@ -60,38 +38,21 @@ export const Onboard = () => {
       <div className="flex items-center justify-center py-12">
         <div className="mx-auto grid w-[350px] gap-6">
           <div className="grid gap-2 text-center">
-            <h1 className="text-3xl font-bold">Login</h1>
+            <h1 className="text-3xl font-bold">Mau Binh Helper</h1>
             <p className="text-balance text-muted-foreground">
-              Enter your email below to login to your account
+              Your application not active, please active to use
             </p>
           </div>
           <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-              />
+            <div className="flex items-center">
+              <Label></Label>
+              <Link
+                to="/active-license"
+                className="ml-auto inline-block text-sm underline"
+              >
+                Active license key
+              </Link>
             </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
-                <a
-                  href="/forgot-password"
-                  className="ml-auto inline-block text-sm underline"
-                >
-                  Forgot your password?
-                </a>
-              </div>
-              <Input id="password" type="password" required />
-            </div>
-            <Link to={'/app'} className="flex">
-              <Button type="submit" className="w-full">
-                Login
-              </Button>
-            </Link>
           </div>
         </div>
       </div>
@@ -99,7 +60,7 @@ export const Onboard = () => {
         <img
           src={backgound}
           alt="Image"
-          className="h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+          className="h-full w-full object-cover dark:brightness-[0.7] dark:grayscale"
         />
       </div>
     </div>

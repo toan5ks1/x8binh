@@ -74,7 +74,9 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
     window.backend.sendMessage(
       'update-file',
       text,
-      [`account/${accountType.toLowerCase()}Account.txt`],
+      [
+        `C:/Users/PC/AppData/Local/Programs/electron-react-boilerplate/resources/account/${accountType.toLowerCase()}Account.txt`,
+      ],
       accountType
     );
     await clearAccounts();
@@ -162,7 +164,9 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
     window.backend.on('read-file', handleFileData);
     window.backend.sendMessage(
       'read-file',
-      [`account/${accountType.toLowerCase()}Account.txt`],
+      [
+        `C:/Users/PC/AppData/Local/Programs/electron-react-boilerplate/resources/account/${accountType.toLowerCase()}Account.txt`,
+      ],
       accountType
     );
 

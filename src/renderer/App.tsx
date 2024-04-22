@@ -1,5 +1,6 @@
 import { Route, MemoryRouter as Router, Routes } from 'react-router-dom';
 
+import { Active } from '../app/Active';
 import { App as Game } from '../app/App';
 import { Onboard } from '../app/Onboard';
 import { ThemeProvider } from '../components/provider/theme-provider';
@@ -20,6 +21,7 @@ export default function App() {
               <Routes>
                 <Route path="/" element={<Onboard />} />
                 <Route path="/app" element={<Game />} />
+                <Route path="/active-license" element={<Active />} />
               </Routes>
             </Router>
           </TooltipProvider>
