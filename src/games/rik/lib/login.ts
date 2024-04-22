@@ -1,3 +1,4 @@
+import { BotStatus } from '@/src/renderer/providers/app';
 import axios from 'axios';
 import { loginUrl } from '../config';
 
@@ -12,6 +13,7 @@ export interface LoginResponseDto {
   session_id: string;
   token: string;
   username: string;
+  status?: BotStatus;
 }
 
 export interface LoginResponse {

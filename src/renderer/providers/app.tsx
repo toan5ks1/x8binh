@@ -18,17 +18,21 @@ export enum BotStatus {
   Ready = 'READY',
   Received = 'RECEIVED',
   Submitted = 'SUBMITTED',
+  Finished = 'FINISHED',
   Left = 'LEFT',
 }
 
-interface Room {
+export interface GameCard {
+  [key: string]: number[];
+}
+
+export interface Room {
   id?: number;
   owner?: string;
-  players: number;
-  cardDesk: {
-    [key: string]: number[];
-  };
+  players: string[];
+  cardDesk: GameCard[];
   shouldOutVote: number;
+  isFinish?: boolean;
 }
 
 export interface StateProps {
@@ -46,7 +50,13 @@ export interface StateProps {
       status: BotStatus;
     };
   };
+  waiterBots: {
+    [key: string]: {
+      status: BotStatus;
+    };
+  };
   foundAt?: number;
+  foundBy?: string;
   shouldRecreateRoom: boolean;
 }
 
@@ -58,13 +68,14 @@ interface AppContextProps {
 export const AppContext = createContext<AppContextProps>({
   state: {
     initialRoom: {
-      players: 0,
-      cardDesk: {},
+      players: [],
+      cardDesk: [],
       shouldOutVote: 0,
     },
     mainBots: {},
     crawingRoom: {},
     crawingBots: {},
+    waiterBots: {},
     shouldRecreateRoom: false,
   },
   setState: () => {},
@@ -73,13 +84,14 @@ export const AppContext = createContext<AppContextProps>({
 const AppProvider = ({ children }: AppProviderProps) => {
   const [state, setState] = useState({
     initialRoom: {
-      players: 0,
-      cardDesk: {},
+      players: [] as string[],
+      cardDesk: [] as GameCard[],
       shouldOutVote: 0,
     },
     mainBots: {},
     crawingRoom: {},
     crawingBots: {},
+    waiterBots: {},
     shouldRecreateRoom: false,
   });
 

@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import background from '../../../../assets/bg/bg-poker.png';
+import BoardCard from '../../../components/card/boardCard';
 import { Button } from '../../../components/ui/button';
 import { CoupleCrawStatus } from '../components/bots/coupleCraw';
-import { MainPlayerStatus } from '../components/bots/mainPlayer';
+import { CoupleWaiterStatus } from '../components/bots/coupleWaiter';
 import { MainNav } from '../components/layout/main-nav';
-import { bots, crawingBot } from '../config';
+import { crawingBot } from '../config';
 
 export const FindRoom = () => {
   const [shouldLogin, setShouldLogin] = useState(false);
@@ -42,7 +43,7 @@ export const FindRoom = () => {
         }}
       >
         <>
-          {bots.map(
+          {/* {bots.map(
             (bot, index) =>
               index % 2 === 0 &&
               index < bots.length - 1 && (
@@ -57,24 +58,39 @@ export const FindRoom = () => {
                   shouldLeave={shouldLeave}
                 />
               )
-          )}
+          )} */}
 
-          {crawingBot.map(
-            (bot, index) =>
-              index % 2 === 0 &&
-              index < crawingBot.length - 1 && (
-                <CoupleCrawStatus
-                  key={index}
-                  index={index}
-                  craw1={bot}
-                  craw2={crawingBot[index + 1]}
-                  shouldLogin={shouldLogin}
-                  shouldJoinMB={shouldJoinMB}
-                  shouldCreatRoom={shouldCreatRoom}
-                  shouldLeave={shouldLeave}
-                />
-              )
-          )}
+          {crawingBot.map((bot, index) => {
+            if (index % 2 === 0 && index < crawingBot.length - 1) {
+              if (index < crawingBot.length - 3) {
+                return (
+                  <CoupleCrawStatus
+                    key={index}
+                    index={index}
+                    craw1={bot}
+                    craw2={crawingBot[index + 1]}
+                    shouldLogin={shouldLogin}
+                    shouldJoinMB={shouldJoinMB}
+                    shouldCreatRoom={shouldCreatRoom}
+                    shouldLeave={shouldLeave}
+                  />
+                );
+              } else {
+                return (
+                  <CoupleWaiterStatus
+                    key={index}
+                    index={index}
+                    craw1={bot}
+                    craw2={crawingBot[index + 1]}
+                    shouldLogin={shouldLogin}
+                    shouldJoinMB={shouldJoinMB}
+                    shouldCreatRoom={shouldCreatRoom}
+                    shouldLeave={shouldLeave}
+                  />
+                );
+              }
+            }
+          })}
         </>
 
         <div className="flex space-x-2">
@@ -86,7 +102,7 @@ export const FindRoom = () => {
             Ngắt kết nối
           </Button>
         </div>
-        {/* <BoardCard /> */}
+        <BoardCard />
       </div>
     </div>
   );

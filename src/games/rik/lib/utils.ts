@@ -1,5 +1,10 @@
 import { Dispatch, SetStateAction } from 'react';
-import { BotStatus, StateProps } from '../../../renderer/providers/app';
+import {
+  BotStatus,
+  GameCard,
+  StateProps,
+} from '../../../renderer/providers/app';
+import { LoginResponseDto } from './login';
 
 export enum ServerMessageType {
   JoinGame = 'joinGame',
@@ -72,15 +77,16 @@ export function handleStartActionTimer(message: any) {
 interface HandleCRMessageProps {
   message: any;
   setState: Dispatch<SetStateAction<StateProps>>;
-  caller: string;
+  user: LoginResponseDto;
 }
 
 export function handleMessage({
   message,
   setState,
-  caller,
+  user,
 }: HandleCRMessageProps) {
   let returnMsg;
+  const { username: caller, fullname } = user;
 
   switch (message[0]) {
     case 5:
@@ -111,7 +117,10 @@ export function handleMessage({
           },
         }));
         returnMsg = `Created room ${roomId}`;
-      } else if (message[1]?.c === 100) {
+      } else if (
+        message[1]?.c === 100 ||
+        (message[1]?.cmd === 5 && message[1]?.dn === fullname)
+      ) {
         setState((pre) => ({
           ...pre,
           mainBots: {
@@ -125,10 +134,12 @@ export function handleMessage({
             ...pre,
             initialRoom: {
               ...pre.initialRoom,
-              cardDesk: {
-                ...(pre.initialRoom?.cardDesk ?? {}),
-                [caller]: message[1].cs,
-              },
+              cardDesk: insertReceivedCards(
+                pre.initialRoom.cardDesk,
+                caller,
+                message[1].cs
+              ),
+              isFinish: false,
             },
             mainBots: {
               ...pre.mainBots,
@@ -137,7 +148,10 @@ export function handleMessage({
           };
         });
         returnMsg = `Card received: ${message[1].cs}`;
-      } else if (message[1].cmd === 603 && message[1].iar === true) {
+      } else if (
+        (message[1].hsl === false || message[1].hsl === true) &&
+        message[1].ps?.length >= 2
+      ) {
         setState((pre) => {
           return {
             ...pre,
@@ -146,6 +160,10 @@ export function handleMessage({
               [caller]: {
                 status: BotStatus.Submitted,
               },
+            },
+            initialRoom: {
+              ...pre.initialRoom,
+              isFinish: true,
             },
           };
         });
@@ -157,8 +175,8 @@ export function handleMessage({
         // Host join room response
         let currentPlayers;
         setState((pre) => {
-          currentPlayers = pre.initialRoom.players + 1;
-          returnMsg = `Joined room ${message[3]} (room now has ${currentPlayers} players)`;
+          currentPlayers = [...pre.initialRoom.players, caller];
+          returnMsg = `Joined room ${message[3]} (room now has ${currentPlayers.length} players)`;
           return {
             ...pre,
             mainBots: {
@@ -201,37 +219,41 @@ export function handleMessage({
 }
 
 const defaultRoom = {
-  players: 0,
-  cardDesk: {},
+  players: [],
+  cardDesk: [],
   shouldOutVote: 0,
 };
 
 interface HandleCRMessageCrawingProps {
   message: any;
+  state: StateProps;
   setState: Dispatch<SetStateAction<StateProps>>;
-  caller: string;
+  user: LoginResponseDto;
   coupleId: string;
 }
 
 export function handleMessageCrawing({
   message,
+  state,
   setState,
-  caller,
+  user,
   coupleId,
 }: HandleCRMessageCrawingProps) {
+  const { username: caller, fullname } = user;
   let returnMsg;
 
   switch (message[0]) {
     case 5:
-      if (message[1].rs) {
+      const botStatus = state.crawingBots[caller]?.status;
+      if (message[1].rs && !botStatus) {
         setState((pre) => {
-          const curStatus = pre.crawingBots[caller]?.status;
+          // const curStatus = pre.crawingBots[caller]?.status;
           return {
             ...pre,
             crawingBots: {
               ...pre.crawingBots,
               [caller]: {
-                status: !curStatus ? BotStatus.Connected : curStatus,
+                status: BotStatus.Connected,
               },
             },
           };
@@ -256,7 +278,10 @@ export function handleMessageCrawing({
           };
         });
         returnMsg = `Created room ${roomId}`;
-      } else if (message[1]?.c === 100) {
+      } else if (
+        message[1]?.c === 100 ||
+        (message[1]?.cmd === 5 && message[1]?.dn === fullname)
+      ) {
         setState((pre) => ({
           ...pre,
           crawingBots: {
@@ -273,10 +298,12 @@ export function handleMessageCrawing({
               ...pre.crawingRoom,
               [coupleId]: {
                 ...currentRoom,
-                cardDesk: {
-                  ...(currentRoom.cardDesk ?? {}),
-                  [caller]: message[1].cs,
-                },
+                cardDesk: insertReceivedCards(
+                  currentRoom.cardDesk,
+                  caller,
+                  message[1].cs
+                ),
+                isFinish: false,
               },
             },
             crawingBots: {
@@ -289,8 +316,30 @@ export function handleMessageCrawing({
         });
 
         returnMsg = `Card received: ${message[1].cs}`;
-      } else if (message[1].cmd === 603 && message[1].iar === true) {
-        //[5,{"uid":"29_24437429","cmd":603,"iar":true}]
+      } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
+        setState((pre) => {
+          return {
+            ...pre,
+            crawingBots: {
+              ...pre.crawingBots,
+              [caller]: {
+                status: BotStatus.Finished,
+              },
+            },
+            crawingRoom: {
+              ...pre.crawingRoom,
+              [coupleId]: {
+                ...pre.crawingRoom[coupleId],
+                isFinish: true,
+              },
+            },
+          };
+        });
+        returnMsg = 'Game finished!';
+      } else if (
+        (message[1].hsl === false || message[1].hsl === true) &&
+        message[1].ps?.length >= 2
+      ) {
         setState((pre) => {
           return {
             ...pre,
@@ -307,27 +356,30 @@ export function handleMessageCrawing({
       break;
     case 3:
       if (message[1] === true) {
-        // Host join room response
-        let currentPlayers;
-        setState((pre) => {
-          const currentRoom = pre.crawingRoom[coupleId];
-          currentPlayers = currentRoom.players + 1;
-          returnMsg = `Joined room ${message[3]} (room now has ${currentPlayers} players)`;
-          return {
-            ...pre,
-            crawingBots: {
-              ...pre.crawingBots,
-              [caller]: { status: BotStatus.Joined },
-            },
-            crawingRoom: {
-              ...pre.crawingRoom,
-              [coupleId]: {
-                ...currentRoom,
-                players: currentPlayers,
+        // Join room response
+        if (coupleId) {
+          const currentRoom = state.crawingRoom[coupleId];
+          const currentPlayers = [...currentRoom.players, caller];
+
+          setState((pre) => {
+            return {
+              ...pre,
+              crawingBots: {
+                ...pre.crawingBots,
+                [caller]: { status: BotStatus.Joined },
               },
-            },
-          };
-        });
+              crawingRoom: {
+                ...pre.crawingRoom,
+                [coupleId]: {
+                  ...currentRoom,
+                  players: currentPlayers,
+                },
+              },
+            };
+          });
+
+          returnMsg = `Joined room ${message[3]} (room now has ${currentPlayers.length} players)`;
+        }
       }
       break;
     case 4:
@@ -363,22 +415,147 @@ export function handleMessageCrawing({
   return returnMsg;
 }
 
-export const isFoundCards = (
-  desk1: { [key: string]: number[] },
-  desk2: { [key: string]: number[] }
+interface HandleMessageWaiterProps {
+  message: any;
+  state: StateProps;
+  setState: Dispatch<SetStateAction<StateProps>>;
+  user: LoginResponseDto;
+  setUser: Dispatch<React.SetStateAction<LoginResponseDto>>;
+}
+
+export function handleMessageWaiter({
+  message,
+  state,
+  setState,
+  user,
+  setUser,
+}: HandleMessageWaiterProps) {
+  const { username: caller, fullname } = user;
+  let returnMsg;
+
+  switch (message[0]) {
+    case 5:
+      if (message[1].rs && !user.status) {
+        // setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
+        returnMsg = 'Join Maubinh sucessfully!';
+      } else if (
+        message[1]?.c === 100 ||
+        (message[1]?.cmd === 5 && message[1]?.dn === fullname)
+      ) {
+        setUser((pre) => ({ ...pre, status: BotStatus.Ready }));
+      } else if (message[1]?.cs?.length > 0 && state.foundBy) {
+        setState((pre) => {
+          const currentRoom = pre.crawingRoom[pre.foundBy!];
+          return {
+            ...pre,
+            crawingRoom: {
+              ...pre.crawingRoom,
+              [pre.foundBy!]: {
+                ...currentRoom,
+                cardDesk: insertReceivedCards(
+                  currentRoom.cardDesk,
+                  caller,
+                  message[1].cs
+                ),
+              },
+            },
+          };
+        });
+        setUser((pre) => ({ ...pre, status: BotStatus.Received }));
+
+        returnMsg = `Card received: ${message[1].cs}`;
+      } else if (
+        (message[1].hsl === false || message[1].hsl === true) &&
+        message[1].ps?.length >= 2
+      ) {
+        const isPlaying = amIPlaying(message[1].ps, user.fullname);
+        setUser((pre) => ({
+          ...pre,
+          status: isPlaying ? BotStatus.Submitted : pre.status,
+        }));
+        returnMsg = 'Cards submitted!';
+      }
+      break;
+    case 3:
+      if (message[1] === true) {
+        // Join room response
+        if (state.foundBy) {
+          const currentRoom = state.crawingRoom[state.foundBy];
+          const currentPlayers = [...currentRoom.players, caller];
+
+          setState((pre) => {
+            return {
+              ...pre,
+              crawingRoom: {
+                ...pre.crawingRoom,
+                [state.foundBy!]: {
+                  ...currentRoom,
+                  players: currentPlayers,
+                },
+              },
+            };
+          });
+          setUser((pre) => ({ ...pre, status: BotStatus.Joined }));
+          //[5,{"hsl":false,"ps":[{"cs":[17,10,19,12,27,0,14,49,1,13,16,40,26],"rr":1,"uid":"29_24437416","psh":0,"psl":0,"dn":"vcnrtyyh345","mX":0,"gr":[[],[],[]],"tp":0,"m":28218,"rp":0},{"cs":[44,18,21,37,22,45,36,42,48,46,11,31,2],"rr":1,"uid":"29_24437435","psh":0,"psl":0,"dn":"ghxcet4","mX":0,"gr":[[],[],[]],"tp":0,"m":31635,"rp":0}],"hsc":false,"hb":false,"cmd":602,"hsh":false}]
+          returnMsg = `Joined room ${message[3]} (room now has ${currentPlayers.length} players)`;
+        }
+      }
+      break;
+    case 4:
+      // Left room response
+      if (message[1] === true) {
+        setState((pre) => {
+          return {
+            ...pre,
+            waiterBots: {
+              ...pre.waiterBots,
+              [caller]: {
+                status: BotStatus.Left,
+              },
+            },
+          };
+        });
+        returnMsg = 'Left room successfully!';
+      } else {
+        returnMsg = message[5] || 'Left room failed!';
+      }
+      break;
+    default:
+      break;
+  }
+
+  return returnMsg;
+}
+
+const insertReceivedCards = (
+  cardDesk: GameCard[],
+  botId: string,
+  cardToInsert: number[]
 ) => {
-  const cardDesk1 = Object.values(desk1);
-  const cardDesk2 = Object.values(desk2);
-  if (cardDesk1.length < 2 || cardDesk2.length < 2) {
+  const lastGame = cardDesk.pop();
+  const newGame = { ...lastGame, [botId]: cardToInsert };
+
+  return [...cardDesk, newGame];
+};
+
+export const isFoundCards = (cardPlayer1: GameCard, cardPlayer2: GameCard) => {
+  if (
+    Object.keys(cardPlayer1).length < 2 ||
+    Object.keys(cardPlayer2).length < 2
+  ) {
     return false;
   }
 
+  const cardArray1 = Object.values(cardPlayer1);
+  const cardArray2 = Object.values(cardPlayer2);
+
   const isFound1 =
-    JSON.stringify(cardDesk1[0]) === JSON.stringify(cardDesk2[0]) ||
-    JSON.stringify(cardDesk1[0]) === JSON.stringify(cardDesk2[1]);
+    JSON.stringify(cardArray1[0]) === JSON.stringify(cardArray2[0]) ||
+    JSON.stringify(cardArray1[0]) === JSON.stringify(cardArray2[1]);
   const isFound2 =
-    JSON.stringify(cardDesk1[1]) === JSON.stringify(cardDesk2[0]) ||
-    JSON.stringify(cardDesk1[1]) === JSON.stringify(cardDesk2[1]);
+    JSON.stringify(cardArray1[1]) === JSON.stringify(cardArray2[0]) ||
+    JSON.stringify(cardArray1[1]) === JSON.stringify(cardArray2[1]);
+
   return isFound1 && isFound2;
 };
 
@@ -402,3 +579,11 @@ export const isAllHostReady = (state: StateProps) => {
 
   return isMainHostReady && isCrawingHostReady;
 };
+
+const amIPlaying = (ps: any[], username: string) => {
+  const isPlaying = ps.find((obj) => obj.dn === username);
+  return isPlaying;
+};
+
+// [5,{"ps":[{"uid":"29_24608219","m":43974},{"uid":"29_24437435","m":30449}],"cmd":205}]
+// [5,{"uid":"29_24608219","dn":"Abalaha","cmd":5}]

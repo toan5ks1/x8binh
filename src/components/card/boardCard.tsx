@@ -1,33 +1,19 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import eventBar from '../../../assets/bg/event-bxh-bar.png';
-import { HandCard } from '../card/handcard';
+import { AppContext, GameCard } from '../../renderer/providers/app';
 
 const BoardCard: React.FC = ({}) => {
-  const [bookmarksChecked, setBookmarksChecked] = useState(true);
-  const [urlsChecked, setUrlsChecked] = useState(false);
+  const { state } = useContext(AppContext);
+  const [gameCards, setGameCards] = useState<GameCard[]>([]);
 
-  const [cards, setCards] = useState<number[]>([
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-    22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
-  ]);
-  const [numPlayers, setNumPlayers] = useState(4);
+  useEffect(() => {
+    if (state.foundBy) {
+      const gameCards = state.crawingRoom[state.foundBy].cardDesk;
+      setGameCards(gameCards);
+      console.log(state.crawingRoom[state.foundBy].cardDesk);
+    }
+  }, [state.crawingRoom]);
 
-  const distributeCards = () => {
-    const playerHands: number[][] = Array.from(
-      { length: numPlayers },
-      () => []
-    );
-
-    cards.forEach((card, index) => {
-      const playerIndex = index % numPlayers;
-      playerHands[playerIndex].push(card);
-    });
-
-    return playerHands;
-  };
-
-  const playerHands = distributeCards();
   return (
     <div className="px-[5px] ">
       <div className="bg-[#4298d1] bg-opacity-70 pb-[20px] rounded-[25px] shadow-[4.0px_10.0px_8.0px_rgba(0,0,0,0.38)]">
@@ -47,10 +33,14 @@ const BoardCard: React.FC = ({}) => {
           </div>
         </div>
 
-        <div className="flex flex-row gap-[5px] px-[20px]">
-          {playerHands.map((hand, index) => (
-            <HandCard key={index} cardProp={hand} />
-          ))}
+        <div className="flex w-full">
+          {/* {gameCards.map((gameCard, index) => (
+            <div key={index} className="flex flex-row gap-[5px] px-[20px]">
+              {Object.values(gameCard).map((card, index) => (
+                <HandCard key={index} card={card} />
+              ))}
+            </div>
+          ))} */}
         </div>
       </div>
     </div>

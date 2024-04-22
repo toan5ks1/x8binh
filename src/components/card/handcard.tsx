@@ -10,7 +10,7 @@ interface DraggableCardProps {
 }
 
 interface HandCardProps {
-  cardProp: number[];
+  card: number[];
 }
 
 const DraggableCard: React.FC<DraggableCardProps> = ({
@@ -51,8 +51,8 @@ const DropCard: React.FC<DropCardProps> = ({ id, children, moveCard }) => {
   return <div ref={drop}>{children}</div>;
 };
 
-export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
-  const initialCards = useState<number[]>(cardProp);
+export const HandCard: React.FC<HandCardProps> = ({ card }) => {
+  const initialCards = useState<number[]>(card);
   const [cards, setCards] = initialCards;
   const [part1, setPart1] = useState<number[]>(cards.slice(0, 5));
   const [part2, setPart2] = useState<number[]>(cards.slice(5, 10));

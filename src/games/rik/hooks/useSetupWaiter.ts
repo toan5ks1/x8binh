@@ -7,15 +7,15 @@ import {
   LoginResponseDto,
   login,
 } from '../lib/login';
-import { handleMessage, isAllHostReady } from '../lib/utils';
+import { handleMessageWaiter } from '../lib/utils';
 
-export function useSetupBot(bot: LoginParams, isHost: boolean) {
+export function useSetupWaiter(bot: LoginParams) {
   const [socketUrl, setSocketUrl] = useState('');
   const { state, setState } = useContext(AppContext);
-  const room = state.initialRoom;
-  const me = state.mainBots[bot.username];
+  const room = state.crawingRoom[state.foundBy ?? ''];
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
+
   const [shouldPingMaubinh, setShouldPingMaubinh] = useState(false);
 
   const [iTime, setITime] = useState(1);
@@ -51,10 +51,14 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
   useEffect(() => {
     if (lastMessage !== null && user) {
       const message = JSON.parse(lastMessage.data);
-      const newMsg = handleMessage({
+      const newMsg = handleMessageWaiter({
         message,
+        state,
         setState,
         user,
+        setUser: setUser as React.Dispatch<
+          React.SetStateAction<LoginResponseDto>
+        >,
       });
 
       newMsg && setMessageHistory((msgs) => [...msgs, newMsg]);
@@ -63,10 +67,10 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
 
   // Ping pong
   useEffect(() => {
-    const pingPongMessage = () => ` ["7", "Simms", "1",${iTimeRef.current}]`;
+    const pingPongMessage = `["7", "Simms", "1",${iTimeRef.current}]`;
 
     const intervalId = setInterval(() => {
-      shouldConnect && sendMessage(pingPongMessage());
+      shouldConnect && sendMessage(pingPongMessage);
       setITime((prevITime) => prevITime + 1);
     }, 4000);
 
@@ -113,105 +117,70 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
     }
   };
 
-  const handleConnectMauBinh = () => {
+  const handleConnectMauBinh = (): void => {
     setShouldPingMaubinh(true);
   };
 
-  const handleCreateRoom = () => {
-    sendMessage(
-      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":100,"Mu":4,"iJ":true,"inc":false,"pwd":""}]`
-    );
-  };
-
-  // Bot join initial room
+  // Join found room
   useEffect(() => {
-    if (
-      room.id &&
-      Object.keys(room.cardDesk).length === 0 // Make sure cards isn't received
-    ) {
-      // Host and guess join after created room
-      if (room.players.length < 2) {
-        if (bot.username === room.owner && room.players.length === 0) {
-          // Host
-          sendMessage(`[3,"Simms",${room.id},""]`);
-        } else if (bot.username !== room.owner && room.players.length === 1) {
-          // Guess
-          sendMessage(`[3,"Simms",${room.id},"",true]`);
-        }
+    if (state.foundAt && state.foundBy && user && room) {
+      if (!room.players.includes(bot.username)) {
+        sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+        // me.status = BotStatus.Joined;
+        console.log('waiter call join', user.status, room.isFinish);
       }
 
-      // Host ready
-      if (room.players.length === 2) {
-        if (bot.username === room.owner) {
-          sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
-        }
+      // if (
+      //   froom.players.includes(bot.username) &&
+      //   froom.isFinish &&
+      //   user.status === BotStatus.Joined
+      // ) {
+      //   console.log('waiter call ready', bot.username, user.status);
+      //   sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
+      // }
+    }
+  }, [state.foundBy, state.foundAt]);
+
+  // Waiter ready
+  useEffect(() => {
+    if (
+      (user?.status === BotStatus.Joined ||
+        user?.status === BotStatus.Submitted) &&
+      room.isFinish
+    ) {
+      setTimeout(() => {
+        console.log('craw call ready new game');
+        sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
+      }, 2100);
+      // console.log('waiter call ready', bot.username, user.status);
+      // sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
+    }
+  }, [user, room?.isFinish]);
+
+  // Crawing
+  useEffect(() => {
+    if (room && user?.status === BotStatus.Received) {
+      const cardDesk = room.cardDesk[room.cardDesk.length - 1];
+      const myCards = cardDesk ? cardDesk[bot.username] : null;
+      if (myCards) {
+        // Submit cards
+        sendMessage(
+          `[5,"Simms",${state.foundAt},{"cmd":603,"cs":[${myCards}]}]`
+        );
       }
     }
-  }, [state.initialRoom]);
+  }, [user]);
 
-  // Guess ready
-  useEffect(() => {
-    if (
-      room &&
-      bot.username !== room.owner &&
-      me?.status === BotStatus.Joined &&
-      isAllHostReady(state)
-    ) {
-      sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-    }
-  }, [state.mainBots, state.crawingBots]);
-
-  // Submit
-  useEffect(() => {
-    const numOfCrawer = Object.keys(state.crawingBots).length;
-
-    if (
-      me?.status === BotStatus.Received &&
-      room?.shouldOutVote === numOfCrawer &&
-      !state.foundAt
-    ) {
-      // // Submit cards
-      sendMessage(
-        `[5,"Simms",${room.id},{"cmd":603,"cs":[${
-          room.cardDesk[0][bot.username]
-        }]}]`
-      );
-    }
-  }, [state.initialRoom, state.foundAt]);
-
-  // Leave room
-  useEffect(() => {
-    if (room.isFinish) {
-      sendMessage(`[4,"Simms",${state.initialRoom.id}]`);
-    }
-  }, [state.mainBots[bot.username]]);
-
-  const handleLeaveRoom = () => {
-    return sendMessage(`[4,"Simms",${state.initialRoom.id}]`);
+  const handleLeaveRoom = (roomId: number) => {
+    return sendMessage(`[4,"Simms",${roomId}]`);
   };
-
-  // Recreate room
-  useEffect(() => {
-    if (state.shouldRecreateRoom && isHost && me.status !== BotStatus.Finding) {
-      handleCreateRoom();
-      setState((pre) => ({
-        ...pre,
-        mainBots: {
-          ...pre.mainBots,
-          [bot.username]: { ...me, status: BotStatus.Finding },
-        },
-      }));
-    }
-  }, [state.shouldRecreateRoom]);
 
   return {
     user,
-    handleCreateRoom,
-    messageHistory,
-    handleLeaveRoom,
-    connectionStatus,
     handleLoginClick,
-    connectMainGame,
     handleConnectMauBinh,
+    messageHistory,
+    connectionStatus,
+    handleLeaveRoom,
   };
 }
