@@ -9,7 +9,9 @@ import {
 } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BotStatus } from '../components/account/botStatus';
+import { CoupleCrawStatus } from '../components/bots/coupleCraw';
+import { CoupleWaiterStatus } from '../components/bots/coupleWaiter';
+import { MainPlayerStatus } from '../components/bots/mainPlayer';
 import { SideBar } from '../components/sidebar/sidebar';
 import { useToast } from '../components/toast/use-toast';
 import { Button } from '../components/ui/button';
@@ -23,7 +25,7 @@ import {
 } from '../components/ui/dropdown-menu';
 import { Tabs, TabsContent } from '../components/ui/tabs';
 import { useAccounts } from '../context/AccountContext';
-import { useSetupBot } from '../hooks/useSetupBot';
+import { bots, crawingBot } from '../lib/config';
 import { validateLicense } from '../lib/supabase';
 import { AppContext } from '../renderer/providers/app';
 import { HomePage } from './pages/home';
@@ -40,44 +42,26 @@ export function App() {
   const [cardDeck, setCardDeck] = useState('4');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const {
-    user: user1,
-    messageHistory: messageHistoryBot1,
-    handleLeaveRoom: handleLeaveRoomBot1,
-    connectionStatus: connectionStatusBot1,
-    handleLoginClick: loginBot1,
-    handleCreateRoom: handleCreateRoomBot1,
-    handleConnectMauBinh: handleConnectMauBinhBot1,
-    setMessageHistory: setMessageHistoryBot1,
-  } = useSetupBot(bot1Account);
 
-  const {
-    user: user2,
-    messageHistory: messageHistoryBot2,
-    handleLeaveRoom: handleLeaveRoomBot2,
-    connectionStatus: connectionStatusBot2,
-    handleLoginClick: loginBot2,
-    handleConnectMauBinh: handleConnectMauBinhBot2,
-    setMessageHistory: setMessageHistoryBot2,
-  } = useSetupBot(bot2Account);
+  const [shouldLogin, setShouldLogin] = useState(false);
+  const [shouldJoinMB, setShouldJoinMB] = useState(false);
+  const [shouldCreatRoom, setShouldCreateRoom] = useState(false);
+  const [shouldLeave, setShouldLeave] = useState(false);
 
-  const onLogin = async () => {
-    loginBot1();
-    loginBot2();
+  const onLogin = () => {
+    setShouldLogin(true);
   };
 
-  const onJoinMauBinh = async () => {
-    handleConnectMauBinhBot1();
-    handleConnectMauBinhBot2();
+  const onJoinMauBinh = () => {
+    setShouldJoinMB(true);
   };
 
   const onCreatRoom = () => {
-    handleCreateRoomBot1();
+    setShouldCreateRoom(true);
   };
 
   const onLeaveRoom = () => {
-    handleLeaveRoomBot1();
-    handleLeaveRoomBot2();
+    setShouldLeave(true);
   };
 
   useEffect(() => {
@@ -196,25 +180,58 @@ export function App() {
                 value="find-room"
                 hidden={'find-room' !== tab}
               >
-                <div className="flex flex-col h-screen">
-                  <div className="flex flex-col  text-white space-y-4 flex-1">
-                    <div className="grid grid-cols-2 gap-[20px] w-full">
-                      <BotStatus
-                        name={'Bot 1'}
-                        userId={user1?.username}
-                        connectionStatus={connectionStatusBot1}
-                        messageHistory={messageHistoryBot1}
-                        setMessageHistory={setMessageHistoryBot1}
-                      />
+                <div className="flex flex-col h-screen w-full">
+                  <div className="flex flex-col  text-white space-y-4 flex-1 w-full">
+                    {/* <div className="grid grid-cols-2 gap-[20px] w-full"> */}
+                    {bots.map(
+                      (bot, index) =>
+                        index % 2 === 0 &&
+                        index < bots.length - 1 && (
+                          <MainPlayerStatus
+                            key={index}
+                            index={index}
+                            craw1={bot}
+                            craw2={bots[index + 1]}
+                            shouldLogin={shouldLogin}
+                            shouldJoinMB={shouldJoinMB}
+                            shouldCreatRoom={shouldCreatRoom}
+                            shouldLeave={shouldLeave}
+                          />
+                        )
+                    )}
 
-                      <BotStatus
-                        name={'Bot 2'}
-                        userId={user2?.username}
-                        connectionStatus={connectionStatusBot2}
-                        messageHistory={messageHistoryBot2}
-                        setMessageHistory={setMessageHistoryBot2}
-                      />
-                    </div>
+                    {crawingBot.map((bot, index) => {
+                      if (index % 2 === 0 && index < crawingBot.length - 1) {
+                        if (index < crawingBot.length - 3) {
+                          return (
+                            <CoupleCrawStatus
+                              key={index}
+                              index={index}
+                              craw1={bot}
+                              craw2={crawingBot[index + 1]}
+                              shouldLogin={shouldLogin}
+                              shouldJoinMB={shouldJoinMB}
+                              shouldCreatRoom={shouldCreatRoom}
+                              shouldLeave={shouldLeave}
+                            />
+                          );
+                        } else {
+                          return (
+                            <CoupleWaiterStatus
+                              key={index}
+                              index={index}
+                              craw1={bot}
+                              craw2={crawingBot[index + 1]}
+                              shouldLogin={shouldLogin}
+                              shouldJoinMB={shouldJoinMB}
+                              shouldCreatRoom={shouldCreatRoom}
+                              shouldLeave={shouldLeave}
+                            />
+                          );
+                        }
+                      }
+                    })}
+                    {/* </div> */}
                   </div>
                 </div>
               </TabsContent>

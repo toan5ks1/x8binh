@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { loginUrl } from './site';
+import { BotStatus } from '../renderer/providers/app';
+import { loginUrl } from './config';
 
 export interface LoginResponseDto {
   avatar: string;
@@ -12,6 +13,7 @@ export interface LoginResponseDto {
   session_id: string;
   token: string;
   username: string;
+  status?: BotStatus;
 }
 
 export interface LoginResponse {
@@ -22,20 +24,15 @@ export interface LoginResponse {
 }
 
 export interface LoginParams {
-  isSelected?: any;
   username: string;
   password: string;
-  app_id?: string;
-  os?: string;
-  device?: string;
-  browser?: string;
-  fg?: string;
-  time?: number;
-  aff_id?: string;
-}
-
-interface ConnectTokenResponse {
-  connectionToken: string;
+  app_id: string;
+  os: string;
+  device: string;
+  browser: string;
+  fg: string;
+  time: number;
+  aff_id: string;
 }
 
 const login = async (botInfo: LoginParams): Promise<LoginResponse | null> => {
@@ -54,6 +51,10 @@ const login = async (botInfo: LoginParams): Promise<LoginResponse | null> => {
     return null;
   }
 };
+
+interface ConnectTokenResponse {
+  connectionToken: string;
+}
 
 const getConnectToken = async (
   token?: string
@@ -91,15 +92,5 @@ export async function setupBot(
     setUser(bot.username);
   } catch (err) {
     console.error('Error when calling setup bot:', err);
-  }
-}
-
-export async function accountLogin(account: LoginParams) {
-  try {
-    const res = await login(account);
-    return res;
-  } catch (err) {
-    console.error('Error when calling accountLogin:', err);
-    return { error: true, message: 'An error occurred during login.' };
   }
 }
