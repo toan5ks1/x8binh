@@ -18,6 +18,7 @@ export enum BotStatus {
   Ready = 'READY',
   Received = 'RECEIVED',
   Submitted = 'SUBMITTED',
+  PreFinished = 'PREFINISHED',
   Finished = 'FINISHED',
   Left = 'LEFT',
 }

@@ -7,7 +7,11 @@ import {
   LoginResponseDto,
   login,
 } from '../lib/login';
-import { handleMessageCrawing, isAllHostReady } from '../lib/utils';
+import {
+  handleMessageCrawing,
+  isAllHostReady,
+  isFoundCards,
+} from '../lib/utils';
 
 export function useSetupCraw(
   bot: LoginParams,
@@ -175,16 +179,16 @@ export function useSetupCraw(
     if (!state.foundAt) {
       if (
         room?.cardDesk[0] &&
-        Object.keys(room.cardDesk[0]).length === 2
-        // initRoom.cardDesk[0] &&
-        // Object.keys(initRoom.cardDesk[0]).length === 2
+        Object.keys(room.cardDesk[0]).length === 2 &&
+        initRoom.cardDesk[0] &&
+        Object.keys(initRoom.cardDesk[0]).length === 2
       ) {
-        // if (isFoundCards(room.cardDesk[0], initRoom.cardDesk[0])) {
-        if (coupleId === 'nbmhkghjh456mnnbktyu453') {
+        if (isFoundCards(room.cardDesk[0], initRoom.cardDesk[0])) {
+          // if (coupleId === 'nbmhkghjh456mnnbktyu453') {
           setState((pre) => ({
             ...pre,
-            foundAt: state.crawingRoom['nbmhkghjh456mnnbktyu453'].id,
-            foundBy: 'nbmhkghjh456mnnbktyu453',
+            foundAt: state.crawingRoom[coupleId].id,
+            foundBy: coupleId,
           }));
         } else {
           console.log('Not match!');
@@ -239,23 +243,20 @@ export function useSetupCraw(
       const cardDesk = room.cardDesk[room.cardDesk.length - 1];
       const myCards = cardDesk ? cardDesk[bot.username] : null;
       if (
-        // myCards &&
         me.status === BotStatus.Received &&
-        // room.isFinish &&
         room.players.length === 4 &&
         myCards
       ) {
+        // console.log(me.status, room);
         // Submit cards
         sendMessage(`[5,"Simms",${room.id},{"cmd":603,"cs":[${myCards}]}]`);
-
-        console.log('desk', room.cardDesk);
       }
 
       if (room.isFinish) {
-        setTimeout(() => {
-          console.log('craw call ready new game');
-          sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-        }, 2100);
+        // setTimeout(() => {
+        //   console.log('craw call ready new game');
+        // }, 2100);
+        sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
         // ready for new game
       }
 

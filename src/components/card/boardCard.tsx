@@ -5,14 +5,18 @@ import { AppContext, GameCard } from '../../renderer/providers/app';
 const BoardCard: React.FC = ({}) => {
   const { state } = useContext(AppContext);
   const [gameCards, setGameCards] = useState<GameCard[]>([]);
+  const froom = state.crawingRoom[state.foundBy ?? ''];
 
   useEffect(() => {
-    if (state.foundBy) {
-      const gameCards = state.crawingRoom[state.foundBy].cardDesk;
-      setGameCards(gameCards);
-      console.log(state.crawingRoom[state.foundBy].cardDesk);
+    if (state.foundBy && froom) {
+      const gCards = froom.cardDesk;
+
+      if (gCards.length) {
+        console.log('card desk:', gCards);
+        setGameCards(gCards);
+      }
     }
-  }, [state.crawingRoom]);
+  }, [state.foundBy, froom]);
 
   return (
     <div className="px-[5px] ">
@@ -34,13 +38,24 @@ const BoardCard: React.FC = ({}) => {
         </div>
 
         <div className="flex w-full">
-          {/* {gameCards.map((gameCard, index) => (
-            <div key={index} className="flex flex-row gap-[5px] px-[20px]">
-              {Object.values(gameCard).map((card, index) => (
-                <HandCard key={index} card={card} />
-              ))}
+          {/* {gameCards
+            ? gameCards.map((gameCard, index) => (
+                <div key={index} className="flex flex-row gap-[5px] px-[20px]">
+                  {Object.values(gameCard).map((card, index) => (
+                    <HandCard key={index} card={card} />
+                  ))}
+                </div>
+              ))
+            : null} */}
+          {/* {gameCards.length ? (
+            <div className="flex flex-row gap-[5px] px-[20px]">
+              {Object.values(gameCards).map(
+                (card, index) => (
+                  <HandCard key={index} card={card} />
+                )
+              )}
             </div>
-          ))} */}
+          ) : null} */}
         </div>
       </div>
     </div>

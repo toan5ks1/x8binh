@@ -53,6 +53,7 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       const message = JSON.parse(lastMessage.data);
       const newMsg = handleMessage({
         message,
+        state,
         setState,
         user,
       });

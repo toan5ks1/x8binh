@@ -4,8 +4,9 @@ import BoardCard from '../../../components/card/boardCard';
 import { Button } from '../../../components/ui/button';
 import { CoupleCrawStatus } from '../components/bots/coupleCraw';
 import { CoupleWaiterStatus } from '../components/bots/coupleWaiter';
+import { MainPlayerStatus } from '../components/bots/mainPlayer';
 import { MainNav } from '../components/layout/main-nav';
-import { crawingBot } from '../config';
+import { bots, crawingBot } from '../config';
 
 export const FindRoom = () => {
   const [shouldLogin, setShouldLogin] = useState(false);
@@ -43,7 +44,7 @@ export const FindRoom = () => {
         }}
       >
         <>
-          {/* {bots.map(
+          {bots.map(
             (bot, index) =>
               index % 2 === 0 &&
               index < bots.length - 1 && (
@@ -58,7 +59,7 @@ export const FindRoom = () => {
                   shouldLeave={shouldLeave}
                 />
               )
-          )} */}
+          )}
 
           {crawingBot.map((bot, index) => {
             if (index % 2 === 0 && index < crawingBot.length - 1) {

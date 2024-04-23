@@ -76,12 +76,14 @@ export function handleStartActionTimer(message: any) {
 
 interface HandleCRMessageProps {
   message: any;
+  state: StateProps;
   setState: Dispatch<SetStateAction<StateProps>>;
   user: LoginResponseDto;
 }
 
 export function handleMessage({
   message,
+  state,
   setState,
   user,
 }: HandleCRMessageProps) {
@@ -90,15 +92,15 @@ export function handleMessage({
 
   switch (message[0]) {
     case 5:
-      if (message[1].rs) {
+      const botStatus = state.mainBots[caller]?.status;
+      if (message[1].rs && !botStatus) {
         setState((pre) => {
-          const curStatus = pre.mainBots[caller]?.status;
           return {
             ...pre,
             mainBots: {
               ...pre.mainBots,
               [caller]: {
-                status: !curStatus ? BotStatus.Connected : curStatus,
+                status: BotStatus.Connected,
               },
             },
           };
@@ -148,6 +150,23 @@ export function handleMessage({
           };
         });
         returnMsg = `Card received: ${message[1].cs}`;
+      } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
+        setState((pre) => {
+          return {
+            ...pre,
+            mainBots: {
+              ...pre.mainBots,
+              [caller]: {
+                status: BotStatus.Finished,
+              },
+            },
+            initialRoom: {
+              ...pre.initialRoom,
+              isFinish: true,
+            },
+          };
+        });
+        returnMsg = 'Game finished!';
       } else if (
         (message[1].hsl === false || message[1].hsl === true) &&
         message[1].ps?.length >= 2
@@ -160,10 +179,6 @@ export function handleMessage({
               [caller]: {
                 status: BotStatus.Submitted,
               },
-            },
-            initialRoom: {
-              ...pre.initialRoom,
-              isFinish: true,
             },
           };
         });
@@ -317,6 +332,29 @@ export function handleMessageCrawing({
 
         returnMsg = `Card received: ${message[1].cs}`;
       } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
+        setState((pre) => {
+          return {
+            ...pre,
+            crawingBots: {
+              ...pre.crawingBots,
+              [caller]: {
+                status: BotStatus.PreFinished,
+              },
+            },
+            // crawingRoom: {
+            //   ...pre.crawingRoom,
+            //   [coupleId]: {
+            //     ...pre.crawingRoom[coupleId],
+            //     isFinish: true,
+            //   },
+            // },
+          };
+        });
+        returnMsg = 'Game pre finished!';
+      } else if (
+        message[1]?.cmd === 204 &&
+        state.crawingBots[caller]?.status === BotStatus.PreFinished
+      ) {
         setState((pre) => {
           return {
             ...pre,
@@ -496,7 +534,6 @@ export function handleMessageWaiter({
             };
           });
           setUser((pre) => ({ ...pre, status: BotStatus.Joined }));
-          //[5,{"hsl":false,"ps":[{"cs":[17,10,19,12,27,0,14,49,1,13,16,40,26],"rr":1,"uid":"29_24437416","psh":0,"psl":0,"dn":"vcnrtyyh345","mX":0,"gr":[[],[],[]],"tp":0,"m":28218,"rp":0},{"cs":[44,18,21,37,22,45,36,42,48,46,11,31,2],"rr":1,"uid":"29_24437435","psh":0,"psl":0,"dn":"ghxcet4","mX":0,"gr":[[],[],[]],"tp":0,"m":31635,"rp":0}],"hsc":false,"hb":false,"cmd":602,"hsh":false}]
           returnMsg = `Joined room ${message[3]} (room now has ${currentPlayers.length} players)`;
         }
       }
@@ -532,10 +569,23 @@ const insertReceivedCards = (
   botId: string,
   cardToInsert: number[]
 ) => {
-  const lastGame = cardDesk.pop();
-  const newGame = { ...lastGame, [botId]: cardToInsert };
+  const cardDeskClone = [...cardDesk];
+  const lastGameIndex = cardDeskClone.length - 1; // Get the index of the last element
+  let lastGame = cardDeskClone[lastGameIndex];
 
-  return [...cardDesk, newGame];
+  if (lastGameIndex < 0 || Object.keys(lastGame)?.length === 4) {
+    cardDeskClone.push({ [botId]: cardToInsert });
+  } else if (
+    Object.keys(cardDeskClone[0]).length === 2 &&
+    lastGameIndex === 0
+  ) {
+    // Skip first game
+    cardDeskClone.push({ [botId]: cardToInsert });
+  } else {
+    lastGame[botId] = cardToInsert;
+  }
+
+  return cardDeskClone;
 };
 
 export const isFoundCards = (cardPlayer1: GameCard, cardPlayer2: GameCard) => {

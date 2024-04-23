@@ -126,8 +126,6 @@ export function useSetupWaiter(bot: LoginParams) {
     if (state.foundAt && state.foundBy && user && room) {
       if (!room.players.includes(bot.username)) {
         sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
-        // me.status = BotStatus.Joined;
-        console.log('waiter call join', user.status, room.isFinish);
       }
 
       // if (
@@ -148,10 +146,10 @@ export function useSetupWaiter(bot: LoginParams) {
         user?.status === BotStatus.Submitted) &&
       room.isFinish
     ) {
-      setTimeout(() => {
-        console.log('craw call ready new game');
-        sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-      }, 2100);
+      // setTimeout(() => {
+      //   console.log('craw call ready new game');
+      // }, 2100);
+      sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
       // console.log('waiter call ready', bot.username, user.status);
       // sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
     }
