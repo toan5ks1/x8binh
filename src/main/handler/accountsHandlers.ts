@@ -46,10 +46,10 @@ export const setupAccountHandlers = (
       const client = await page.target().createCDPSession();
       await client.send('Network.enable');
       client.on('Network.webSocketFrameReceived', ({ response }: any) => {
-        console.log(
-          `Data received from WebSocket for account ${account.username}:`,
-          response.payloadData
-        );
+        // console.log(
+        //   `Data received from WebSocket for account ${account.username}:`,
+        //   response.payloadData
+        // );
       });
 
       puppeteerInstances.push({
@@ -65,7 +65,7 @@ export const setupAccountHandlers = (
         'Network.webSocketCreated',
         ({ requestId, url }: WebSocketCreatedData) => {
           if (url.includes('wss://cardskgw.ryksockesg.net/websocket')) {
-            console.log(`WebSocket Created to specific URL: ${url}`);
+            // console.log(`WebSocket Created to specific URL: ${url}`);
 
             specificWebSocketRequestId = requestId;
           }
@@ -120,7 +120,9 @@ export const setupAccountHandlers = (
     }
   });
 
-  ipcMain.on('execute-script', async (event, { username, script }) => {
+  ipcMain.on('execute-script', async (event, { username }, script) => {
+    console.log('username', username);
+    console.log('script', script);
     const instance = puppeteerInstances.find(
       (instance) => instance.username === username
     );
