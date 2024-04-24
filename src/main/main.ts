@@ -4,6 +4,7 @@ import { autoUpdater } from 'electron-updater';
 import path from 'path';
 import { loadExtensions } from './extension/installer';
 import { setupAccountHandlers } from './handler/accountsHandlers';
+import { setupArrangeCardHandlers } from './handler/arrangeCardHandlers';
 import { setupFileHandlers } from './handler/fileHandlers';
 import { setupPuppeteerHandlers } from './handler/puppeteerHandlers';
 import { setupReadHardwareHandlers } from './handler/readHardwareHandler';
@@ -83,6 +84,7 @@ const createWindow = async () => {
   setupFileHandlers();
   setupPuppeteerHandlers(mainWindow);
   setupAccountHandlers(mainWindow);
+  setupArrangeCardHandlers();
 
   new AppUpdater();
 };
@@ -98,10 +100,10 @@ const extensions = [
     id: 'lmhkpmbekcpmknklioeibfkpmmfibljd', // React DevTools ID
     version: '3.1.6_0',
   },
-  {
-    id: 'npbfdllefekhdplbkdigpncggmojpefi',
-    version: '1.3.1_0',
-  },
+  // {
+  //   id: 'npbfdllefekhdplbkdigpncggmojpefi',
+  //   version: '1.3.1_0',
+  // },
 ];
 
 app
