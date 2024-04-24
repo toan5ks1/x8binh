@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { HandCard } from '../card/handcard';
 import { TableCell } from '../ui/table';
 
 const BoardCard: React.FC<any> = ({ indexProps, cards, numPlayers }) => {
-  const distributeCards = () => {
+  const playerHands = useMemo(() => {
     const playerHands: number[][] = Array.from(
       { length: numPlayers },
       () => []
@@ -15,10 +15,8 @@ const BoardCard: React.FC<any> = ({ indexProps, cards, numPlayers }) => {
     });
 
     return playerHands;
-  };
+  }, [cards]);
 
-  const playerHands = distributeCards();
-  console.log(playerHands);
   return (
     <TableCell
       key={indexProps}
