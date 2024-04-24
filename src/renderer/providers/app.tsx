@@ -5,19 +5,60 @@ import {
   SetStateAction,
   useState,
 } from 'react';
+
 interface AppProviderProps {
   children: ReactNode;
 }
 
+export enum BotStatus {
+  Initialized = 'INITIALIZED',
+  Connected = 'CONNECTED',
+  Finding = 'Finding',
+  Joined = 'JOINED',
+  Ready = 'READY',
+  Received = 'RECEIVED',
+  Submitted = 'SUBMITTED',
+  PreFinished = 'PREFINISHED',
+  Finished = 'FINISHED',
+  Left = 'LEFT',
+}
+
+export interface GameCard {
+  [key: string]: number[];
+}
+
+export interface Room {
+  id?: number;
+  owner?: string;
+  players: string[];
+  cardDesk: GameCard[];
+  shouldOutVote: number;
+  isFinish?: boolean;
+}
+
 export interface StateProps {
-  initialRoom: {
-    id?: number;
-    owner?: string;
-    players: number;
-    cardDesk: {
-      [key: string]: number[];
+  initialRoom: Room;
+  crawingRoom: {
+    [key: string]: Room;
+  };
+  crawingBots: {
+    [key: string]: {
+      status: BotStatus;
     };
   };
+  mainBots: {
+    [key: string]: {
+      status: BotStatus;
+    };
+  };
+  waiterBots: {
+    [key: string]: {
+      status: BotStatus;
+    };
+  };
+  foundAt?: number;
+  foundBy?: string;
+  shouldRecreateRoom: boolean;
 }
 
 interface AppContextProps {
@@ -26,13 +67,33 @@ interface AppContextProps {
 }
 
 export const AppContext = createContext<AppContextProps>({
-  state: { initialRoom: { players: 0, cardDesk: {} } },
+  state: {
+    initialRoom: {
+      players: [],
+      cardDesk: [],
+      shouldOutVote: 0,
+    },
+    mainBots: {},
+    crawingRoom: {},
+    crawingBots: {},
+    waiterBots: {},
+    shouldRecreateRoom: false,
+  },
   setState: () => {},
 });
 
 const AppProvider = ({ children }: AppProviderProps) => {
   const [state, setState] = useState({
-    initialRoom: { players: 0, cardDesk: {} },
+    initialRoom: {
+      players: [] as string[],
+      cardDesk: [] as GameCard[],
+      shouldOutVote: 0,
+    },
+    mainBots: {},
+    crawingRoom: {},
+    crawingBots: {},
+    waiterBots: {},
+    shouldRecreateRoom: false,
   });
 
   return (

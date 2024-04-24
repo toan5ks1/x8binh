@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useContext, useMemo } from 'react';
 import BoardCard from '../../components/card/boardCard';
 import {
   Card,
@@ -15,16 +15,49 @@ import {
   TableHeader,
   TableRow,
 } from '../../components/ui/table';
+import { AppContext } from '../../renderer/providers/app';
 
 export const HomePage: React.FC<any> = (cardDeck) => {
-  const [games, setGames] = useState<number[][]>([
-    [
-      7, 13, 12, 35, 17, 39, 46, 32, 4, 21, 30, 45, 38, 20, 42, 6, 36, 44, 28,
-      51, 8, 43, 27, 50, 22, 11, 29, 24, 34, 16, 25, 15, 10, 19, 3, 1, 47, 2,
-      18, 23, 33, 37, 9, 0, 48, 41, 5, 40, 26, 14, 31, 49,
-    ],
-    [7, 10, 23, 22, 21, 8, 42, 40, 1, 2, 38, 32, 14],
-  ]);
+  // const [cards, setGames] = useState<number[][]>([
+  //   [],
+  //   [
+  //     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+  //     22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
+  //     40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
+  //   ],
+  // ]);
+
+  // setInterval(() => {
+  //   setGames((pre) => [
+  //     ...pre,
+  //     [
+  //       1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+  //       21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
+  //       39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
+  //     ],
+  //   ]);
+  // }, 5000);
+
+  const { state } = useContext(AppContext);
+
+  const cards = useMemo(() => {
+    if (state.foundBy) {
+      const desk = state.crawingRoom[state.foundBy].cardDesk;
+      const card = desk.map((game) => {
+        const arr = Object.values(game);
+        if (arr.length === 4) {
+          return ([] as number[]).concat(...arr).map((item) => item + 1);
+        }
+        return [];
+      });
+
+      return card;
+    }
+
+    return [];
+  }, [state.crawingRoom]);
+
+  // console.log(cards);
 
   return (
     <div className="text-center relative">
@@ -44,7 +77,7 @@ export const HomePage: React.FC<any> = (cardDeck) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {games.map((game, index) => (
+                {cards.map((game, index) => (
                   <TableRow key={index}>
                     <BoardCard
                       cards={game}
