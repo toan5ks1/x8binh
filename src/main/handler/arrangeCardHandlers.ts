@@ -18,16 +18,14 @@ function isFourOfAKind(hand: any) {
 }
 
 // Hàm kiểm tra Thùng (Flush)
-function isFlush(hand: any[]) {
-  const suits = hand.map((card) => Math.floor((card - 1) / 13));
-  return suits.every((suit) => suit === suits[0]);
+function isFlush(hand: any) {
+  const suits = hand.map((card: number) => card % 4);
+  return suits.every((suit: any) => suit === suits[0]);
 }
 
 // Hàm kiểm tra Sảnh (Straight)
 function isStraight(hand: any[]) {
-  const values = hand
-    .map((card) => ((card - 1) % 13) + 2)
-    .sort((a, b) => a - b);
+  const values = hand.map((card) => Math.floor(card / 4)).sort((a, b) => a - b);
   for (let i = 0; i < values.length - 1; i++) {
     if (values[i + 1] - values[i] !== 1) {
       return false;
@@ -137,35 +135,6 @@ function evaluateHand(hand: any) {
   return { score: 10, name: 'Mậu thầu' };
 }
 
-function findBestDivision(cards: any) {
-  // Sắp xếp các lá bài từ nhỏ đến lớn
-  cards.sort((a: number, b: number) => a - b);
-
-  // Chọn chi 1 là mạnh nhất dựa trên tiêu chí nào đó
-  let chi1 = cards.slice(8, 13);
-  let chi2 = cards.slice(3, 8);
-  let chi3 = cards.slice(0, 3);
-
-  // Đảm bảo chi 1 là mạnh nhất bằng cách sắp xếp
-  chi1.sort((a: number, b: number) => b - a);
-
-  return { chi1, chi2, chi3 };
-}
-
-function simpleSort(cards: any) {
-  cards.sort((a: number, b: number) => ((a - 1) % 13) - ((b - 1) % 13));
-
-  let chi1 = [],
-    chi2 = [],
-    chi3 = [];
-
-  chi1 = cards.slice(8, 13);
-  chi2 = cards.slice(3, 8);
-  chi3 = cards.slice(0, 3);
-
-  return findBestDivision(cards);
-}
-
 function displaySortedHands(cards: any) {
   const sorted = findBestHand(cards);
 
@@ -189,7 +158,6 @@ export const setupArrangeCardHandlers = () => {
       .map(Number)
       .filter((card: number) => card >= 1 && card <= 52);
     if (cards.length !== 13) {
-      console.log('Bạn cần nhập đúng 13 số, mỗi số từ 1 đến 52.');
       event.reply('arrange-card', {
         error: 'Bạn cần nhập đúng 13 số, mỗi số từ 1 đến 52.',
       });

@@ -105,10 +105,42 @@ const cardImages: { [key: string]: string } = {
   ace_of_clubs: ace_of_clubs,
   ace_of_diamonds: ace_of_diamonds,
 };
+//Hit club
+// const getCardImageUrl = (cardNumber: number): string => {
+//   const suits = ['hearts', 'diamonds', 'clubs', 'spades']; // Adjusted suits order
+//   const ranks = [
+//     '2',
+//     '3',
+//     '4',
+//     '5',
+//     '6',
+//     '7',
+//     '8',
+//     '9',
+//     '10',
+//     'jack',
+//     'queen',
+//     'king',
+//     'ace',
+//   ];
+
+//   if (cardNumber < 1 || cardNumber > 52) {
+//     throw new Error('Card number must be between 1 and 52.');
+//   }
+
+//   cardNumber -= 1;
+
+//   const suit = suits[Math.floor(cardNumber / 13)];
+//   const rank = ranks[cardNumber % 13];
+//   const key = `${rank}_of_${suit}` as keyof typeof cardImages;
+
+//   return cardImages[key];
+// };
 
 const getCardImageUrl = (cardNumber: number): string => {
-  const suits = ['spades', 'clubs', 'diamonds', 'hearts'];
+  const suits = ['spades', 'clubs', 'diamonds', 'hearts']; // Điều chỉnh thứ tự chất cho phù hợp
   const ranks = [
+    'ace',
     '2',
     '3',
     '4',
@@ -121,20 +153,18 @@ const getCardImageUrl = (cardNumber: number): string => {
     'jack',
     'queen',
     'king',
-    'ace',
   ];
 
-  if (cardNumber < 1 || cardNumber > 52) {
-    throw new Error('Card number must be between 1 and 52.');
+  if (cardNumber < 0 || cardNumber > 51) {
+    throw new Error('Card number must be between 0 and 51.');
   }
 
-  cardNumber -= 1;
+  const suitIndex = cardNumber % 4; // Tính toán chất dựa trên phần dư của chia cho 4
+  const rankIndex = Math.floor(cardNumber / 4); // Tính toán giá trị dựa trên phần nguyên của chia cho 4
+  const key =
+    `${ranks[rankIndex]}_of_${suits[suitIndex]}` as keyof typeof cardImages;
 
-  const suit = suits[Math.floor(cardNumber / 13)];
-  const rank = ranks[cardNumber % 13];
-  const key = `${rank}_of_${suit}` as keyof typeof cardImages;
-
-  return cardImages[key];
+  return cardImages[key]; // Trả về URL của hình ảnh tương ứng
 };
 
 export { getCardImageUrl };
