@@ -117,10 +117,10 @@ export function useSetupCraw(
     if (user?.token) {
       const connectURL = 'wss://cardskgw.ryksockesg.net/websocket';
       setSocketUrl(connectURL);
+      setShouldConnect(true);
       sendMessage(
         `[1,"Simms","","",{"agentId":"1","accessToken":"${user.token}","reconnect":false}]`
       );
-      setShouldConnect(true);
     }
   };
 
@@ -184,7 +184,6 @@ export function useSetupCraw(
         Object.keys(initRoom.cardDesk[0]).length === 2
       ) {
         if (isFoundCards(room.cardDesk[0], initRoom.cardDesk[0])) {
-          // if (coupleId === 'nbmhkghjh456mnnbktyu453') {
           setState((pre) => ({
             ...pre,
             foundAt: state.crawingRoom[coupleId].id,
@@ -222,7 +221,8 @@ export function useSetupCraw(
     if (
       state.shouldRecreateRoom &&
       isHost &&
-      me?.status !== BotStatus.Finding
+      me?.status !== BotStatus.Finding &&
+      !state.foundAt
     ) {
       handleCreateRoom();
       setState((pre) => ({
@@ -233,12 +233,10 @@ export function useSetupCraw(
         },
       }));
     }
-  }, [state.shouldRecreateRoom]);
+  }, [state.shouldRecreateRoom, state.foundAt]);
 
   // Found room submit cards
   useEffect(() => {
-    // state.foundBy && console.log('froom', state.crawingRoom[state.foundBy]);
-
     if (coupleId === state.foundBy) {
       const cardDesk = room.cardDesk[room.cardDesk.length - 1];
       const myCards = cardDesk ? cardDesk[bot.username] : null;
@@ -247,15 +245,11 @@ export function useSetupCraw(
         room.players.length === 4 &&
         myCards
       ) {
-        // console.log(me.status, room);
         // Submit cards
         sendMessage(`[5,"Simms",${room.id},{"cmd":603,"cs":[${myCards}]}]`);
       }
 
       if (room.isFinish) {
-        // setTimeout(() => {
-        //   console.log('craw call ready new game');
-        // }, 2100);
         sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
         // ready for new game
       }
@@ -265,25 +259,6 @@ export function useSetupCraw(
       }
     }
   }, [state.foundBy, room, me]);
-
-  // Crawing
-  // useEffect(() => {
-  //   if (
-  //     state.foundBy &&
-  //     state.crawingBots[bot.username]?.status === BotStatus.Received
-  //   ) {
-  //     const crawingRoom = state.crawingRoom[state.foundBy];
-  //     const myCards = crawingRoom.cardDesk[crawingRoom.cardDesk.length - 1]
-  //       ? crawingRoom.cardDesk[crawingRoom.cardDesk.length - 1][bot.username]
-  //       : null;
-  //     if (myCards) {
-  //       // Submit cards
-  //       sendMessage(
-  //         `[5,"Simms",${state.foundAt},{"cmd":603,"cs":[${myCards}]}]`
-  //       );
-  //     }
-  //   }
-  // }, [state.crawingRoom]);
 
   return {
     user,

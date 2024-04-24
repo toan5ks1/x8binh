@@ -54,6 +54,7 @@ export function useWaiting(bot1: LoginParams, bot2: LoginParams) {
     handleLoginClick: loginHost,
     handleConnectMauBinh: connectMbHost,
     messageHistory: messageHistoryBot1,
+    setMessageHistory: setMsgHistoryBot1,
     connectionStatus: connectionStatusBot1,
     handleLeaveRoom: hostLeaveRoom,
   } = useSetupWaiter(bot1);
@@ -63,6 +64,7 @@ export function useWaiting(bot1: LoginParams, bot2: LoginParams) {
     handleLoginClick: loginGuess,
     handleConnectMauBinh: connectMbGuess,
     messageHistory: messageHistoryBot2,
+    setMessageHistory: setMsgHistoryBot2,
     connectionStatus: connectionStatusBot2,
     handleLeaveRoom: guessLeaveRoom,
   } = useSetupWaiter(bot2);
@@ -77,6 +79,8 @@ export function useWaiting(bot1: LoginParams, bot2: LoginParams) {
     connectMbGuess,
     msgHost: messageHistoryBot1,
     msgGuess: messageHistoryBot2,
+    setMsgHost: setMsgHistoryBot1,
+    setMsgGuess: setMsgHistoryBot2,
     connectionStatusHost: connectionStatusBot1,
     connectionStatusGuess: connectionStatusBot2,
     hostLeaveRoom,

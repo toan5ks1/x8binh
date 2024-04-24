@@ -110,10 +110,10 @@ export function useSetupWaiter(bot: LoginParams) {
     if (user?.token) {
       const connectURL = 'wss://cardskgw.ryksockesg.net/websocket';
       setSocketUrl(connectURL);
+      setShouldConnect(true);
       sendMessage(
         `[1,"Simms","","",{"agentId":"1","accessToken":"${user.token}","reconnect":false}]`
       );
-      setShouldConnect(true);
     }
   };
 
@@ -169,8 +169,8 @@ export function useSetupWaiter(bot: LoginParams) {
     }
   }, [user]);
 
-  const handleLeaveRoom = (roomId: number) => {
-    return sendMessage(`[4,"Simms",${roomId}]`);
+  const handleLeaveRoom = () => {
+    return sendMessage(`[4,"Simms",${state.foundAt}]`);
   };
 
   return {
@@ -178,6 +178,7 @@ export function useSetupWaiter(bot: LoginParams) {
     handleLoginClick,
     handleConnectMauBinh,
     messageHistory,
+    setMessageHistory,
     connectionStatus,
     handleLeaveRoom,
   };

@@ -107,10 +107,10 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
     if (user?.token) {
       const connectURL = 'wss://cardskgw.ryksockesg.net/websocket';
       setSocketUrl(connectURL);
+      setShouldConnect(true);
       sendMessage(
         `[1,"Simms","","",{"agentId":"1","accessToken":"${user.token}","reconnect":false}]`
       );
-      setShouldConnect(true);
     }
   };
 
@@ -182,10 +182,10 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
 
   // Leave room
   useEffect(() => {
-    if (room.isFinish) {
+    if (room.isFinish && !state.foundAt) {
       sendMessage(`[4,"Simms",${state.initialRoom.id}]`);
     }
-  }, [state.mainBots[bot.username]]);
+  }, [state.mainBots[bot.username], state.foundAt]);
 
   const handleLeaveRoom = () => {
     return sendMessage(`[4,"Simms",${state.initialRoom.id}]`);
@@ -204,6 +204,20 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       }));
     }
   }, [state.shouldRecreateRoom]);
+
+  // Auto ready for new game
+  useEffect(() => {
+    if (state.foundAt) {
+      if (room.isFinish) {
+        sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
+        // ready for new game
+      }
+
+      if (room.isFinish && isHost && me.status === BotStatus.Ready) {
+        sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
+      }
+    }
+  }, [state.foundAt, room.isFinish, me]);
 
   return {
     user,

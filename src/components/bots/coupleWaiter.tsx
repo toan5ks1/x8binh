@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useWaiting } from '../../hooks/useCrawing';
 import { LoginParams } from '../../lib/login';
+import { BotCmp } from './botCmp';
 // import { BotCmp } from './botCmp';
 
 export interface BotStatusProps {
@@ -19,23 +20,25 @@ export const CoupleWaiterStatus = ({
   // index,
   shouldLogin,
   shouldJoinMB,
+  shouldLeave,
 }: // shouldCreatRoom,
-// shouldLeave,
 BotStatusProps) => {
   const {
-    // host,
-    // guess,
+    host,
+    guess,
     connectMbHost,
     connectMbGuess,
     loginHost,
     loginGuess,
-    // msgHost,
-    // msgGuess,
-    // connectionStatusHost,
-    // connectionStatusGuess,
+    msgHost,
+    msgGuess,
+    setMsgHost,
+    setMsgGuess,
+    connectionStatusHost,
+    connectionStatusGuess,
     // hostCreateRoom,
-    // hostLeaveRoom,
-    // guessLeaveRoom,
+    hostLeaveRoom,
+    guessLeaveRoom,
   } = useWaiting(craw1, craw2);
 
   useEffect(() => {
@@ -58,27 +61,29 @@ BotStatusProps) => {
   //   }
   // }, [shouldCreatRoom]);
 
-  // useEffect(() => {
-  //   if (shouldLeave) {
-  //     hostLeaveRoom();
-  //     guessLeaveRoom();
-  //   }
-  // }, [shouldLeave]);
+  useEffect(() => {
+    if (shouldLeave) {
+      hostLeaveRoom();
+      guessLeaveRoom();
+    }
+  }, [shouldLeave]);
 
   return (
-    <div className="hidden">
-      {/* <BotCmp
-        name={`Craw ${index + 1}`}
+    <div className="hidden space-x-4 w-full">
+      <BotCmp
+        name={`Waiter 1`}
         userId={host?.username}
         connectionStatus={connectionStatusHost}
         messageHistory={msgHost}
+        setMessageHistory={setMsgHost}
       />
       <BotCmp
-        name={`Craw ${index + 2}`}
+        name={`waiter 2`}
         userId={guess?.username}
         connectionStatus={connectionStatusGuess}
         messageHistory={msgGuess}
-      /> */}
+        setMessageHistory={setMsgGuess}
+      />
     </div>
   );
 };

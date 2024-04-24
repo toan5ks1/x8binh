@@ -160,6 +160,26 @@ export function handleMessage({
             mainBots: {
               ...pre.mainBots,
               [caller]: {
+                status: BotStatus.PreFinished,
+              },
+            },
+            // initialRoom: {
+            //   ...pre.initialRoom,
+            //   isFinish: true,
+            // },
+          };
+        });
+        returnMsg = 'Game pre finished!';
+      } else if (
+        message[1]?.cmd === 204 &&
+        state.mainBots[caller]?.status === BotStatus.PreFinished
+      ) {
+        setState((pre) => {
+          return {
+            ...pre,
+            mainBots: {
+              ...pre.mainBots,
+              [caller]: {
                 status: BotStatus.Finished,
               },
             },

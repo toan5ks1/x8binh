@@ -18,6 +18,7 @@ const BoardCard: React.FC<any> = ({ indexProps, cards, numPlayers }) => {
   };
 
   const playerHands = distributeCards();
+  console.log(playerHands);
   return (
     <TableCell
       key={indexProps}
