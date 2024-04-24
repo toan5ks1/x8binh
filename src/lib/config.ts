@@ -25,7 +25,7 @@ export const bots = [
 
 export const crawingBot = [
   // {
-  //   username: 'blahs123',
+  //   username: 'nbmhkghjh456',
   //   password: 'zxcv123123',
   //   app_id: 'rik.vip',
   //   os: 'Windows',
@@ -102,7 +102,7 @@ export const crawingBot = [
     aff_id: 'hit',
   },
   {
-    username: 'nbmhkghjh456',
+    username: 'blahs123',
     password: 'zxcv123123',
     app_id: 'rik.vip',
     os: 'Windows',
