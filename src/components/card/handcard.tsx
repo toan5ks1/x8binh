@@ -1,8 +1,11 @@
-import { useCallback, useState } from 'react';
+import { Label } from '@radix-ui/react-label';
+import { ArrowDownAZ } from 'lucide-react';
+import { useCallback, useEffect, useId, useState } from 'react';
 import { DndProvider, DragSourceMonitor, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { getCardImageUrl } from '../../lib/card';
 import CardGame from '../card/card';
+import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 interface DraggableCardProps {
   id: number;
@@ -12,6 +15,7 @@ interface DraggableCardProps {
 
 interface HandCardProps {
   cardProp: number[];
+  key: number;
 }
 
 const DraggableCard: React.FC<DraggableCardProps> = ({
@@ -53,11 +57,15 @@ const DropCard: React.FC<DropCardProps> = ({ id, children, moveCard }) => {
 };
 
 export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
+  const idHand = useId();
   const initialCards = useState<number[]>(cardProp);
   const [cards, setCards] = initialCards;
   const [part1, setPart1] = useState<number[]>(cards.slice(0, 5));
   const [part2, setPart2] = useState<number[]>(cards.slice(5, 10));
   const [part3, setPart3] = useState<number[]>([0, ...cards.slice(10, 13), 0]);
+  const [evaluation1, setEvaluation1] = useState<string>('');
+  const [evaluation2, setEvaluation2] = useState<string>('');
+  const [evaluation3, setEvaluation3] = useState<string>('');
 
   const moveCard = useCallback(
     (dragId: number, hoverId: number) => {
@@ -94,35 +102,82 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
     );
   }, []);
 
+  const handleArrange = (): void => {
+    window.backend.sendMessage('arrange-card', cards, idHand);
+  };
+
+  useEffect(() => {
+    setPart1(cards.slice(0, 5));
+    setPart2(cards.slice(5, 10));
+    setPart3([0, ...cards.slice(10, 13), 0]);
+  }, [cards]);
+
+  useEffect(() => {
+    const handleData = (newData: any, position: any) => {
+      if (position === idHand) {
+        setCards(newData.cards);
+        setEvaluation1(newData.chi1.name);
+        setEvaluation2(newData.chi2.name);
+        setEvaluation3(newData.chi3.name);
+      }
+    };
+
+    window.backend.on('arrange-card', handleData);
+
+    return () => {
+      window.backend.removeListener('arrange-card', handleData);
+    };
+  }, [handleArrange]);
+
   return (
     <DndProvider backend={HTML5Backend}>
       <Card className="bg-[#252425] bg-opacity-20 py-[10px] rounded-[15px] px-[7px] shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.38)]">
         <div className="grid grid-rows-3 gap-[5px] ">
-          <div className="grid grid-cols-5 gap-[5px]">
-            {part3.map((cardNumber, index) => renderCard(cardNumber, index))}
+          <div className="flex flex-col gap-1">
+            <div className="grid grid-cols-5 gap-[5px]">
+              {part3.map((cardNumber, index) => renderCard(cardNumber, index))}
+            </div>
+
+            <Label className=" bg-background p-[5px] rounded-[5px] font-semibold">
+              {evaluation3}
+            </Label>
           </div>
-          <div className="grid grid-cols-5 gap-[5px]">
-            {part2.map((cardNumber) => (
-              <DropCard key={cardNumber} id={cardNumber} moveCard={moveCard}>
-                <DraggableCard
-                  id={cardNumber}
-                  imageUrl={getCardImageUrl(cardNumber)}
-                  moveCard={moveCard}
-                />
-              </DropCard>
-            ))}
+          <div className="flex flex-col gap-1">
+            <div className="grid grid-cols-5 gap-[5px] relative">
+              {part2.map((cardNumber) => (
+                <DropCard key={cardNumber} id={cardNumber} moveCard={moveCard}>
+                  <DraggableCard
+                    id={cardNumber}
+                    imageUrl={getCardImageUrl(cardNumber)}
+                    moveCard={moveCard}
+                  />
+                </DropCard>
+              ))}
+            </div>
+            <Label className=" bg-background p-[5px] rounded-[5px] font-semibold">
+              {evaluation2}
+            </Label>
           </div>
-          <div className="grid grid-cols-5 gap-[5px]">
-            {part1.map((cardNumber) => (
-              <DropCard key={cardNumber} id={cardNumber} moveCard={moveCard}>
-                <DraggableCard
-                  id={cardNumber}
-                  imageUrl={getCardImageUrl(cardNumber)}
-                  moveCard={moveCard}
-                />
-              </DropCard>
-            ))}
+          <div className="flex flex-col gap-1">
+            <div className="grid grid-cols-5 gap-[5px]">
+              {part1.map((cardNumber) => (
+                <DropCard key={cardNumber} id={cardNumber} moveCard={moveCard}>
+                  <DraggableCard
+                    id={cardNumber}
+                    imageUrl={getCardImageUrl(cardNumber)}
+                    moveCard={moveCard}
+                  />
+                </DropCard>
+              ))}
+            </div>
+            <Label className=" bg-background p-[5px] rounded-[5px] font-semibold">
+              {evaluation1}
+            </Label>
           </div>
+          <Button onClick={() => handleArrange()}>
+            <ArrowDownAZ />
+            Arrange
+          </Button>
         </div>
       </Card>
     </DndProvider>

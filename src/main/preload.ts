@@ -12,6 +12,7 @@ const validChannels: string[] = [
   'send-message',
   'file-updated',
   'get-hardware-info',
+  'arrange-card',
 ];
 
 contextBridge.exposeInMainWorld('backend', {

@@ -33,11 +33,37 @@ export const TerminalPage: React.FC = () => {
       '[6,"Simms","channelPlugin",{"cmd":300,"aid":"1","gid":4}]',
     ]);
   };
-  const createRoom = () => {
-    console.log('create ROom');
-    window.backend.sendMessage('execute-script', [
-      `__require('GamePlayManager').default.getInstance().requestcreateRoom(4,100,4,)`,
-    ]);
+  const createRoom = (account: any): void => {
+    window.backend.sendMessage(
+      'execute-script',
+      account,
+      `__require('GamePlayManager').default.getInstance().requestcreateRoom(4,100,4,)`
+    );
+  };
+  const outRoom = (account: any): void => {
+    console.log('create ROom 1');
+    window.backend.sendMessage(
+      'execute-script',
+      account,
+      `f12_GameController.sendLeaveRoom();`
+    );
+  };
+  const joinLobby = (account: any): void => {
+    window.backend.sendMessage(
+      'execute-script',
+      account,
+      `window.f12_gm = __require('GamePlayManager').default.getInstance();
+      window.f12_JoinRoom = __require('GamePlayManager').default.getInstance();
+      window.f12_Joinlobby = __require('LobbyViewController');
+      window.f12_GameController = __require('GameController').default.prototype;
+      window.hd_liengcontroller = __require('LiengController').default.prototype;
+      window.hd_pokercontroller = __require('PokerController').default.prototype;
+      var myDiv = document.createElement("div");
+      myDiv.id = 'div_id';
+      myDiv.innerHTML = '<h1 style="color:#fff;position:fixed;top:0;right:0;z-index:99999;background:#020817;padding:15px;border: solid 1px #1E293B; border-radius: 15px">${account.username} </h1>';
+      document.body.appendChild(myDiv);
+      f12_Joinlobby.default.Instance.onClickIConGame(null,"vgcg_4");`
+    );
   };
 
   function openPuppeteer(): void {
@@ -47,11 +73,13 @@ export const TerminalPage: React.FC = () => {
     window.backend.sendMessage('open-accounts', account);
   }
 
-  function joinRoom(): any {
+  function joinRoom(account: any): void {
     if (state.initialRoom.id) {
-      window.backend.sendMessage('execute-script', [
-        `__require('GamePlayManager').default.getInstance().joinRoom(${state.initialRoom.id},0,'',true);`,
-      ]);
+      window.backend.sendMessage(
+        'execute-script',
+        account,
+        `__require('GamePlayManager').default.getInstance().joinRoom(${state.initialRoom.id},0,'',true);`
+      );
     }
   }
 
@@ -100,9 +128,6 @@ export const TerminalPage: React.FC = () => {
   const clearData = () => {
     setData([]);
   };
-  useEffect(() => {
-    console.log('account main:', accounts['MAIN']);
-  }, [accounts]);
 
   return (
     <div className="text-center h-full">
@@ -124,7 +149,7 @@ export const TerminalPage: React.FC = () => {
                   <div className="flex flex-row justify-end bg-[#141414] gap-[10px]">
                     <Label className="flex items-center">{main.username}</Label>
                     <Button
-                      onClick={createRoom}
+                      onClick={() => createRoom(main)}
                       style={{ fontFamily: 'monospace' }}
                       className="rounded-[5px] py-[0px] flex items-center hover:bg-slate-400 cursor-pointer gap-[2px] px-[5px] h-[30px]"
                     >
@@ -133,12 +158,28 @@ export const TerminalPage: React.FC = () => {
                     </Button>
 
                     <Button
-                      onClick={joinRoom}
+                      onClick={() => joinLobby(main)}
+                      style={{ fontFamily: 'monospace' }}
+                      className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+                    >
+                      <Unplug className="h-3.5 w-3.5" />
+                      <span>Lobby</span>
+                    </Button>
+                    <Button
+                      onClick={() => joinRoom(main)}
                       style={{ fontFamily: 'monospace' }}
                       className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
                     >
                       <Unplug className="h-3.5 w-3.5" />
                       <span>Join</span>
+                    </Button>
+                    <Button
+                      onClick={() => outRoom(main)}
+                      style={{ fontFamily: 'monospace' }}
+                      className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+                    >
+                      <Unplug className="h-3.5 w-3.5" />
+                      <span>Out</span>
                     </Button>
                     <Button
                       onClick={() => openAccounts(main)}
