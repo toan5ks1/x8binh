@@ -94,3 +94,13 @@ export async function setupBot(
     console.error('Error when calling setup bot:', err);
   }
 }
+
+export async function accountLogin(account: any) {
+  try {
+    const res = await login(account);
+    return res;
+  } catch (err) {
+    console.error('Error when calling accountLogin:', err);
+    return { error: true, message: 'An error occurred during login.' };
+  }
+}

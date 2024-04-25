@@ -1,7 +1,7 @@
 import { now } from 'lodash';
 import { Paperclip, Save } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { LoginParams, accountLogin } from '../../lib/login';
+import { accountLogin } from '../../lib/login';
 import useAccountStore from '../../store/accountStore';
 import { useToast } from '../toast/use-toast';
 import { Button } from '../ui/button';
@@ -75,7 +75,8 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
       'update-file',
       text,
       [
-        `C:/Users/PC/AppData/Local/Programs/electron-react-boilerplate/resources/account/${accountType.toLowerCase()}Account.txt`,
+        `account/${accountType.toLowerCase()}Account.txt`,
+        // `C:/Users/PC/AppData/Local/Programs/electron-react-boilerplate/resources/account/${accountType.toLowerCase()}Account.txt`,
       ],
       accountType
     );
@@ -131,7 +132,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
       if (accountTypeReceived == accountType) {
         const newAccounts = readValidAccount(data);
 
-        newAccounts.map(async (account: LoginParams) => {
+        newAccounts.map(async (account: any) => {
           try {
             var cash = 0;
             if (account.isSelected) {
@@ -165,7 +166,8 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
     window.backend.sendMessage(
       'read-file',
       [
-        `C:/Users/PC/AppData/Local/Programs/electron-react-boilerplate/resources/account/${accountType.toLowerCase()}Account.txt`,
+        // `C:/Users/PC/AppData/Local/Programs/electron-react-boilerplate/resources/account/${accountType.toLowerCase()}Account.txt`,
+        `account/${accountType.toLowerCase()}Account.txt`,
       ],
       accountType
     );
