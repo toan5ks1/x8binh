@@ -14,14 +14,13 @@ const BoardCard: React.FC<any> = ({ indexProps, cards, numPlayers }) => {
       playerHands[playerIndex].push(card);
     });
 
-    console.log('playerHands', playerHands);
     return playerHands;
   }, [cards, numPlayers]);
 
   return (
     <TableCell
       key={indexProps}
-      className={`grid grid-cols-1 tablet:grid-cols-2 laptop:grid-cols-4 !w-[100%] gap-[20px]`}
+      className={`grid grid-cols-1 tablet:grid-cols-2 laptop:grid-cols-4 !w-[100%] gap-[20px] `}
     >
       {playerHands.map((hand, index) => (
         <HandCard key={index} cardProp={hand} />

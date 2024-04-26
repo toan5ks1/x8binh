@@ -119,27 +119,38 @@ function sortCardsForChinesePoker(cards: any) {
   }
 
   // Hàm tìm và lấy bộ
-  function findCombination(
-    ranks: { [x: string]: any[] },
-    suits: { [x: string]: string | any[] }
-  ) {
+  function findCombination(ranks, suits) {
     let combinations = [];
 
-    // Tìm tứ quý, cù lũ, sảnh, thùng, sám, đôi
+    // Tìm tứ quý, cù lũ, sảnh, thùng, Sám cô, đôi
     for (let rank in ranks) {
       if (ranks[rank].length === 4) {
         combinations.push({ type: 'Tứ Quý', cards: ranks[rank] });
       }
       if (ranks[rank].length === 3) {
-        combinations.push({ type: 'Sám', cards: ranks[rank] });
+        combinations.push({ type: 'Sám cô', cards: ranks[rank] });
       }
-      if (ranks[rank].length === 2) {
-        combinations.push({ type: 'Đôi', cards: ranks[rank] });
-      }
-      //sort theo thứ tự ["Ğôi", "Sám", "Tứ Quý"]
+      // if (ranks[rank].length === 2) {
+      //   combinations.push({ type: "Đôi", cards: ranks[rank] });
+      // }
+      //sort theo thứ tự ["Đôi", "Sám cô", "Tứ Quý"]
     }
 
-    //tìm nhiỞu sảnh nhất
+    //tìm nhiều đôi nhất (1 đôi). Trong 1 trường hợp có tứ quý, sẽ có 4 combinations đôi được tạo ra
+    for (let rank in ranks) {
+      if (ranks[rank].length >= 2) {
+        for (let i = 0; i < ranks[rank].length - 1; i++) {
+          for (let j = i + 1; j < ranks[rank].length; j++) {
+            combinations.push({
+              type: 'Đôi',
+              cards: [ranks[rank][i], ranks[rank][j]],
+            });
+          }
+        }
+      }
+    }
+
+    //tìm nhiều sảnh nhất
     for (let i = 0; i < RANKS.length - 4; i++) {
       let straight = [];
       let count = 0;
@@ -154,21 +165,51 @@ function sortCardsForChinesePoker(cards: any) {
       }
     }
 
-    //tìm nhiỞu thú nhất (2 đôi)
+    //tìm nhiều thú nhất (2 đôi)
     for (let rank in ranks) {
-      if (ranks[rank].length === 2) {
+      if (ranks[rank].length >= 2) {
+        let rankPairs = [];
+        for (let i = 0; i < ranks[rank].length - 1; i++) {
+          for (let j = i + 1; j < ranks[rank].length; j++) {
+            rankPairs.push([ranks[rank][i], ranks[rank][j]]);
+          }
+        }
+        console.log(rankPairs);
         for (let rank2 in ranks) {
-          if (rank !== rank2 && ranks[rank2].length === 2) {
-            combinations.push({
-              type: 'Thú',
-              cards: ranks[rank].concat(ranks[rank2]),
+          if (ranks[rank2].length >= 2) {
+            let rank2Pairs = [];
+            for (let i = 0; i < ranks[rank2].length - 1; i++) {
+              for (let j = i + 1; j < ranks[rank2].length; j++) {
+                rank2Pairs.push([ranks[rank2][i], ranks[rank2][j]]);
+              }
+            }
+            //conmpare 2 pairs from 2 ranks if not the same rank and not the same pair of cards push to combinations
+            rankPairs.forEach((pair) => {
+              rank2Pairs.forEach((pair2) => {
+                //check if 2 pairs are not the same rank and not the same pair of cards
+                if (
+                  pair[0].substring(0, pair[0].length - 1) !==
+                    pair2[0].substring(0, pair2[0].length - 1) &&
+                  pair[1].substring(0, pair[1].length - 1) !==
+                    pair2[1].substring(0, pair2[1].length - 1) &&
+                  pair[0].substring(0, pair[0].length - 1) !==
+                    pair2[1].substring(0, pair2[1].length - 1) &&
+                  pair[1].substring(0, pair[1].length - 1) !==
+                    pair2[0].substring(0, pair2[0].length - 1)
+                ) {
+                  combinations.push({
+                    type: 'Thú',
+                    cards: pair.concat(pair2),
+                  });
+                }
+              });
             });
           }
         }
       }
     }
 
-    //tìm nhiỞu cù lũ nhất (3 la cùng 1 rank và 2 la cùng 1 rank)
+    //tìm nhiều cù lũ nhất (3 la cùng 1 rank và 2 la cùng 1 rank)
     for (let rank in ranks) {
       if (ranks[rank].length === 3) {
         for (let rank2 in ranks) {
@@ -182,7 +223,7 @@ function sortCardsForChinesePoker(cards: any) {
       }
     }
 
-    //tìm nhiỞu thùng nhất
+    //tìm nhiều thùng nhất
     for (let suit in suits) {
       let numOfCards = suits[suit].length;
       if (suits[suit].length >= 5) {
@@ -195,41 +236,48 @@ function sortCardsForChinesePoker(cards: any) {
       }
     }
 
-    //tim nhieu thùng phá sảnh nhất (sảnh đồng chất)
+    //tim nhieu Thùng phá sảnh nhất (sảnh đồng chất) 5 lá tuần tự theo RANKS order và cùng 1 suit
     for (let suit in suits) {
       let straight = [];
-      let count = 0;
-      for (let i = 0; i < RANKS.length - 4; i++) {
-        if (ranks[RANKS[i]] && suits[suit].includes(ranks[RANKS[i]][0])) {
-          straight.push(ranks[RANKS[i]][0]);
-          count++;
+      const suitRanksIndex = suits[suit].map((card) =>
+        RANKS.indexOf(card.substring(0, card.length - 1))
+      );
+      for (let i = 0; i <= suitRanksIndex.length - 5; i++) {
+        let isValidSubset = true;
+        for (let j = i; j < i + 5 - 1; j++) {
+          if (suitRanksIndex[j + 1] - suitRanksIndex[j] !== 1) {
+            isValidSubset = false;
+            break;
+          }
+        }
+        if (isValidSubset) {
+          straight = suits[suit].slice(i, i + 5);
+          combinations.push({ type: 'Thùng phá sảnh', cards: straight });
         }
       }
-      if (count === 5) {
-        combinations.push({ type: 'thùng phá Sảnh', cards: straight });
-      }
     }
+
     combinations.sort((a, b) => {
       return (
         [
           'Đôi',
           'Thú',
-          'Sám',
+          'Sám cô',
           'Sảnh',
           'Tứ Quý',
           'Thùng',
           'Cù Lũ',
-          'thùng phá Sảnh',
+          'Thùng phá sảnh',
         ].indexOf(a.type) -
         [
           'Đôi',
           'Thú',
-          'Sám',
+          'Sám cô',
           'Sảnh',
           'Tứ Quý',
           'Thùng',
           'Cù Lũ',
-          'thùng phá Sảnh',
+          'Thùng phá sảnh',
         ].indexOf(b.type)
       );
     });
@@ -240,26 +288,23 @@ function sortCardsForChinesePoker(cards: any) {
   let { ranks, suits } = classifyCards(cards);
   let combinations = findCombination(ranks, suits);
 
-  console.log('combinations', combinations);
   const combinations2 = combinations;
 
-  let firstSet: any = null;
-  let secondSet: any = null;
-  let thirdSet: any = null;
+  let firstSet = null;
+  let secondSet = null;
+  let thirdSet = null;
   if (combinations.length > 0) {
     if (combinations[combinations.length - 1].cards.length == 5) {
       firstSet = combinations[combinations.length - 1];
       combinations = combinations.filter(
-        (combination: any) =>
-          !combination.cards.some((card: any) => firstSet.cards.includes(card))
+        (combination) =>
+          !combination.cards.some((card) => firstSet.cards.includes(card))
       );
       if (combinations.length > 0) {
         secondSet = combinations[combinations.length - 1];
         combinations = combinations.filter(
-          (combination: any) =>
-            !combination.cards.some((card: any) =>
-              secondSet.cards.includes(card)
-            )
+          (combination) =>
+            !combination.cards.some((card) => secondSet.cards.includes(card))
         );
       } else {
         secondSet = { type: 'Mậu thầu', cards: [] };
@@ -267,13 +312,9 @@ function sortCardsForChinesePoker(cards: any) {
       while (secondSet.cards.length < 5) {
         //filter notFullFiveCombinations that don't have any card in secondSet
         let notFullFiveCombinations = combinations.filter(
-          (combination: any) =>
-            !combination.cards.some((card: any) =>
-              secondSet.cards.includes(card)
-            ) &&
-            !combination.cards.some((card: any) =>
-              firstSet.cards.includes(card)
-            ) &&
+          (combination) =>
+            !combination.cards.some((card) => secondSet.cards.includes(card)) &&
+            !combination.cards.some((card) => firstSet.cards.includes(card)) &&
             combination.cards.length + secondSet.cards.length <= 5
         );
         if (notFullFiveCombinations.length > 0) {
@@ -283,27 +324,36 @@ function sortCardsForChinesePoker(cards: any) {
         }
         if (notFullFiveCombinations.length == 0) {
           const cardsLeft = cards.filter(
-            (card: any) =>
+            (card) =>
               !firstSet.cards.includes(card) && !secondSet.cards.includes(card)
           );
-          secondSet.cards.push(
-            ...cardsLeft.slice(0, 5 - secondSet.cards.length)
-          );
+          cardsLeft.forEach((card) => {
+            if (
+              !combinations.some((combination) =>
+                combination.cards.includes(card)
+              ) &&
+              secondSet.cards.length < 5
+            ) {
+              secondSet.cards.push(card);
+            }
+          });
+          if (secondSet.cards.length < 5) {
+            secondSet.cards.push(
+              ...cardsLeft.slice(0, 5 - secondSet.cards.length)
+            );
+          }
         }
       }
       combinations = combinations.filter(
-        (combination: any) =>
-          !combination.cards.some((card: any) =>
-            secondSet.cards.includes(card)
-          ) && ['Đôi', 'Sám'].includes(combination.type)
+        (combination) =>
+          !combination.cards.some((card) => secondSet.cards.includes(card)) &&
+          ['Đôi', 'Sám cô'].includes(combination.type)
       );
       if (combinations.length > 0) {
         thirdSet = combinations[combinations.length - 1];
         combinations = combinations.filter(
-          (combination: any) =>
-            !combination.cards.some((card: any) =>
-              thirdSet.cards.includes(card)
-            )
+          (combination) =>
+            !combination.cards.some((card) => thirdSet.cards.includes(card))
         );
       } else {
         thirdSet = { type: 'Mậu thầu', cards: [] };
@@ -311,16 +361,10 @@ function sortCardsForChinesePoker(cards: any) {
       while (thirdSet.cards.length < 3) {
         //filter notFullFiveCombinations that don't have any card in thirdSet
         let notFullFiveCombinations = combinations.filter(
-          (combination: any) =>
-            !combination.cards.some((card: any) =>
-              thirdSet.cards.includes(card)
-            ) &&
-            !combination.cards.some((card: any) =>
-              secondSet.cards.includes(card)
-            ) &&
-            !combination.cards.some((card: any) =>
-              firstSet.cards.includes(card)
-            ) &&
+          (combination) =>
+            !combination.cards.some((card) => thirdSet.cards.includes(card)) &&
+            !combination.cards.some((card) => secondSet.cards.includes(card)) &&
+            !combination.cards.some((card) => firstSet.cards.includes(card)) &&
             combination.cards.length + thirdSet.cards.length <= 3
         );
         if (notFullFiveCombinations.length > 0) {
@@ -330,12 +374,25 @@ function sortCardsForChinesePoker(cards: any) {
         }
         if (notFullFiveCombinations.length == 0) {
           const cardsLeft = cards.filter(
-            (card: any) =>
+            (card) =>
               !firstSet.cards.includes(card) &&
               !secondSet.cards.includes(card) &&
               !thirdSet.cards.includes(card)
           );
-          thirdSet.cards.push(...cardsLeft.slice(0, 3 - thirdSet.cards.length));
+          cardsLeft.forEach((card) => {
+            if (
+              !combinations.some((combination) =>
+                combination.cards.includes(card)
+              ) &&
+              thirdSet.cards.length < 3
+            ) {
+              thirdSet.cards.push(card);
+            }
+          });
+          if (thirdSet.cards.length < 3)
+            thirdSet.cards.push(
+              ...cardsLeft.slice(0, 3 - thirdSet.cards.length)
+            );
         }
       }
     } else {
@@ -344,47 +401,56 @@ function sortCardsForChinesePoker(cards: any) {
       while (firstSet.cards.length < 5) {
         //filter notFullFiveCombinations that don't have any card in firstSet
         let notFullFiveCombinations = combinations.filter(
-          (combination: any) =>
-            !combination.cards.some((card: any) =>
-              firstSet.cards.includes(card)
-            ) && combination.cards.length + firstSet.cards.length <= 5
+          (combination) =>
+            !combination.cards.some((card) => firstSet.cards.includes(card)) &&
+            combination.cards.length + firstSet.cards.length <= 5
         );
         if (notFullFiveCombinations.length > 0) {
           firstSet.cards.push(
             ...notFullFiveCombinations[notFullFiveCombinations.length - 1].cards
           );
           combinations = combinations.filter(
-            (combination: any) =>
+            (combination) =>
               combination.cards !==
-              !combination.cards.some((card: any) =>
-                firstSet.cards.includes(card)
-              )
+              !combination.cards.some((card) => firstSet.cards.includes(card))
           );
           notFullFiveCombinations = notFullFiveCombinations.filter(
-            (combination: any) =>
-              !combination.cards.some((card: any) =>
+            (combination) =>
+              !combination.cards.some((card) =>
                 firstSet.cards.includes(card)
               ) && combination.cards.length + firstSet.cards.length <= 5
           );
         }
         if (notFullFiveCombinations.length == 0) {
           const cardsLeft = cards.filter(
-            (card: any) => !firstSet.cards.includes(card)
+            (card) => !firstSet.cards.includes(card)
           );
-          firstSet.cards.push(...cardsLeft.slice(0, 5 - firstSet.cards.length));
+          //check if cardsLeft is in combination
+          cardsLeft.forEach((card) => {
+            if (
+              !combinations.some((combination) =>
+                combination.cards.includes(card)
+              ) &&
+              firstSet.cards.length < 5
+            ) {
+              firstSet.cards.push(card);
+            }
+          });
+          if (firstSet.cards.length < 5)
+            firstSet.cards.push(
+              ...cardsLeft.slice(0, 5 - firstSet.cards.length)
+            );
         }
       }
       combinations = combinations.filter(
-        (combination: any) =>
-          !combination.cards.some((card: any) => firstSet.cards.includes(card))
+        (combination) =>
+          !combination.cards.some((card) => firstSet.cards.includes(card))
       );
       if (combinations.length > 0) {
         secondSet = combinations[combinations.length - 1];
         combinations = combinations.filter(
-          (combination: any) =>
-            !combination.cards.some((card: any) =>
-              secondSet.cards.includes(card)
-            )
+          (combination) =>
+            !combination.cards.some((card) => secondSet.cards.includes(card))
         );
       } else {
         secondSet = { type: 'Mậu thầu', cards: [] };
@@ -392,13 +458,9 @@ function sortCardsForChinesePoker(cards: any) {
       while (secondSet.cards.length < 5) {
         //filter notFullFiveCombinations that don't have any card in secondSet
         let notFullFiveCombinations = combinations.filter(
-          (combination: any) =>
-            !combination.cards.some((card: any) =>
-              secondSet.cards.includes(card)
-            ) &&
-            !combination.cards.some((card: any) =>
-              firstSet.cards.includes(card)
-            ) &&
+          (combination) =>
+            !combination.cards.some((card) => secondSet.cards.includes(card)) &&
+            !combination.cards.some((card) => firstSet.cards.includes(card)) &&
             combination.cards.length + secondSet.cards.length <= 5
         );
         if (notFullFiveCombinations.length > 0) {
@@ -406,42 +468,51 @@ function sortCardsForChinesePoker(cards: any) {
             ...notFullFiveCombinations[notFullFiveCombinations.length - 1].cards
           );
           combinations = combinations.filter(
-            (combination: any) =>
+            (combination) =>
               combination.cards !==
-              !combination.cards.some((card: any) =>
-                secondSet.cards.includes(card)
-              )
+              !combination.cards.some((card) => secondSet.cards.includes(card))
           );
           notFullFiveCombinations = notFullFiveCombinations.filter(
-            (combination: any) =>
-              !combination.cards.some((card: any) =>
+            (combination) =>
+              !combination.cards.some((card) =>
                 secondSet.cards.includes(card)
               ) && combination.cards.length + secondSet.cards.length <= 5
           );
         }
         if (notFullFiveCombinations.length == 0) {
           const cardsLeft = cards.filter(
-            (card: any) =>
+            (card) =>
               !firstSet.cards.includes(card) && !secondSet.cards.includes(card)
           );
-          secondSet.cards.push(
-            ...cardsLeft.slice(0, 5 - secondSet.cards.length)
-          );
+          cardsLeft.forEach((card) => {
+            if (
+              !combinations.some((combination) =>
+                combination.cards.includes(card)
+              ) &&
+              secondSet.cards.length < 5
+            ) {
+              secondSet.cards.push(card);
+            }
+          });
+          if (firstSet.cards.length < 5) {
+            secondSet.cards.push(
+              ...cardsLeft.slice(0, 5 - secondSet.cards.length)
+            );
+          }
         }
       }
+
       combinations = combinations.filter(
-        (combination: any) =>
-          !combination.cards.some((card: any) =>
-            secondSet.cards.includes(card)
-          ) && ['Đôi', 'Sám'].includes(combination.type)
+        (combination) =>
+          !combination.cards.some((card) => secondSet.cards.includes(card)) &&
+          ['Đôi', 'Sám cô'].includes(combination.type)
       );
+
       if (combinations.length > 0) {
         thirdSet = combinations[combinations.length - 1];
         combinations = combinations.filter(
-          (combination: any) =>
-            !combination.cards.some((card: any) =>
-              thirdSet.cards.includes(card)
-            )
+          (combination) =>
+            !combination.cards.some((card) => thirdSet.cards.includes(card))
         );
       } else {
         thirdSet = { type: 'Mậu thầu', cards: [] };
@@ -449,26 +520,22 @@ function sortCardsForChinesePoker(cards: any) {
       while (thirdSet.cards.length < 3) {
         //filter notFullFiveCombinations that don't have any card in thirdSet
         let notFullFiveCombinations = combinations.filter(
-          (combination: any) =>
-            !combination.cards.some((card: any) =>
-              thirdSet.cards.includes(card)
-            ) &&
-            !combination.cards.some((card: any) =>
-              secondSet.cards.includes(card)
-            ) &&
-            !combination.cards.some((card: any) =>
-              firstSet.cards.includes(card)
-            ) &&
+          (combination) =>
+            !combination.cards.some((card) => thirdSet.cards.includes(card)) &&
+            !combination.cards.some((card) => secondSet.cards.includes(card)) &&
+            !combination.cards.some((card) => firstSet.cards.includes(card)) &&
             combination.cards.length + thirdSet.cards.length <= 3
         );
+        console.log('notFullFiveCombinations', notFullFiveCombinations);
         if (notFullFiveCombinations.length > 0) {
           thirdSet.cards.push(
             ...notFullFiveCombinations[notFullFiveCombinations.length - 1].cards
           );
         }
+
         if (notFullFiveCombinations.length == 0) {
           const cardsLeft = cards.filter(
-            (card: any) =>
+            (card) =>
               !firstSet.cards.includes(card) &&
               !secondSet.cards.includes(card) &&
               !thirdSet.cards.includes(card)
@@ -480,18 +547,18 @@ function sortCardsForChinesePoker(cards: any) {
 
     //filter combinations that don't have any card in firstSet
     combinations = combinations.filter(
-      (combination: any) =>
-        !combination.cards.some((card: any) => firstSet.cards.includes(card))
+      (combination) =>
+        !combination.cards.some((card) => firstSet.cards.includes(card))
     );
     console.log('Sắp xếp chi đầu với bộ:', firstSet);
     console.log('Sắp xếp chi thứ hai với bộ:', secondSet);
 
     // Xóa bộ đã dùng
-    firstSet.cards.forEach((card: any) => {
-      cards = cards.filter((c: any) => c !== card);
+    firstSet.cards.forEach((card) => {
+      cards = cards.filter((c) => c !== card);
     });
-    secondSet.cards.forEach((card: any) => {
-      cards = cards.filter((c: any) => c !== card);
+    secondSet.cards.forEach((card) => {
+      cards = cards.filter((c) => c !== card);
     });
   }
 
@@ -518,9 +585,9 @@ function checkInstantWin(cards: any) {
   if (checkStraightFlush(ranks)) {
     return { win: true, type: 'Sảnh rồng' };
   }
-  // Kiểm tra Năm đôi 1 sám
+  // Kiểm tra Năm đôi 1 Sám cô
   if (checkFivePairsOneTrio(ranks)) {
-    return { win: true, type: 'Năm đôi 1 sám' };
+    return { win: true, type: 'Năm đôi 1 Sám cô' };
   }
   // Kiểm tra Lục phé bôn (6 đôi)
   if (checkSixPairs(ranks)) {
@@ -615,20 +682,18 @@ function findCard(cardsInput: any[]) {
 
 export const setupArrangeCardHandlers = () => {
   ipcMain.on('arrange-card', (event, input, position) => {
-    console.log('asdjkas', typeof input);
-
     let cards = findCard(input).sort((a, b) => {
       return CARDS.indexOf(a) - CARDS.indexOf(b);
     });
-    console.log('card:', cards);
     let result = checkInstantWin(cards);
     console.log('🞀 ~ result:', result);
-    const returnCards = sortCardsForChinesePoker(cards);
+    let returnCards = sortCardsForChinesePoker(cards);
     if (cards.length !== 13) {
       event.reply('arrange-card', {
         error: 'Bạn cần nhập đúng 13 số, mỗi số từ 1 đến 52.',
       });
     }
+    returnCards.isInstantWin = result;
 
     // const result = displaySortedHands(cards);
     event.reply('arrange-card', returnCards, position);

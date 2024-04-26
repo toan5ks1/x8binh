@@ -1,5 +1,5 @@
 import { Label } from '@radix-ui/react-label';
-import { RotateCw } from 'lucide-react';
+import { RotateCw, Star } from 'lucide-react';
 import { useCallback, useEffect, useId, useState } from 'react';
 import { DndProvider, DragSourceMonitor, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -65,6 +65,8 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
   const [evaluation1, setEvaluation1] = useState<string>('');
   const [evaluation2, setEvaluation2] = useState<string>('');
   const [evaluation3, setEvaluation3] = useState<string>('');
+  const [isInstant, setIsInstant] = useState<boolean>(false);
+  const [titleInstant, setTitleInstant] = useState<boolean>(false);
 
   const moveCard = useCallback(
     (dragId: number, hoverId: number) => {
@@ -128,6 +130,8 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
         setEvaluation1(newData.chi1.type);
         setEvaluation2(newData.chi2.type);
         setEvaluation3(newData.chi3.type);
+        setIsInstant(newData.isInstantWin.win);
+        setTitleInstant(newData.isInstantWin.type);
       }
     };
 
@@ -140,7 +144,21 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <Card className="bg-[#252425] bg-opacity-20 py-[10px] rounded-[15px] px-[7px] shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.38)]">
+      <Card
+        className={`bg-[#252424] bg-opacity-20 py-[10px] rounded-[15px] px-[7px] relative ${
+          isInstant
+            ? 'shadow-[0_10px_20px_rgba(240,_46,_170,_0.7)]'
+            : ' shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.38)]'
+        }  `}
+      >
+        {titleInstant && (
+          <div className="absolute top-[-20px] left-0 right-0 flex justify-center items-center ">
+            <Label className="shadow-[rgba(6,_24,_44,_0.4)_0px_0px_0px_2px,_rgba(6,_24,_44,_0.65)_0px_4px_6px_-1px,_rgba(255,_255,_255,_0.08)_0px_1px_0px_inset] p-[5px] border bg-background rounded-sm z-[200] flex flex-row gap-[3px] items-center">
+              <Star className="w-3.5 h-3.5"></Star>
+              {titleInstant}
+            </Label>
+          </div>
+        )}
         <div className="grid grid-rows-3 gap-[5px] relative">
           <div className="flex flex-col gap-1">
             <div className="grid grid-cols-5 gap-[5px]">

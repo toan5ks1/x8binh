@@ -1,10 +1,10 @@
 import {
-  Footprints,
   Hand,
   Loader,
   LogIn,
   LogOut,
   PlusCircle,
+  RockingChair,
   ScreenShareOff,
   Unplug,
 } from 'lucide-react';
@@ -149,7 +149,7 @@ export function App() {
                     </div>
                   </RadioGroup>
                   <Label className="flex flex-row justify-center gap-[3px] border rounded-[15px] px-3 py-[10px]">
-                    <Footprints className="w-3.5 h-3.5" />3
+                    <RockingChair className="w-3.5 h-3.5" />3
                   </Label>
                   <DropdownMenu>
                     {/* <DropdownMenuTrigger asChild>
