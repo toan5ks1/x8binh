@@ -12,6 +12,7 @@ export interface BotStatusProps {
   shouldJoinMB: boolean;
   shouldCreatRoom: boolean;
   shouldLeave: boolean;
+  shouldDisconnect: boolean;
 }
 
 export const CoupleWaiterStatus = ({
@@ -21,6 +22,7 @@ export const CoupleWaiterStatus = ({
   shouldLogin,
   shouldJoinMB,
   shouldLeave,
+  shouldDisconnect,
 }: // shouldCreatRoom,
 BotStatusProps) => {
   const {
@@ -39,6 +41,8 @@ BotStatusProps) => {
     // hostCreateRoom,
     hostLeaveRoom,
     guessLeaveRoom,
+    hostDisconnect,
+    guessDisconnect,
   } = useWaiting(craw1, craw2);
 
   useEffect(() => {
@@ -67,6 +71,13 @@ BotStatusProps) => {
       guessLeaveRoom();
     }
   }, [shouldLeave]);
+
+  useEffect(() => {
+    if (shouldDisconnect) {
+      hostDisconnect();
+      guessDisconnect();
+    }
+  }, [shouldDisconnect]);
 
   return (
     <div className="hidden space-x-4 w-full">

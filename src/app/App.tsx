@@ -47,9 +47,11 @@ export function App() {
   const [shouldJoinMB, setShouldJoinMB] = useState(false);
   const [shouldCreatRoom, setShouldCreateRoom] = useState(false);
   const [shouldLeave, setShouldLeave] = useState(false);
+  const [shouldDisconnect, setShouldDisconnect] = useState(false);
 
   const onLogin = () => {
     setShouldLogin(true);
+    setShouldDisconnect(false);
   };
 
   const onJoinMauBinh = () => {
@@ -62,6 +64,16 @@ export function App() {
 
   const onLeaveRoom = () => {
     setShouldLeave(true);
+    setShouldCreateRoom(false);
+  };
+
+  const onDisconnect = () => {
+    setShouldDisconnect(true);
+
+    setShouldLogin(false);
+    setShouldJoinMB(false);
+    setShouldCreateRoom(false);
+    setShouldLeave(false);
   };
 
   useEffect(() => {
@@ -157,7 +169,11 @@ export function App() {
                       Quit
                     </span>
                   </Button>
-                  <Button size="sm" className="h-8 gap-1">
+                  <Button
+                    onClick={onDisconnect}
+                    size="sm"
+                    className="h-8 gap-1"
+                  >
                     <ScreenShareOff className="h-3.5 w-3.5" />
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                       Disconnect
@@ -196,6 +212,7 @@ export function App() {
                             shouldJoinMB={shouldJoinMB}
                             shouldCreatRoom={shouldCreatRoom}
                             shouldLeave={shouldLeave}
+                            shouldDisconnect={shouldDisconnect}
                           />
                         )
                     )}
@@ -213,6 +230,7 @@ export function App() {
                               shouldJoinMB={shouldJoinMB}
                               shouldCreatRoom={shouldCreatRoom}
                               shouldLeave={shouldLeave}
+                              shouldDisconnect={shouldDisconnect}
                             />
                           );
                         } else {
@@ -226,6 +244,7 @@ export function App() {
                               shouldJoinMB={shouldJoinMB}
                               shouldCreatRoom={shouldCreatRoom}
                               shouldLeave={shouldLeave}
+                              shouldDisconnect={shouldDisconnect}
                             />
                           );
                         }

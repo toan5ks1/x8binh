@@ -1,46 +1,3 @@
-// import { ScrollArea } from '../../../../components/ui/scroll-area';
-
-// interface BotCmpProps {
-//   name: string;
-//   userId: string | undefined;
-//   connectionStatus: string;
-//   messageHistory: any;
-// }
-// export const BotCmp = ({
-//   name,
-//   userId,
-//   connectionStatus,
-//   messageHistory,
-// }: BotCmpProps) => {
-//   return (
-//     <div className="flex">
-//       <div className="px-4 space-y-4">
-//         <div className="flex">
-//           <p className="w-full truncate">
-//             {name}:{' '}
-//             {connectionStatus == 'Uninstantiated' ? userId : connectionStatus}
-//           </p>
-//         </div>
-
-//         <div className="">
-//           <ScrollArea className="h-32 w-72 rounded-md border">
-//             <div className="p-4">
-//               <h4 className="mb-4 text-sm font-medium leading-none">
-//                 Messages:
-//               </h4>
-//               {messageHistory.map((tag: any, index: number) => (
-//                 <div key={index} className="text-sm">
-//                   {JSON.stringify(tag)}
-//                 </div>
-//               ))}
-//             </div>
-//           </ScrollArea>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
 import { Trash } from 'lucide-react';
 import { Button } from '../ui/button';
 import {
@@ -50,14 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from '../ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '../ui/table';
+import { ScrollArea } from '../ui/scroll-area';
+import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 
 interface BotStatusProps {
   name: string;
@@ -79,13 +30,8 @@ export const BotCmp = ({
   };
   return (
     <Card x-chunk="dashboard-07-chunk-1" className="flex-1">
-      <CardHeader>
-        <CardTitle className="flex justify-between">
-          {name}
-          <Button onClick={onClearMessage} className="p-0 py-0 px-[10px]">
-            <Trash className="h-3.5 w-3.5" />
-          </Button>
-        </CardTitle>
+      <CardHeader className="flex flex-row justify-between items-end px-2 py-0">
+        <CardTitle className="text-lg">{name}</CardTitle>
         <CardDescription>
           {connectionStatus === 'Uninstantiated'
             ? userId
@@ -93,30 +39,24 @@ export const BotCmp = ({
               : 'Not logged'
             : connectionStatus}
         </CardDescription>
+        <Button onClick={onClearMessage} className="h-4">
+          <Trash className="h-3 w-3" />
+        </Button>
       </CardHeader>
-      <CardContent>
-        <CardContent>
+      <CardContent className="p-2">
+        <ScrollArea className="h-36 rounded-md">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="">Message</TableHead>
-              </TableRow>
-            </TableHeader>
             <TableBody>
-              {messageHistory !== undefined ? (
-                messageHistory.map((tag: any, index: number) => (
-                  <div key={index} className="text-sm">
-                    {JSON.stringify(tag)}
-                  </div>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell className="font-semibold">No message</TableCell>
-                </TableRow>
+              {(messageHistory.length ? messageHistory : ['No message']).map(
+                (tag: any, index: number) => (
+                  <TableRow key={index}>
+                    <TableCell>{JSON.stringify(tag)}</TableCell>
+                  </TableRow>
+                )
               )}
             </TableBody>
           </Table>
-        </CardContent>
+        </ScrollArea>
       </CardContent>
     </Card>
   );

@@ -11,6 +11,7 @@ export const MainPlayerStatus = ({
   shouldJoinMB,
   shouldCreatRoom,
   shouldLeave,
+  shouldDisconnect,
 }: BotStatusProps) => {
   const {
     user: user1,
@@ -21,6 +22,7 @@ export const MainPlayerStatus = ({
     handleLoginClick: loginBot1,
     handleCreateRoom: handleCreateRoomBot1,
     handleConnectMauBinh: connectMbBot1,
+    disconnectGame: disconnectBot1,
   } = useSetupBot(craw1, true);
 
   const {
@@ -31,6 +33,7 @@ export const MainPlayerStatus = ({
     connectionStatus: connectionStatusBot2,
     handleLoginClick: loginBot2,
     handleConnectMauBinh: connectMbBot2,
+    disconnectGame: disconnectBot2,
   } = useSetupBot(craw2, false);
 
   useEffect(() => {
@@ -60,17 +63,24 @@ export const MainPlayerStatus = ({
     }
   }, [shouldLeave]);
 
+  useEffect(() => {
+    if (shouldDisconnect) {
+      disconnectBot1();
+      disconnectBot2();
+    }
+  }, [shouldDisconnect]);
+
   return (
     <div className="flex space-x-4 w-full">
       <BotCmp
-        name={`Bot ${index + 1}`}
+        name={`Sub ${index + 1}`}
         userId={user1?.username}
         connectionStatus={connectionStatusBot1}
         messageHistory={messageHistoryBot1}
         setMessageHistory={setMessageHistoryBot1}
       />
       <BotCmp
-        name={`Bot ${index + 2}`}
+        name={`Sub ${index + 2}`}
         userId={user2?.username}
         connectionStatus={connectionStatusBot2}
         messageHistory={messageHistoryBot2}

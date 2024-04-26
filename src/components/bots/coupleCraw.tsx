@@ -11,6 +11,7 @@ export interface BotStatusProps {
   shouldJoinMB: boolean;
   shouldCreatRoom: boolean;
   shouldLeave: boolean;
+  shouldDisconnect: boolean;
 }
 
 export const CoupleCrawStatus = ({
@@ -21,6 +22,7 @@ export const CoupleCrawStatus = ({
   shouldJoinMB,
   shouldCreatRoom,
   shouldLeave,
+  shouldDisconnect,
 }: BotStatusProps) => {
   const {
     host,
@@ -38,6 +40,8 @@ export const CoupleCrawStatus = ({
     hostCreateRoom,
     hostLeaveRoom,
     guessLeaveRoom,
+    hostDisconnect,
+    guessDisconnect,
   } = useCrawing(craw1, craw2);
 
   useEffect(() => {
@@ -66,6 +70,13 @@ export const CoupleCrawStatus = ({
       guessLeaveRoom();
     }
   }, [shouldLeave]);
+
+  useEffect(() => {
+    if (shouldDisconnect) {
+      hostDisconnect();
+      guessDisconnect();
+    }
+  }, [shouldDisconnect]);
 
   return (
     <div className="flex space-x-4 w-full">

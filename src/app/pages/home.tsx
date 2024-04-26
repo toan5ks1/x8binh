@@ -27,10 +27,14 @@ export const HomePage: React.FC<any> = (cardDeck) => {
       const desk = state.crawingRoom[state.foundBy].cardDesk;
       const lastIndex = desk.length - 1;
       const lastGame = desk[lastIndex];
-      const lastMapped = Object.values(lastGame);
+      const lastCards = Object.values(lastGame);
 
-      if (lastIndex > 0 && Object.values(lastGame).length === 4) {
-        const mappedCard = ([] as number[]).concat(...lastMapped);
+      if (
+        lastIndex > 0 &&
+        lastCards.length === 4 &&
+        cards.length === lastIndex - 1
+      ) {
+        const mappedCard = ([] as number[]).concat(...lastCards);
         setCards((pre) => [...pre, mappedCard]);
       }
     }
