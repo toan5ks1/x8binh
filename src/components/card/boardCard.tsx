@@ -14,8 +14,9 @@ const BoardCard: React.FC<any> = ({ indexProps, cards, numPlayers }) => {
       playerHands[playerIndex].push(card);
     });
 
+    console.log('playerHands', playerHands);
     return playerHands;
-  }, [cards]);
+  }, [cards, numPlayers]);
 
   return (
     <TableCell

@@ -1,5 +1,5 @@
 import {
-  Hand,
+  Footprints,
   Loader,
   LogIn,
   LogOut,
@@ -21,8 +21,9 @@ import {
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
+import { Label } from '../components/ui/label';
+import { RadioGroup, RadioGroupItem } from '../components/ui/radio';
 import { Tabs, TabsContent } from '../components/ui/tabs';
 import { useAccounts } from '../context/AccountContext';
 import { bots, crawingBot } from '../lib/config';
@@ -39,7 +40,7 @@ export function App() {
   const { toast } = useToast();
   const bot1Account = accounts['BOT']?.[0] ?? {};
   const bot2Account = accounts['BOT']?.[1] ?? {};
-  const [cardDeck, setCardDeck] = useState('4');
+  const [cardDeck, setCardDeck] = useState('3');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -103,21 +104,51 @@ export function App() {
           <div className="flex flex-col sm:gap-4 sm:pl-14">
             <main className="grid flex-1 items-start gap-4 bg-background sm:px-6 sm:py-0 md:gap-8">
               <div className="flex items-center sticky top-0 py-[15px] bg-background border-b z-[9] px-[10px]">
-                <div className="ml-auto grid grid-cols-7 items-center gap-2">
+                <div className="ml-auto flex flex-row items-center gap-2">
                   <div className="h-8 gap-1 flex flex-row justify-center items-center">
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                       {state.initialRoom.id && `Room: ${state.initialRoom.id}`}
                     </span>
                   </div>
+                  <RadioGroup
+                    defaultValue="option-one"
+                    className="flex flex-row border p-2 rounded-[5px]"
+                  >
+                    <div
+                      className="flex items-center space-x-2"
+                      onClick={() => handleCardDeckChange('2')}
+                    >
+                      <RadioGroupItem value="option-one" id="option-one" />
+                      <Label htmlFor="option-one">2</Label>
+                    </div>
+                    <div
+                      className="flex items-center space-x-2"
+                      onClick={() => handleCardDeckChange('3')}
+                    >
+                      <RadioGroupItem value="option-two" id="option-two" />
+                      <Label htmlFor="option-two">3</Label>
+                    </div>
+                    <div
+                      className="flex items-center space-x-2"
+                      onClick={() => handleCardDeckChange('4')}
+                    >
+                      <RadioGroupItem value="option-three" id="option-three" />
+                      <Label htmlFor="option-two">4</Label>
+                    </div>
+                  </RadioGroup>
+                  <Label className="flex flex-row justify-center gap-[3px] border rounded-[15px] px-3 py-[10px]">
+                    <Footprints className="w-3.5 h-3.5" />3
+                  </Label>
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                    {/* <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="sm" className="h-8 gap-1">
                         <Hand className="h-3.5 w-3.5" />
                         <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                           Deck
                         </span>
                       </Button>
-                    </DropdownMenuTrigger>
+                    </DropdownMenuTrigger> */}
+
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Card deck</DropdownMenuLabel>
                       <DropdownMenuSeparator />

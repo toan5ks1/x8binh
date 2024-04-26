@@ -58,8 +58,7 @@ const DropCard: React.FC<DropCardProps> = ({ id, children, moveCard }) => {
 
 export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
   const idHand = useId();
-  const initialCards = useState<number[]>(cardProp);
-  const [cards, setCards] = initialCards;
+  const [cards, setCards] = useState<number[]>(cardProp);
   const [part1, setPart1] = useState<number[]>(cards.slice(0, 5));
   const [part2, setPart2] = useState<number[]>(cards.slice(5, 10));
   const [part3, setPart3] = useState<number[]>([0, ...cards.slice(10, 13), 0]);
@@ -111,6 +110,10 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
     setPart2(cards.slice(5, 10));
     setPart3([0, ...cards.slice(10, 13), 0]);
   }, [cards]);
+
+  useEffect(() => {
+    setCards(cardProp);
+  }, [cardProp]);
 
   useEffect(() => {
     const handleData = (newData: any, position: any) => {
