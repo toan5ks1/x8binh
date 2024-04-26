@@ -1,5 +1,13 @@
 import { PaperPlaneIcon } from '@radix-ui/react-icons';
-import { Chrome, PlusCircle, TrashIcon, Unplug } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Chrome,
+  PlusCircle,
+  RefreshCcw,
+  TrashIcon,
+  Unplug,
+} from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react';
 import { AccountSection } from '../../components/account/accountSection';
 import { Button } from '../../components/ui/button';
@@ -41,13 +49,27 @@ export const TerminalPage: React.FC = () => {
     );
   };
   const outRoom = (account: any): void => {
-    console.log('create ROom 1');
     window.backend.sendMessage(
       'execute-script',
       account,
       `f12_GameController.sendLeaveRoom();`
     );
   };
+  function joinRoom(account: any): void {
+    if (state.initialRoom.id) {
+      window.backend.sendMessage(
+        'execute-script',
+        account,
+        `__require('GamePlayManager').default.getInstance().joinRoom(${state.initialRoom.id},0,'',true);`
+      );
+    }
+  }
+  async function outInRoom(account: any): Promise<void> {
+    if (state.initialRoom.id) {
+      await outRoom(account);
+      joinRoom(account);
+    }
+  }
   const joinLobby = (account: any): void => {
     window.backend.sendMessage(
       'execute-script',
@@ -71,16 +93,6 @@ export const TerminalPage: React.FC = () => {
   }
   function openAccounts(account: any): void {
     window.backend.sendMessage('open-accounts', account);
-  }
-
-  function joinRoom(account: any): void {
-    if (state.initialRoom.id) {
-      window.backend.sendMessage(
-        'execute-script',
-        account,
-        `__require('GamePlayManager').default.getInstance().joinRoom(${state.initialRoom.id},0,'',true);`
-      );
-    }
   }
 
   const highlightSyntax = (jsonString: string) => {
@@ -170,16 +182,24 @@ export const TerminalPage: React.FC = () => {
                       style={{ fontFamily: 'monospace' }}
                       className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
                     >
-                      <Unplug className="h-3.5 w-3.5" />
-                      <span>Join</span>
+                      <ArrowRight className="h-3.5 w-3.5" />
+                      <span>In</span>
                     </Button>
                     <Button
                       onClick={() => outRoom(main)}
                       style={{ fontFamily: 'monospace' }}
                       className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
                     >
-                      <Unplug className="h-3.5 w-3.5" />
+                      <ArrowLeft className="h-3.5 w-3.5" />
                       <span>Out</span>
+                    </Button>
+                    <Button
+                      onClick={() => outInRoom(main)}
+                      style={{ fontFamily: 'monospace' }}
+                      className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+                    >
+                      <RefreshCcw className="h-3.5 w-3.5" />
+                      <span>Out-In</span>
                     </Button>
                     <Button
                       onClick={() => openAccounts(main)}
