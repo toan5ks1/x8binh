@@ -1,4 +1,4 @@
-import { useContext, useMemo } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import BoardCard from '../../components/card/boardCard';
 import {
   Card,
@@ -18,44 +18,40 @@ import {
 import { AppContext } from '../../renderer/providers/app';
 
 export const HomePage: React.FC<any> = (cardDeck) => {
-  // const [cards, setGames] = useState<number[][]>([
-  //   [],
-  //   [
-  //     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-  //     22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
-  //     40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
-  //   ],
-  // ]);
-
-  // setInterval(() => {
-  //   setGames((pre) => [
-  //     ...pre,
-  //     [
-  //       1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-  //       21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
-  //       39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52,
-  //     ],
-  //   ]);
-  // }, 5000);
+  const [cards, setCards] = useState<number[][]>([]);
 
   const { state } = useContext(AppContext);
 
-  const cards = useMemo(() => {
+  useEffect(() => {
     if (state.foundBy) {
       const desk = state.crawingRoom[state.foundBy].cardDesk;
-      const card = desk.map((game) => {
-        const arr = Object.values(game);
-        if (arr.length === 4) {
-          return ([] as number[]).concat(...arr).map((item) => item + 1);
-        }
-        return [];
-      });
+      const lastIndex = desk.length - 1;
+      const lastGame = desk[lastIndex];
+      const lastMapped = Object.values(lastGame);
 
-      return card;
+      if (lastIndex > 0 && Object.values(lastGame).length === 4) {
+        const mappedCard = ([] as number[]).concat(...lastMapped);
+        setCards((pre) => [...pre, mappedCard]);
+      }
     }
+  }, [state.foundAt, state.crawingRoom]);
 
-    return [];
-  }, [state.crawingRoom]);
+  // const cards = useMemo(() => {
+  //   if (state.foundBy) {
+  //     const desk = state.crawingRoom[state.foundBy].cardDesk;
+  //     const card = desk.map((game) => {
+  //       const arr = Object.values(game);
+  //       if (arr.length === 4) {
+  //         return ([] as number[]).concat(...arr);
+  //       }
+  //       return [];
+  //     });
+
+  //     return card;
+  //   }
+
+  //   return [];
+  // }, [state.crawingRoom]);
 
   // console.log(cards);
 
