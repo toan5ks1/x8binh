@@ -1,16 +1,13 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { handleMessageCrawing } from '../lib/listeners/craw';
 import {
   LoginParams,
   LoginResponse,
   LoginResponseDto,
   login,
 } from '../lib/login';
-import {
-  handleMessageCrawing,
-  isAllHostReady,
-  isFoundCards,
-} from '../lib/utils';
+import { isAllHostReady, isFoundCards } from '../lib/utils';
 import { AppContext, BotStatus } from '../renderer/providers/app';
 
 export function useSetupCraw(

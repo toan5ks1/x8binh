@@ -1,12 +1,13 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { handleMessage } from '../lib/listeners/bot';
 import {
   LoginParams,
   LoginResponse,
   LoginResponseDto,
   login,
 } from '../lib/login';
-import { handleMessage, isAllHostReady } from '../lib/utils';
+import { isAllHostReady } from '../lib/utils';
 import { AppContext, BotStatus } from '../renderer/providers/app';
 
 export function useSetupBot(bot: LoginParams, isHost: boolean) {

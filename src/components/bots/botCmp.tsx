@@ -30,22 +30,20 @@ export const BotCmp = ({
   };
   return (
     <Card x-chunk="dashboard-07-chunk-1" className="flex-1">
-      <CardHeader>
-        <CardTitle className="flex justify-between items-center">
-          {name}{' '}
-          <CardDescription>
-            {connectionStatus === 'Uninstantiated'
+      <CardHeader className="flex flex-row justify-between items-end px-2 py-0">
+        <CardTitle className="text-lg">{name}</CardTitle>
+        <CardDescription>
+          {connectionStatus === 'Uninstantiated'
+            ? userId
               ? userId
-                ? userId
-                : 'Not logged'
-              : connectionStatus}
-          </CardDescription>
-          <Button onClick={onClearMessage} className="p-0 py-0 px-[10px]">
-            <Trash className="h-3.5 w-3.5" />
-          </Button>
-        </CardTitle>
+              : 'Not logged'
+            : connectionStatus}
+        </CardDescription>
+        <Button onClick={onClearMessage} className="h-4">
+          <Trash className="h-3 w-3" />
+        </Button>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-2">
         <ScrollArea className="h-36 rounded-md">
           <Table>
             <TableBody>

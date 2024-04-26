@@ -1,12 +1,12 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { handleMessageWaiter } from '../lib/listeners/waiter';
 import {
   LoginParams,
   LoginResponse,
   LoginResponseDto,
   login,
 } from '../lib/login';
-import { handleMessageWaiter } from '../lib/utils';
 import { AppContext, BotStatus } from '../renderer/providers/app';
 
 export function useSetupWaiter(bot: LoginParams) {

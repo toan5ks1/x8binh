@@ -64,6 +64,7 @@ export function App() {
 
   const onLeaveRoom = () => {
     setShouldLeave(true);
+    setShouldCreateRoom(false);
   };
 
   const onDisconnect = () => {
