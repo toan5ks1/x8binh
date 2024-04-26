@@ -1,5 +1,6 @@
 import {
   Footprints,
+  Hand,
   Loader,
   LogIn,
   LogOut,
@@ -40,7 +41,7 @@ export function App() {
   const { toast } = useToast();
   const bot1Account = accounts['BOT']?.[0] ?? {};
   const bot2Account = accounts['BOT']?.[1] ?? {};
-  const [cardDeck, setCardDeck] = useState('3');
+  const [cardDeck, setCardDeck] = useState('4');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -111,29 +112,40 @@ export function App() {
                     </span>
                   </div>
                   <RadioGroup
-                    defaultValue="option-one"
-                    className="flex flex-row border p-2 rounded-[5px]"
+                    defaultValue={cardDeck}
+                    className="flex flex-row border py-[4px] px-[7px] rounded-[5px]"
                   >
+                    <Hand className="" />
                     <div
                       className="flex items-center space-x-2"
                       onClick={() => handleCardDeckChange('2')}
                     >
-                      <RadioGroupItem value="option-one" id="option-one" />
-                      <Label htmlFor="option-one">2</Label>
+                      <div className="border p-0 px-[4px] rounded-full">
+                        <RadioGroupItem
+                          value="2"
+                          id="option-two"
+                          className=" border-white"
+                        />
+                      </div>
+                      <Label>2</Label>
                     </div>
                     <div
                       className="flex items-center space-x-2"
                       onClick={() => handleCardDeckChange('3')}
                     >
-                      <RadioGroupItem value="option-two" id="option-two" />
-                      <Label htmlFor="option-two">3</Label>
+                      <div className="border p-0 px-[4px] rounded-full">
+                        <RadioGroupItem value="3" id="option-three" />
+                      </div>
+                      <Label>3</Label>
                     </div>
                     <div
                       className="flex items-center space-x-2"
                       onClick={() => handleCardDeckChange('4')}
                     >
-                      <RadioGroupItem value="option-three" id="option-three" />
-                      <Label htmlFor="option-two">4</Label>
+                      <div className="border p-0 px-[4px] rounded-full">
+                        <RadioGroupItem value="4" id="option-four" />
+                      </div>
+                      <Label>4</Label>
                     </div>
                   </RadioGroup>
                   <Label className="flex flex-row justify-center gap-[3px] border rounded-[15px] px-3 py-[10px]">

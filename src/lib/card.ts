@@ -138,7 +138,7 @@ const cardImages: { [key: string]: string } = {
 // };
 
 const getCardImageUrl = (cardNumber: number): string => {
-  const suits = ['spades', 'clubs', 'diamonds', 'hearts']; // Điều chỉnh thứ tự chất cho phù hợp
+  const suits = ['spades', 'clubs', 'diamonds', 'hearts'];
   const ranks = [
     'ace',
     '2',
@@ -159,12 +159,12 @@ const getCardImageUrl = (cardNumber: number): string => {
     throw new Error('Card number must be between 0 and 51.');
   }
 
-  const suitIndex = cardNumber % 4; // Tính toán chất dựa trên phần dư của chia cho 4
-  const rankIndex = Math.floor(cardNumber / 4); // Tính toán giá trị dựa trên phần nguyên của chia cho 4
+  const suitIndex = cardNumber % 4;
+  const rankIndex = Math.floor(cardNumber / 4);
   const key =
     `${ranks[rankIndex]}_of_${suits[suitIndex]}` as keyof typeof cardImages;
 
-  return cardImages[key]; // Trả về URL của hình ảnh tương ứng
+  return cardImages[key];
 };
 
 export { getCardImageUrl };

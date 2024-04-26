@@ -18,13 +18,7 @@ import {
 import { AppContext } from '../../renderer/providers/app';
 
 export const HomePage: React.FC<any> = (cardDeck) => {
-  const [cards, setCards] = useState<number[][]>([
-    [
-      0, 7, 13, 12, 35, 17, 39, 46, 32, 4, 21, 30, 45, 38, 20, 42, 6, 36, 44,
-      28, 51, 8, 43, 27, 50, 22, 11, 29, 24, 34, 16, 25, 15, 10, 19, 3, 1, 47,
-      2, 18, 23, 33, 37, 9, 48, 41, 5, 40, 26, 14, 31, 49,
-    ],
-  ]);
+  const [cards, setCards] = useState<number[][]>([]);
 
   const { state } = useContext(AppContext);
 
