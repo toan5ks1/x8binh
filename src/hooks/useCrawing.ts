@@ -14,6 +14,7 @@ export function useCrawing(bot1: LoginParams, bot2: LoginParams) {
     connectionStatus: connectionStatusBot1,
     handleCreateRoom: hostCreateRoom,
     handleLeaveRoom: hostLeaveRoom,
+    disconnectGame: hostDisconnect,
   } = useSetupCraw(bot1, coupleId, true);
 
   const {
@@ -24,6 +25,7 @@ export function useCrawing(bot1: LoginParams, bot2: LoginParams) {
     setMessageHistory: setMessageHistoryBot2,
     connectionStatus: connectionStatusBot2,
     handleLeaveRoom: guessLeaveRoom,
+    disconnectGame: guessDisconnect,
   } = useSetupCraw(bot2, coupleId, false);
 
   return {
@@ -43,6 +45,8 @@ export function useCrawing(bot1: LoginParams, bot2: LoginParams) {
     hostCreateRoom,
     hostLeaveRoom,
     guessLeaveRoom,
+    hostDisconnect,
+    guessDisconnect,
   };
 }
 
@@ -57,6 +61,7 @@ export function useWaiting(bot1: LoginParams, bot2: LoginParams) {
     setMessageHistory: setMsgHistoryBot1,
     connectionStatus: connectionStatusBot1,
     handleLeaveRoom: hostLeaveRoom,
+    disconnectGame: hostDisconnect,
   } = useSetupWaiter(bot1);
 
   const {
@@ -67,6 +72,7 @@ export function useWaiting(bot1: LoginParams, bot2: LoginParams) {
     setMessageHistory: setMsgHistoryBot2,
     connectionStatus: connectionStatusBot2,
     handleLeaveRoom: guessLeaveRoom,
+    disconnectGame: guessDisconnect,
   } = useSetupWaiter(bot2);
 
   return {
@@ -85,5 +91,7 @@ export function useWaiting(bot1: LoginParams, bot2: LoginParams) {
     connectionStatusGuess: connectionStatusBot2,
     hostLeaveRoom,
     guessLeaveRoom,
+    hostDisconnect,
+    guessDisconnect,
   };
 }

@@ -117,6 +117,11 @@ export function useSetupWaiter(bot: LoginParams) {
     }
   };
 
+  const disconnectGame = () => {
+    setShouldPingMaubinh(false);
+    setShouldConnect(false);
+  };
+
   const handleConnectMauBinh = (): void => {
     setShouldPingMaubinh(true);
   };
@@ -170,7 +175,9 @@ export function useSetupWaiter(bot: LoginParams) {
   }, [user]);
 
   const handleLeaveRoom = () => {
-    return sendMessage(`[4,"Simms",${state.foundAt}]`);
+    if (state.foundAt) {
+      return sendMessage(`[4,"Simms",${state.foundAt}]`);
+    }
   };
 
   return {
@@ -181,5 +188,6 @@ export function useSetupWaiter(bot: LoginParams) {
     setMessageHistory,
     connectionStatus,
     handleLeaveRoom,
+    disconnectGame,
   };
 }

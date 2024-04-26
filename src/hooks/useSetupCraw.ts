@@ -124,6 +124,11 @@ export function useSetupCraw(
     }
   };
 
+  const disconnectGame = () => {
+    setShouldPingMaubinh(false);
+    setShouldConnect(false);
+  };
+
   const handleConnectMauBinh = (): void => {
     setShouldPingMaubinh(true);
   };
@@ -213,7 +218,9 @@ export function useSetupCraw(
   }, [me, state.foundBy, room]);
 
   const handleLeaveRoom = () => {
-    return sendMessage(`[4,"Simms",${room.id}]`);
+    if (room?.id) {
+      return sendMessage(`[4,"Simms",${room.id}]`);
+    }
   };
 
   // Recreate room
@@ -269,5 +276,6 @@ export function useSetupCraw(
     setMessageHistory,
     connectionStatus,
     handleLeaveRoom,
+    disconnectGame,
   };
 }
