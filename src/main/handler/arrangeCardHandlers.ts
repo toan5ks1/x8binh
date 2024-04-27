@@ -174,7 +174,6 @@ function sortCardsForChinesePoker(cards: any) {
             rankPairs.push([ranks[rank][i], ranks[rank][j]]);
           }
         }
-        console.log(rankPairs);
         for (let rank2 in ranks) {
           if (ranks[rank2].length >= 2) {
             let rank2Pairs = [];
@@ -526,7 +525,6 @@ function sortCardsForChinesePoker(cards: any) {
             !combination.cards.some((card) => firstSet.cards.includes(card)) &&
             combination.cards.length + thirdSet.cards.length <= 3
         );
-        console.log('notFullFiveCombinations', notFullFiveCombinations);
         if (notFullFiveCombinations.length > 0) {
           thirdSet.cards.push(
             ...notFullFiveCombinations[notFullFiveCombinations.length - 1].cards
@@ -550,8 +548,6 @@ function sortCardsForChinesePoker(cards: any) {
       (combination) =>
         !combination.cards.some((card) => firstSet.cards.includes(card))
     );
-    console.log('Sắp xếp chi đầu với bộ:', firstSet);
-    console.log('Sắp xếp chi thứ hai với bộ:', secondSet);
 
     // Xóa bộ đã dùng
     firstSet.cards.forEach((card) => {
@@ -686,7 +682,6 @@ export const setupArrangeCardHandlers = () => {
       return CARDS.indexOf(a) - CARDS.indexOf(b);
     });
     let result = checkInstantWin(cards);
-    console.log('🞀 ~ result:', result);
     let returnCards = sortCardsForChinesePoker(cards);
     if (cards.length !== 13) {
       event.reply('arrange-card', {

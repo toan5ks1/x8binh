@@ -22,7 +22,10 @@ export const setupAccountHandlers = (
 ) => {
   let puppeteerInstances: any[] = [];
 
-  async function startPuppeteerForAccount(account: { username: any }) {
+  async function startPuppeteerForAccount(account: {
+    username: string;
+    password: string;
+  }) {
     try {
       let userProfilePath;
       const usernamePc = os.userInfo().username;
@@ -107,74 +110,56 @@ export const setupAccountHandlers = (
         [...videos, ...audios].forEach((media) => (media.muted = true));
       });
 
-      const url = 'https://bordergw.api-inovated.com/user/login.aspx';
-      const payload = {
-        username: 'emblak1830',
-        password: 'zxcv123123',
-        app_id: 'rik.vip',
-        os: 'Windows',
-        device: 'Computer',
-        browser: 'chrome',
-        fg: 'c08ac2590159e23dea3ae34023150ff2',
-        time: 1714200407,
-        sign: '979b1e64b64cd10352d72187a259eef0',
-        aff_id: 'hit',
-        r_token:
-          'HFYWR1ch1TcC4pdGtAT05RTg93NjAxVAI6ZgR3ZBE0FBMIAyg4HU4APR9IZD5VIGI_KiVcBRcGSFFPIXIhJFMHKxQEYxdAf0dDAEFoYgRqWHoZAFJmHzJkK0kjORdiFnoMGiVgcyBbUC4wVzFzXEJZfF9HImEeOgY-HXM',
-      };
+      await page.evaluate(`
+      let node2 = cc.find("Canvas/MainUIParent/NewLobby/Footder/bottmBar@3x/Public/Layout/dnButtonSmartObjectGroup1@3x").getComponent(cc.Button);
+      if (node2) {
+          let touchStart = new cc.Touch(0, 0);
+          let touchEnd = new cc.Touch(0, 0);
+          let touchEventStart = new cc.Event.EventTouch([touchStart], false);
+          touchEventStart.type = cc.Node.EventType.TOUCH_START;
+          node2.node.dispatchEvent(touchEventStart);
 
-      const response = await page.evaluate(
-        async (url, payload) => {
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload),
-          });
-          return response.json(); // Giả định server trả về JSON
-        },
-        url,
-        payload
-      );
+          let touchEventEnd = new cc.Event.EventTouch([touchEnd], false);
+          touchEventEnd.type = cc.Node.EventType.TOUCH_END;
+          node2.node.dispatchEvent(touchEventEnd);
+      }
 
-      console.log(response);
 
-      const url2 = 'https://api.wsmt8g.cc/v2/auth/token/login';
-      const token = '29-374acab3b38e74ef83e82c21e9e40e5f';
-      const device = {
-        os: 'Windows',
-        osVersion: '',
-        platform: 101,
-        browser: 'chrome',
-        browserVersion: '123.0.0.0',
-        language: 'en',
-        ssid: '96760accfab5427a8bcd4c43e4d34da9',
-      };
+      setTimeout(() => {
+          let pathUserName = "CommonPrefabs/PopupDangNhap/popup/TenDangNhap/Username";
+          let editBoxNodeUserName = cc.find(pathUserName);
+          let editBoxUserName = editBoxNodeUserName.getComponent(cc.EditBox);
+          if (editBoxUserName) {
+              editBoxUserName.string = "${account.username}";
+          } else {
+              console.log("Không tìm thấy component cc.EditBox trong node");
+          }
 
-      const response2 = await page.evaluate(
-        (url2, token, device) => {
-          return fetch(url2, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `token=${encodeURIComponent(
-              token
-            )}&device=${encodeURIComponent(JSON.stringify(device))}`,
-          })
-            .then((response) => response.json()) // giả định rằng server trả về JSON
-            .catch((error) => console.error('Error:', error));
-        },
-        url2,
-        token,
-        device
-      );
+          let pathPass = "CommonPrefabs/PopupDangNhap/popup/Matkhau/Password";
+          let editBoxNodePass = cc.find(pathPass);
+          let editBoxPass = editBoxNodePass.getComponent(cc.EditBox);
+          if (editBoxPass) {
+              editBoxPass.string = "${account.password}";
+          } else {
+              console.log("Không tìm thấy component cc.EditBox trong node");
+          }
+          let nodeXacNhan = cc.find("CommonPrefabs/PopupDangNhap/popup/BtnOk").getComponent(cc.Button);
+          if (nodeXacNhan) {
+              let touchStart = new cc.Touch(0, 0);
+              let touchEnd = new cc.Touch(0, 0);
+              let touchEventStart = new cc.Event.EventTouch([touchStart], false);
+              touchEventStart.type = cc.Node.EventType.TOUCH_START;
+              nodeXacNhan.node.dispatchEvent(touchEventStart);
 
-      console.log('response Login', response2);
-
-      // Refresh trang
-      // await page.reload();
+              let touchEventEnd = new cc.Event.EventTouch([touchEnd], false);
+              touchEventEnd.type = cc.Node.EventType.TOUCH_END;
+              nodeXacNhan.node.dispatchEvent(touchEventEnd);
+          }
+      }, 500);
+      setTimeout(() => {
+        __require('LobbyViewController').default.Instance.onClickIConGame(null,"vgcg_4");
+      }, 2500);
+      `);
 
       return { browser, page };
     } catch (error) {}
@@ -204,8 +189,6 @@ export const setupAccountHandlers = (
   });
 
   ipcMain.on('execute-script', async (event, { username }, script) => {
-    console.log('username', username);
-    console.log('script', script);
     const instance = puppeteerInstances.find(
       (instance) => instance.username === username
     );
@@ -218,33 +201,32 @@ export const setupAccountHandlers = (
           `Script executed for account ${username}.`
         );
       } catch (error) {
-        console.error(`Error executing script for account ${username}:`, error);
-        await page.evaluate(`window.f12_gm = __require('GamePlayManager').default.getInstance();
-        window.f12_JoinRoom = __require('GamePlayManager').default.getInstance();
-        window.f12_Joinlobby = __require('LobbyViewController');
-        window.f12_GameController = __require('GameController').default.prototype;
-        window.sapBaiMinh = async function () {
-          try {
-            gg = cc
-              .find("Canvas")
-              .getChildByName("MainUI")
-              .getChildByName("MauBinhController")._components[0]
-              .cardGameTableController.gameController;
-            let tempBet = gg.bet;
-            gg.bet = 100;
-            gg.onClickTuSapBai();
-            gg.bet = tempBet;
-            window.delay(Math.floor(Math.random() * 5000 + 35000)).then(function () {
-              if (autoPlayMode) {
-                window.xepBaiXong();
-              }
-            });
-          } catch (e) {
-            console.log("Sap bai ERROR: ", e.toString());
-          }
-        };
-        var myDiv = document.createElement("div")`);
-        await page.evaluate(script);
+        // await page.evaluate(`window.f12_gm = __require('GamePlayManager').default.getInstance();
+        // window.f12_JoinRoom = __require('GamePlayManager').default.getInstance();
+        // window.f12_Joinlobby = __require('LobbyViewController');
+        // window.f12_GameController = __require('GameController').default.prototype;
+        // window.sapBaiMinh = async function () {
+        //   try {
+        //     gg = cc
+        //       .find("Canvas")
+        //       .getChildByName("MainUI")
+        //       .getChildByName("MauBinhController")._components[0]
+        //       .cardGameTableController.gameController;
+        //     let tempBet = gg.bet;
+        //     gg.bet = 100;
+        //     gg.onClickTuSapBai();
+        //     gg.bet = tempBet;
+        //     window.delay(Math.floor(Math.random() * 5000 + 35000)).then(function () {
+        //       if (autoPlayMode) {
+        //         window.xepBaiXong();
+        //       }
+        //     });
+        //   } catch (e) {
+        //     console.log("Sap bai ERROR: ", e.toString());
+        //   }
+        // };
+        // var myDiv = document.createElement("div")`);
+        // await page.evaluate(script);
         event.reply(
           'execute-script-reply',
           `Failed to execute script for account ${username}.`
@@ -255,8 +237,6 @@ export const setupAccountHandlers = (
     }
   });
   ipcMain.on('check-room', async (event, { username }, script) => {
-    console.log('username', username);
-    console.log('script', script);
     const instance = puppeteerInstances.find(
       (instance) => instance.username === username
     );

@@ -9,6 +9,7 @@ import {
   SortAsc,
   TrashIcon,
   Unplug,
+  UserPlus,
 } from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react';
 import { Button } from '../../components/ui/button';
@@ -87,8 +88,57 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
     );
   };
 
-  function openPuppeteer(): void {
-    window.backend.sendMessage('start-puppeteer');
+  async function invitePlayer(account: any): Promise<void> {
+    await window.backend.sendMessage(
+      'execute-script',
+      account,
+      `
+        try{
+          var btnInvite = cc.find("Canvas/MainUI/MauBinhController/BtnInvite");
+          if (btnInvite) {
+              btnInvite.active = true;
+          }
+          if (btnInvite) {
+              btnInvite.on('touchstart', function() {
+                  console.log('Nút đã được nhấn.');
+              });
+          }
+          if (btnInvite) {
+              btnInvite.active = true;
+              btnInvite.opacity = 255;
+              btnInvite.visible = true;
+          }
+          let touchEventStart = new cc.Event.EventTouch([new cc.Touch(0, 0)], false);
+          touchEventStart.type = cc.Node.EventType.TOUCH_START;
+          btnInvite.dispatchEvent(touchEventStart);
+
+          let touchEventEnd = new cc.Event.EventTouch([new cc.Touch(0, 0)], false);
+          touchEventEnd.type = cc.Node.EventType.TOUCH_END;
+          btnInvite.dispatchEvent(touchEventEnd);
+        }catch{
+          if (btnInvite) {
+              btnInvite.active = true;
+          }
+          if (btnInvite) {
+              btnInvite.on('touchstart', function() {
+                  console.log('Nút đã được nhấn.');
+              });
+          }
+          if (btnInvite) {
+              btnInvite.active = true;
+              btnInvite.opacity = 255;
+              btnInvite.visible = true;
+          }
+
+          touchEventStart.type = cc.Node.EventType.TOUCH_START;
+          btnInvite.dispatchEvent(touchEventStart);
+
+          touchEventEnd.type = cc.Node.EventType.TOUCH_END;
+          btnInvite.dispatchEvent(touchEventEnd);
+        }
+
+      `
+    );
   }
   async function openAccounts(account: any) {
     await window.backend.sendMessage('open-accounts', account);
@@ -326,6 +376,14 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
             )}
             {currentRoom && (
               <>
+                <Button
+                  onClick={() => invitePlayer(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+                >
+                  <UserPlus className="h-3.5 w-3.5" />
+                  <span>Invite</span>
+                </Button>
                 <Button
                   onClick={() => arrangeCards(main)}
                   style={{ fontFamily: 'monospace' }}
