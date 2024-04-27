@@ -16,13 +16,6 @@ import { MainPlayerStatus } from '../components/bots/mainPlayer';
 import { SideBar } from '../components/sidebar/sidebar';
 import { useToast } from '../components/toast/use-toast';
 import { Button } from '../components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from '../components/ui/dropdown-menu';
 import { Label } from '../components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio';
 import { Tabs, TabsContent } from '../components/ui/tabs';
@@ -113,13 +106,13 @@ export function App() {
                   </div>
                   <RadioGroup
                     defaultValue={cardDeck}
+                    onValueChange={(value) => {
+                      setCardDeck(value);
+                    }}
                     className="flex flex-row border py-[4px] px-[7px] rounded-[5px]"
                   >
                     <Hand className="" />
-                    <div
-                      className="flex items-center space-x-2"
-                      onClick={() => handleCardDeckChange('2')}
-                    >
+                    <div className="flex items-center space-x-2">
                       <div className="border p-0 px-[4px] rounded-full">
                         <RadioGroupItem
                           value="2"
@@ -129,19 +122,13 @@ export function App() {
                       </div>
                       <Label>2</Label>
                     </div>
-                    <div
-                      className="flex items-center space-x-2"
-                      onClick={() => handleCardDeckChange('3')}
-                    >
+                    <div className="flex items-center space-x-2">
                       <div className="border p-0 px-[4px] rounded-full">
                         <RadioGroupItem value="3" id="option-three" />
                       </div>
                       <Label>3</Label>
                     </div>
-                    <div
-                      className="flex items-center space-x-2"
-                      onClick={() => handleCardDeckChange('4')}
-                    >
+                    <div className="flex items-center space-x-2">
                       <div className="border p-0 px-[4px] rounded-full">
                         <RadioGroupItem value="4" id="option-four" />
                       </div>
@@ -151,39 +138,6 @@ export function App() {
                   <Label className="flex flex-row justify-center gap-[3px] border rounded-[15px] px-3 py-[10px]">
                     <RockingChair className="w-3.5 h-3.5" />3
                   </Label>
-                  <DropdownMenu>
-                    {/* <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-8 gap-1">
-                        <Hand className="h-3.5 w-3.5" />
-                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                          Deck
-                        </span>
-                      </Button>
-                    </DropdownMenuTrigger> */}
-
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Card deck</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuCheckboxItem
-                        checked={cardDeck === '1'}
-                        onSelect={() => handleCardDeckChange('1')}
-                      >
-                        1
-                      </DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem
-                        checked={cardDeck === '2'}
-                        onSelect={() => handleCardDeckChange('2')}
-                      >
-                        2
-                      </DropdownMenuCheckboxItem>
-                      <DropdownMenuCheckboxItem
-                        checked={cardDeck === '3'}
-                        onSelect={() => handleCardDeckChange('3')}
-                      >
-                        3
-                      </DropdownMenuCheckboxItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
                   <Button onClick={onLogin} size="sm" className="h-8 gap-1">
                     <LogIn className="h-3.5 w-3.5" />
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">

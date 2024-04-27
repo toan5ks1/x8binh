@@ -1,5 +1,5 @@
 import { Label } from '@radix-ui/react-label';
-import { RotateCw, Star } from 'lucide-react';
+import { Loader, RotateCw, Star } from 'lucide-react';
 import { useCallback, useEffect, useId, useState } from 'react';
 import { DndProvider, DragSourceMonitor, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -67,6 +67,7 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
   const [evaluation3, setEvaluation3] = useState<string>('');
   const [isInstant, setIsInstant] = useState<boolean>(false);
   const [titleInstant, setTitleInstant] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const moveCard = useCallback(
     (dragId: number, hoverId: number) => {
@@ -104,7 +105,7 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
   }, []);
 
   const handleArrange = (): void => {
-    console.log('cards', cards);
+    setLoading(true);
     window.backend.sendMessage('arrange-card', cardProp, idHand);
   };
 
@@ -125,13 +126,13 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
   useEffect(() => {
     const handleData = (newData: any, position: any) => {
       if (position === idHand) {
-        console.log('newData', newData);
         setCards(newData.cards);
         setEvaluation1(newData.chi1.type);
         setEvaluation2(newData.chi2.type);
         setEvaluation3(newData.chi3.type);
         setIsInstant(newData.isInstantWin.win);
         setTitleInstant(newData.isInstantWin.type);
+        setLoading(false);
       }
     };
 
@@ -140,7 +141,7 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
     return () => {
       window.backend.removeListener('arrange-card', handleData);
     };
-  }, [handleArrange]);
+  }, [idHand]);
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -159,63 +160,77 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
             </Label>
           </div>
         )}
-        <div className="grid grid-rows-3 gap-[5px] relative">
-          <div className="flex flex-col gap-1">
-            <div className="grid grid-cols-5 gap-[5px]">
-              {/* {part3.map((cardNumber, index) => renderCard(cardNumber, index))} */}
-              {part3.map((cardNumber) => (
-                <DropCard key={cardNumber} id={cardNumber} moveCard={moveCard}>
-                  <DraggableCard
+        {!loading ? (
+          <div className="grid grid-rows-3 gap-[5px] relative">
+            <div className="flex flex-col gap-1">
+              <div className="grid grid-cols-5 gap-[5px]">
+                {/* {part3.map((cardNumber, index) => renderCard(cardNumber, index))} */}
+                {part3.map((cardNumber) => (
+                  <DropCard
+                    key={cardNumber}
                     id={cardNumber}
-                    imageUrl={getCardImageUrl(cardNumber)}
                     moveCard={moveCard}
-                  />
-                </DropCard>
-              ))}
-            </div>
+                  >
+                    <DraggableCard
+                      id={cardNumber}
+                      imageUrl={getCardImageUrl(cardNumber)}
+                      moveCard={moveCard}
+                    />
+                  </DropCard>
+                ))}
+              </div>
 
-            <Label className=" bg-background p-[5px] rounded-[5px] font-semibold">
-              {evaluation3}
-            </Label>
-          </div>
-          <div className="flex flex-col gap-1">
-            <div className="grid grid-cols-5 gap-[5px] relative">
-              {part2.map((cardNumber) => (
-                <DropCard key={cardNumber} id={cardNumber} moveCard={moveCard}>
-                  <DraggableCard
-                    id={cardNumber}
-                    imageUrl={getCardImageUrl(cardNumber)}
-                    moveCard={moveCard}
-                  />
-                </DropCard>
-              ))}
+              <Label className=" bg-background p-[5px] rounded-[5px] font-semibold">
+                {evaluation3}
+              </Label>
             </div>
-            <Label className=" bg-background p-[5px] rounded-[5px] font-semibold">
-              {evaluation2}
-            </Label>
-          </div>
-          <div className="flex flex-col gap-1">
-            <div className="grid grid-cols-5 gap-[5px]">
-              {part1.map((cardNumber, index) => (
-                <DropCard key={index} id={cardNumber} moveCard={moveCard}>
-                  <DraggableCard
+            <div className="flex flex-col gap-1">
+              <div className="grid grid-cols-5 gap-[5px] relative">
+                {part2.map((cardNumber) => (
+                  <DropCard
+                    key={cardNumber}
                     id={cardNumber}
-                    imageUrl={getCardImageUrl(cardNumber)}
                     moveCard={moveCard}
-                  />
-                </DropCard>
-              ))}
+                  >
+                    <DraggableCard
+                      id={cardNumber}
+                      imageUrl={getCardImageUrl(cardNumber)}
+                      moveCard={moveCard}
+                    />
+                  </DropCard>
+                ))}
+              </div>
+              <Label className=" bg-background p-[5px] rounded-[5px] font-semibold">
+                {evaluation2}
+              </Label>
             </div>
-            <Label className=" bg-background p-[5px] rounded-[5px] font-semibold">
-              {evaluation1}
-            </Label>
+            <div className="flex flex-col gap-1">
+              <div className="grid grid-cols-5 gap-[5px]">
+                {part1.map((cardNumber, index) => (
+                  <DropCard key={index} id={cardNumber} moveCard={moveCard}>
+                    <DraggableCard
+                      id={cardNumber}
+                      imageUrl={getCardImageUrl(cardNumber)}
+                      moveCard={moveCard}
+                    />
+                  </DropCard>
+                ))}
+              </div>
+              <Label className=" bg-background p-[5px] rounded-[5px] font-semibold">
+                {evaluation1}
+              </Label>
+            </div>
+            <div className="absolute top-0 right-0">
+              <Button className="p-0 px-[5px]" onClick={() => handleArrange()}>
+                <RotateCw />
+              </Button>
+            </div>
           </div>
-          <div className="absolute top-0 right-0">
-            <Button className="p-0 px-[5px]" onClick={() => handleArrange()}>
-              <RotateCw />
-            </Button>
+        ) : (
+          <div className="flex justify-center items-center">
+            <Loader className="w-6.5 h-6.5 animate-spin"></Loader>
           </div>
-        </div>
+        )}
       </Card>
     </DndProvider>
   );

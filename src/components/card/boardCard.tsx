@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { HandCard } from '../card/handcard';
+import { Label } from '../ui/label';
 import { TableCell } from '../ui/table';
 
 const BoardCard: React.FC<any> = ({ indexProps, cards, numPlayers }) => {
@@ -22,6 +23,9 @@ const BoardCard: React.FC<any> = ({ indexProps, cards, numPlayers }) => {
       key={indexProps}
       className={`grid grid-cols-1 tablet:grid-cols-2 laptop:grid-cols-4 !w-[100%] gap-[20px] `}
     >
+      <Label className=" absolute top-[5px] left-[5px] border bg-background rounded-md p-2 z-[1000]">
+        {indexProps + 1}
+      </Label>
       {playerHands.map((hand, index) => (
         <HandCard key={index} cardProp={hand} />
       ))}

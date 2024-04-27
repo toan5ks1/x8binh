@@ -13,6 +13,8 @@ const validChannels: string[] = [
   'file-updated',
   'get-hardware-info',
   'arrange-card',
+  'websocket-data-sent',
+  'check-room',
 ];
 
 contextBridge.exposeInMainWorld('backend', {
@@ -21,7 +23,7 @@ contextBridge.exposeInMainWorld('backend', {
       ipcRenderer.send(channel, ...args);
     }
   },
-  on: (channel: string, func: (...args: unknown[]) => void) => {
+  on: (channel: string, func: (...args: any) => void) => {
     if (validChannels.includes(channel)) {
       ipcRenderer.on(channel, (_event, ...args) => func(...args));
     }

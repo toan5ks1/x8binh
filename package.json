@@ -133,6 +133,8 @@
     "lucide-react": "^0.367.0",
     "process": "^0.11.10",
     "puppeteer": "^22.6.4",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "react": "^18.1.0",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",

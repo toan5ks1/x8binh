@@ -45,7 +45,6 @@ export const Onboard = () => {
           </div>
           <div className="grid gap-4">
             <div className="flex items-center">
-              <Label></Label>
               <Link
                 to="/active-license"
                 className="ml-auto inline-block text-sm underline"

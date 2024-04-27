@@ -47,7 +47,6 @@ export const Active = () => {
               />
             </div>
             <div className="flex items-center">
-              <Label></Label>
               <a href="/" className="ml-auto inline-block text-sm underline">
                 Back to Onboard page
               </a>
