@@ -46,6 +46,9 @@ export default <WebpackConfig>{
   },
 
   plugins: [
+    new webpack.IgnorePlugin({
+      resourceRegExp: /clone-deep/,
+    }),
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'production',
       REACT_APP_SUPABASE_URL: 'https://zvkrfgunpkfnzonjyvno.supabase.co',

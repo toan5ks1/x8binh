@@ -201,32 +201,6 @@ export const setupAccountHandlers = (
           `Script executed for account ${username}.`
         );
       } catch (error) {
-        // await page.evaluate(`window.f12_gm = __require('GamePlayManager').default.getInstance();
-        // window.f12_JoinRoom = __require('GamePlayManager').default.getInstance();
-        // window.f12_Joinlobby = __require('LobbyViewController');
-        // window.f12_GameController = __require('GameController').default.prototype;
-        // window.sapBaiMinh = async function () {
-        //   try {
-        //     gg = cc
-        //       .find("Canvas")
-        //       .getChildByName("MainUI")
-        //       .getChildByName("MauBinhController")._components[0]
-        //       .cardGameTableController.gameController;
-        //     let tempBet = gg.bet;
-        //     gg.bet = 100;
-        //     gg.onClickTuSapBai();
-        //     gg.bet = tempBet;
-        //     window.delay(Math.floor(Math.random() * 5000 + 35000)).then(function () {
-        //       if (autoPlayMode) {
-        //         window.xepBaiXong();
-        //       }
-        //     });
-        //   } catch (e) {
-        //     console.log("Sap bai ERROR: ", e.toString());
-        //   }
-        // };
-        // var myDiv = document.createElement("div")`);
-        // await page.evaluate(script);
         event.reply(
           'execute-script-reply',
           `Failed to execute script for account ${username}.`
@@ -246,6 +220,31 @@ export const setupAccountHandlers = (
         await page.evaluate(script);
         const result = await instance.page.evaluate(script);
         event.reply('check-room', {
+          data: result,
+          username: username,
+        });
+      } catch (error) {
+        console.error(`Error executing script for account ${username}:`, error);
+        event.reply(
+          'execute-script-reply',
+          `Failed to execute script for account ${username}.`
+        );
+      }
+    } else {
+      event.reply('execute-script-reply', `Account ${username} not found.`);
+    }
+  });
+  ipcMain.on('check-position', async (event, { username }, script) => {
+    const instance = puppeteerInstances.find(
+      (instance) => instance.username === username
+    );
+    if (instance) {
+      const { page } = instance;
+      try {
+        await page.evaluate(script);
+        const result = await instance.page.evaluate(script);
+        console.log('data result', result);
+        event.reply('check-position', {
           data: result,
           username: username,
         });
