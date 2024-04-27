@@ -18,10 +18,10 @@ import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio';
 import { Tabs, TabsContent } from '../components/ui/tabs';
-import { useAccounts } from '../context/AccountContext';
-import { bots, crawingBot } from '../lib/config';
+import { bots, craws } from '../lib/config';
 import { validateLicense } from '../lib/supabase';
 import { AppContext } from '../renderer/providers/app';
+import useAccountStore from '../store/accountStore';
 import { HomePage } from './pages/home';
 import { SettingPage } from './pages/setting';
 import { TerminalPage } from './pages/terminal';
@@ -29,10 +29,10 @@ import { TerminalPage } from './pages/terminal';
 export function App() {
   const [tab, setActiveTab] = useState('all');
   const { state } = useContext<any>(AppContext);
-  const { state: accounts } = useAccounts();
+  const { accounts } = useAccountStore();
   const { toast } = useToast();
-  const bot1Account = accounts['BOT']?.[0] ?? {};
-  const bot2Account = accounts['BOT']?.[1] ?? {};
+  // const bots = accounts['SUB'];
+  // const craws = accounts['BOT'];
   const [cardDeck, setCardDeck] = useState('4');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -47,10 +47,6 @@ export function App() {
     setShouldLogin(true);
     setShouldDisconnect(false);
   };
-
-  // const onJoinMauBinh = () => {
-  //   setShouldJoinMB(true);
-  // };
 
   const onCreatRoom = () => {
     setShouldCreateRoom(true);
@@ -143,16 +139,6 @@ export function App() {
                       Login
                     </span>
                   </Button>
-                  {/* <Button
-                    onClick={onJoinMauBinh}
-                    size="sm"
-                    className="h-8 gap-1"
-                  >
-                    <Unplug className="h-3.5 w-3.5" />
-                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                      Connect
-                    </span>
-                  </Button> */}
                   <Button onClick={onCreatRoom} size="sm" className="h-8 gap-1">
                     <PlusCircle className="h-3.5 w-3.5" />
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -192,9 +178,8 @@ export function App() {
                 value="find-room"
                 hidden={'find-room' !== tab}
               >
-                <div className="flex flex-col h-screen w-full">
+                <div className="flex flex-col h-full w-full">
                   <div className="flex flex-col  text-white space-y-4 flex-1 w-full">
-                    {/* <div className="grid grid-cols-2 gap-[20px] w-full"> */}
                     {bots.map(
                       (bot, index) =>
                         index % 2 === 0 &&
@@ -213,15 +198,15 @@ export function App() {
                         )
                     )}
 
-                    {crawingBot.map((bot, index) => {
-                      if (index % 2 === 0 && index < crawingBot.length - 1) {
-                        if (index < crawingBot.length - 3) {
+                    {craws.map((bot, index) => {
+                      if (index % 2 === 0 && index < craws.length - 1) {
+                        if (index < craws.length - 3) {
                           return (
                             <CoupleCrawStatus
                               key={index}
                               index={index}
                               craw1={bot}
-                              craw2={crawingBot[index + 1]}
+                              craw2={craws[index + 1]}
                               shouldLogin={shouldLogin}
                               shouldJoinMB={shouldJoinMB}
                               shouldCreatRoom={shouldCreatRoom}
@@ -235,7 +220,7 @@ export function App() {
                               key={index}
                               index={index}
                               craw1={bot}
-                              craw2={crawingBot[index + 1]}
+                              craw2={craws[index + 1]}
                               shouldLogin={shouldLogin}
                               shouldJoinMB={shouldJoinMB}
                               shouldCreatRoom={shouldCreatRoom}

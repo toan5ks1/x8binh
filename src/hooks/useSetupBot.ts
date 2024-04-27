@@ -134,11 +134,11 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
   };
 
   // Auto connect maubinh
-  useEffect(() => {
-    if (!shouldPingMaubinh && user?.status === BotStatus.Initialized) {
-      setTimeout(handleConnectMauBinh, 500);
-    }
-  }, [user]);
+  // useEffect(() => {
+  //   if (!shouldPingMaubinh && user?.status === BotStatus.Initialized) {
+  //     setTimeout(handleConnectMauBinh, 500);
+  //   }
+  // }, [user]);
 
   // Bot join initial room
   useEffect(() => {
@@ -199,6 +199,7 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       user?.status === BotStatus.Finished &&
       room.shouldOutVote === numOfCrawer
     ) {
+      console.log(bot.username, 'call leave');
       sendMessage(`[4,"Simms",${room.id}]`);
     }
   }, [room, user]);
@@ -214,15 +215,15 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
     if (
       state.shouldRecreateRoom &&
       isHost &&
+      room?.isFinish &&
       user &&
-      room.isFinish &&
-      user.status !== BotStatus.Finding &&
+      user?.status === BotStatus.Left &&
       !state.foundAt
     ) {
       handleCreateRoom();
       setUser({ ...user, status: BotStatus.Finding });
     }
-  }, [state.shouldRecreateRoom]);
+  }, [state.shouldRecreateRoom, user]);
 
   // Auto ready for new game
   // useEffect(() => {

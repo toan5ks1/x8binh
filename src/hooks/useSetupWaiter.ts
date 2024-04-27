@@ -128,11 +128,11 @@ export function useSetupWaiter(bot: LoginParams) {
   };
 
   // Auto connect maubinh
-  useEffect(() => {
-    if (!shouldPingMaubinh && user?.status === BotStatus.Initialized) {
-      setTimeout(handleConnectMauBinh, 500);
-    }
-  }, [user]);
+  // useEffect(() => {
+  //   if (!shouldPingMaubinh && user?.status === BotStatus.Initialized) {
+  //     setTimeout(handleConnectMauBinh, 500);
+  //   }
+  // }, [user]);
 
   // Join found room
   useEffect(() => {

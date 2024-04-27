@@ -23,7 +23,7 @@ export const bots = [
   },
 ];
 
-export const crawingBot = [
+export const craws = [
   {
     username: 'maumau129',
     password: 'zxcv123123',
@@ -47,17 +47,6 @@ export const crawingBot = [
     aff_id: 'hit',
   },
   {
-    username: 'nbmhkghjh456',
-    password: 'zxcv123123',
-    app_id: 'rik.vip',
-    os: 'Windows',
-    device: 'Computer',
-    browser: 'chrome',
-    fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
-    time: 1713005926,
-    aff_id: 'hit',
-  },
-  {
     username: 'mnnbktyu453',
     password: 'zxcv123123',
     app_id: 'rik.vip',
@@ -68,17 +57,17 @@ export const crawingBot = [
     time: 1713005926,
     aff_id: 'hit',
   },
-  // {
-  //   username: 'mnbgfjf4643',
-  //   password: 'zxcv123123',
-  //   app_id: 'rik.vip',
-  //   os: 'Windows',
-  //   device: 'Computer',
-  //   browser: 'chrome',
-  //   fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
-  //   time: 1713005926,
-  //   aff_id: 'hit',
-  // },
+  {
+    username: 'mnbgfjf4643',
+    password: 'zxcv123123',
+    app_id: 'rik.vip',
+    os: 'Windows',
+    device: 'Computer',
+    browser: 'chrome',
+    fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
+    time: 1713005926,
+    aff_id: 'hit',
+  },
   {
     username: 'blahs123',
     password: 'zxcv123123',
@@ -90,19 +79,8 @@ export const crawingBot = [
     time: 1713005926,
     aff_id: 'hit',
   },
-  // {
-  //   username: 'cvbrte354',
-  //   password: 'zxcv123123',
-  //   app_id: 'rik.vip',
-  //   os: 'Windows',
-  //   device: 'Computer',
-  //   browser: 'chrome',
-  //   fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
-  //   time: 1713005926,
-  //   aff_id: 'hit',
-  // },
   {
-    username: 'bvnsdgh4523',
+    username: 'cvbrte354',
     password: 'zxcv123123',
     app_id: 'rik.vip',
     os: 'Windows',
@@ -112,7 +90,29 @@ export const crawingBot = [
     time: 1713005926,
     aff_id: 'hit',
   },
+  // { het tien
+  //   username: 'nbmhkghjh456',
+  //   password: 'zxcv123123',
+  //   app_id: 'rik.vip',
+  //   os: 'Windows',
+  //   device: 'Computer',
+  //   browser: 'chrome',
+  //   fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
+  //   time: 1713005926,
+  //   aff_id: 'hit',
+  // },
   // {
+  //   username: 'bvnsdgh4523',
+  //   password: 'zxcv123123',
+  //   app_id: 'rik.vip',
+  //   os: 'Windows',
+  //   device: 'Computer',
+  //   browser: 'chrome',
+  //   fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
+  //   time: 1713005926,
+  //   aff_id: 'hit',
+  // },
+  // { khoa acc
   //   username: 'luikghyu56',
   //   password: 'zxcv123123',
   //   app_id: 'rik.vip',
@@ -123,7 +123,7 @@ export const crawingBot = [
   //   time: 1713005926,
   //   aff_id: 'hit',
   // },
-  // {
+  // { khoa acc
   //   username: 'ioytkrttyer456',
   //   password: 'zxcv123123',
   //   app_id: 'rik.vip',

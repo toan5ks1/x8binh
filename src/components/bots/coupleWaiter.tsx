@@ -52,12 +52,12 @@ BotStatusProps) => {
     }
   }, [shouldLogin]);
 
-  useEffect(() => {
-    if (shouldJoinMB) {
-      connectMbHost();
-      connectMbGuess();
-    }
-  }, [shouldJoinMB]);
+  // useEffect(() => {
+  //   if (shouldJoinMB) {
+  //     connectMbHost();
+  //     connectMbGuess();
+  //   }
+  // }, [shouldJoinMB]);
 
   // useEffect(() => {
   //   if (shouldCreatRoom) {
@@ -80,7 +80,7 @@ BotStatusProps) => {
   }, [shouldDisconnect]);
 
   return (
-    <div className="hidden space-x-4 w-full">
+    <div className="flex space-x-4 w-full">
       <BotCmp
         name={`Waiter 1`}
         userId={host?.username}

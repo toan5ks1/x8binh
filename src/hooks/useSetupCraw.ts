@@ -143,11 +143,11 @@ export function useSetupCraw(
   };
 
   // Auto connect maubinh
-  useEffect(() => {
-    if (!shouldPingMaubinh && user?.status === BotStatus.Initialized) {
-      setTimeout(handleConnectMauBinh, 500);
-    }
-  }, [user]);
+  // useEffect(() => {
+  //   if (!shouldPingMaubinh && user?.status === BotStatus.Initialized) {
+  //     setTimeout(handleConnectMauBinh, 500);
+  //   }
+  // }, [user]);
 
   // Bot join initial room
   useEffect(() => {
