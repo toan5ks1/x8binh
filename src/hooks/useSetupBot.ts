@@ -14,7 +14,6 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
   const [socketUrl, setSocketUrl] = useState('');
   const { state, setState } = useContext(AppContext);
   const room = state.initialRoom;
-  const me = state.mainBots[bot.username];
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
   const [shouldPingMaubinh, setShouldPingMaubinh] = useState(false);
@@ -57,6 +56,9 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
         state,
         setState,
         user,
+        setUser: setUser as React.Dispatch<
+          React.SetStateAction<LoginResponseDto>
+        >,
       });
 
       newMsg && setMessageHistory((msgs) => [...msgs, newMsg]);
@@ -78,13 +80,12 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
   // Ping maubinh
   useEffect(() => {
     if (shouldPingMaubinh) {
-      const maubinhPingMessage = () =>
-        `[6,"Simms","channelPlugin",{"cmd":300,"aid":"1","gid":4}]`;
+      const maubinhPingMessage = `[6,"Simms","channelPlugin",{"cmd":300,"aid":"1","gid":4}]`;
 
-      sendMessage(maubinhPingMessage());
+      sendMessage(maubinhPingMessage);
 
       const intervalId = setInterval(() => {
-        sendMessage(maubinhPingMessage());
+        sendMessage(maubinhPingMessage);
         setITime((prevITime) => prevITime + 1);
       }, 6000);
 
@@ -96,8 +97,10 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
     login(bot)
       .then((data: LoginResponse | null) => {
         const user = data?.data[0];
-        setUser(user);
-        user && connectMainGame(user);
+        if (user) {
+          setUser(user);
+          connectMainGame(user);
+        }
       })
       .catch((err: Error) =>
         console.error('Error when calling login function:', err)
@@ -130,11 +133,19 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
     );
   };
 
+  // Auto connect maubinh
+  useEffect(() => {
+    if (!shouldPingMaubinh && user?.status === BotStatus.Initialized) {
+      setTimeout(handleConnectMauBinh, 500);
+    }
+  }, [user]);
+
   // Bot join initial room
   useEffect(() => {
     if (
+      !state.foundAt &&
       room.id &&
-      Object.keys(room.cardDesk).length === 0 // Make sure cards isn't received
+      Object.keys(room.cardGame).length === 0 // Make sure cards isn't received
     ) {
       // Host and guess join after created room
       if (room.players.length < 2) {
@@ -147,85 +158,101 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
         }
       }
 
-      // Host ready
-      if (room.players.length === 2) {
+      if (room.players.length === 2 && user?.status === BotStatus.Joined) {
         if (bot.username === room.owner) {
+          // Host ready
           sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
         }
       }
     }
-  }, [state.initialRoom]);
+  }, [room]);
 
   // Guess ready
   useEffect(() => {
     if (
       room &&
       bot.username !== room.owner &&
-      me?.status === BotStatus.Joined &&
-      isAllHostReady(state)
+      user?.status === BotStatus.Joined &&
+      isAllHostReady(state) &&
+      !room.isFinish
     ) {
       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
     }
-  }, [state.mainBots, state.crawingBots]);
+  }, [room, state.crawingRoom]);
 
   // Submit
   useEffect(() => {
-    const numOfCrawer = Object.keys(state.crawingBots).length;
-
-    if (
-      me?.status === BotStatus.Received &&
-      room?.shouldOutVote === numOfCrawer &&
-      !state.foundAt
-    ) {
-      // // Submit cards
+    if (user?.status === BotStatus.Received) {
+      // Submit cards
       sendMessage(
-        `[5,"Simms",${room.id},{"cmd":603,"cs":[${
-          room.cardDesk[0][bot.username]
-        }]}]`
+        `[5,"Simms",${room.id},{"cmd":603,"cs":[${user.currentCard}]}]`
       );
     }
-  }, [state.initialRoom, state.foundAt]);
+  }, [user]);
 
-  // Leave room
   useEffect(() => {
-    if (room.isFinish && !state.foundAt) {
-      sendMessage(`[4,"Simms",${state.initialRoom.id}]`);
+    const numOfCrawer = Object.keys(state.crawingBots).length;
+    // Leave room
+    if (
+      room?.isFinish &&
+      !state.foundBy &&
+      user?.status === BotStatus.Finished &&
+      room.shouldOutVote === numOfCrawer
+    ) {
+      sendMessage(`[4,"Simms",${room.id}]`);
     }
-  }, [state.mainBots[bot.username], state.foundAt]);
+  }, [room, user]);
 
   const handleLeaveRoom = () => {
-    if (state.initialRoom?.id) {
-      return sendMessage(`[4,"Simms",${state.initialRoom.id}]`);
+    if (room?.id) {
+      return sendMessage(`[4,"Simms",${room.id}]`);
     }
   };
 
   // Recreate room
   useEffect(() => {
-    if (state.shouldRecreateRoom && isHost && me.status !== BotStatus.Finding) {
+    if (
+      state.shouldRecreateRoom &&
+      isHost &&
+      user &&
+      room.isFinish &&
+      user.status !== BotStatus.Finding &&
+      !state.foundAt
+    ) {
       handleCreateRoom();
-      setState((pre) => ({
-        ...pre,
-        mainBots: {
-          ...pre.mainBots,
-          [bot.username]: { ...me, status: BotStatus.Finding },
-        },
-      }));
+      setUser({ ...user, status: BotStatus.Finding });
     }
   }, [state.shouldRecreateRoom]);
 
   // Auto ready for new game
-  useEffect(() => {
-    if (state.foundAt) {
-      if (room.isFinish) {
-        sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-        // ready for new game
-      }
+  // useEffect(() => {
+  //   if (state.foundAt) {
+  //     if (room?.isFinish) {
+  //       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
+  //     }
 
-      if (room.isFinish && isHost && me.status === BotStatus.Ready) {
-        sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
-      }
-    }
-  }, [state.foundAt, room.isFinish, me]);
+  //     if (room?.isFinish && isHost && user?.status === BotStatus.Ready) {
+  //       sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
+  //     }
+  //   }
+  // }, [state.foundAt, room]);
+
+  // Sub re-join room
+  // useEffect(() => {
+  //   if (state.targetAt) {
+  //     // Left
+  //     if (user?.status === BotStatus.Finished) {
+  //       return sendMessage(`[4,"Simms",${room.id}]`);
+  //     }
+  //     // re-join
+  //     if (user?.status === BotStatus.Left) {
+  //       console.log(user?.status, room.id);
+  //       isHost
+  //         ? sendMessage(`[3,"Simms",${room.id},""]`)
+  //         : sendMessage(`[3,"Simms",${room.id},"",true]`);
+  //     }
+  //   }
+  // }, [state.targetAt, user]);
 
   return {
     user,

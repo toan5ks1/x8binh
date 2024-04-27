@@ -14,6 +14,7 @@ export interface LoginResponseDto {
   token: string;
   username: string;
   status?: BotStatus;
+  currentCard?: number[];
 }
 
 export interface LoginResponse {

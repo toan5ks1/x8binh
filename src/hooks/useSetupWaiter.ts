@@ -80,13 +80,12 @@ export function useSetupWaiter(bot: LoginParams) {
   // Ping maubinh
   useEffect(() => {
     if (shouldPingMaubinh) {
-      const maubinhPingMessage = () =>
-        `[6,"Simms","channelPlugin",{"cmd":300,"aid":"1","gid":4}]`;
+      const maubinhPingMessage = `[6,"Simms","channelPlugin",{"cmd":300,"aid":"1","gid":4}]`;
 
-      sendMessage(maubinhPingMessage());
+      sendMessage(maubinhPingMessage);
 
       const intervalId = setInterval(() => {
-        sendMessage(maubinhPingMessage());
+        sendMessage(maubinhPingMessage);
         setITime((prevITime) => prevITime + 1);
       }, 6000);
 
@@ -98,8 +97,10 @@ export function useSetupWaiter(bot: LoginParams) {
     login(bot)
       .then((data: LoginResponse | null) => {
         const user = data?.data[0];
-        setUser(user);
-        user && connectMainGame(user);
+        if (user) {
+          setUser(user);
+          connectMainGame(user);
+        }
       })
       .catch((err: Error) =>
         console.error('Error when calling login function:', err)
@@ -126,21 +127,19 @@ export function useSetupWaiter(bot: LoginParams) {
     setShouldPingMaubinh(true);
   };
 
+  // Auto connect maubinh
+  useEffect(() => {
+    if (!shouldPingMaubinh && user?.status === BotStatus.Initialized) {
+      setTimeout(handleConnectMauBinh, 500);
+    }
+  }, [user]);
+
   // Join found room
   useEffect(() => {
     if (state.foundAt && state.foundBy && user && room) {
       if (!room.players.includes(bot.username)) {
         sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
       }
-
-      // if (
-      //   froom.players.includes(bot.username) &&
-      //   froom.isFinish &&
-      //   user.status === BotStatus.Joined
-      // ) {
-      //   console.log('waiter call ready', bot.username, user.status);
-      //   sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
-      // }
     }
   }, [state.foundBy, state.foundAt]);
 
@@ -149,23 +148,17 @@ export function useSetupWaiter(bot: LoginParams) {
     if (
       (user?.status === BotStatus.Joined ||
         user?.status === BotStatus.Submitted) &&
-      room.isFinish
+      room?.isFinish
     ) {
-      // setTimeout(() => {
-      //   console.log('craw call ready new game');
-      // }, 2100);
       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-      // console.log('waiter call ready', bot.username, user.status);
-      // sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
     }
-  }, [user, room?.isFinish]);
+  }, [user, room]);
 
   // Crawing
   useEffect(() => {
-    if (room && user?.status === BotStatus.Received) {
-      const cardDesk = room.cardDesk[room.cardDesk.length - 1];
-      const myCards = cardDesk ? cardDesk[bot.username] : null;
-      if (myCards) {
+    if (user) {
+      const { status, currentCard: myCards } = user;
+      if (status === BotStatus.Received && myCards) {
         // Submit cards
         sendMessage(
           `[5,"Simms",${state.foundAt},{"cmd":603,"cs":[${myCards}]}]`

@@ -31,40 +31,16 @@ export const HomePage: React.FC<any> = (cardDeck) => {
 
   useEffect(() => {
     if (state.foundBy) {
-      const desk = state.crawingRoom[state.foundBy].cardDesk;
+      const desk = state.crawingRoom[state.foundBy].cardGame;
       const lastIndex = desk.length - 1;
       const lastGame = desk[lastIndex];
-      const lastCards = Object.values(lastGame);
 
-      if (
-        lastIndex > 0 &&
-        lastCards.length === 4 &&
-        cards.length === lastIndex - 1
-      ) {
-        const mappedCard = ([] as number[]).concat(...lastCards);
-        setCards((pre) => [...pre, mappedCard]);
+      if (lastIndex > 0 && cards.length === lastIndex - 1) {
+        const mappedCard = lastGame.map((gameCard) => gameCard.cs);
+        setCards((pre) => [...pre, ([] as number[]).concat(...mappedCard)]);
       }
     }
   }, [state.foundAt, state.crawingRoom]);
-
-  // const cards = useMemo(() => {
-  //   if (state.foundBy) {
-  //     const desk = state.crawingRoom[state.foundBy].cardDesk;
-  //     const card = desk.map((game) => {
-  //       const arr = Object.values(game);
-  //       if (arr.length === 4) {
-  //         return ([] as number[]).concat(...arr);
-  //       }
-  //       return [];
-  //     });
-
-  //     return card;
-  //   }
-
-  //   return [];
-  // }, [state.crawingRoom]);
-
-  // console.log(cards);
 
   return (
     <div className="text-center relative">

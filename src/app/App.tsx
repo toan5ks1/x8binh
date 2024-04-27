@@ -6,7 +6,6 @@ import {
   PlusCircle,
   RockingChair,
   ScreenShareOff,
-  Unplug,
 } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -49,9 +48,9 @@ export function App() {
     setShouldDisconnect(false);
   };
 
-  const onJoinMauBinh = () => {
-    setShouldJoinMB(true);
-  };
+  // const onJoinMauBinh = () => {
+  //   setShouldJoinMB(true);
+  // };
 
   const onCreatRoom = () => {
     setShouldCreateRoom(true);
@@ -144,7 +143,7 @@ export function App() {
                       Login
                     </span>
                   </Button>
-                  <Button
+                  {/* <Button
                     onClick={onJoinMauBinh}
                     size="sm"
                     className="h-8 gap-1"
@@ -153,7 +152,7 @@ export function App() {
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                       Connect
                     </span>
-                  </Button>
+                  </Button> */}
                   <Button onClick={onCreatRoom} size="sm" className="h-8 gap-1">
                     <PlusCircle className="h-3.5 w-3.5" />
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">

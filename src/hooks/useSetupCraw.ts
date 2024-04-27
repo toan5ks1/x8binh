@@ -1,5 +1,6 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { useToast } from '../components/toast/use-toast';
 import { handleMessageCrawing } from '../lib/listeners/craw';
 import {
   LoginParams,
@@ -19,7 +20,7 @@ export function useSetupCraw(
   const { state, setState } = useContext(AppContext);
   const initRoom = state.initialRoom;
   const room = state.crawingRoom[coupleId];
-  const me = state.crawingBots[bot.username];
+  // const me = state.crawingBots[bot.username];
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
   const [shouldPingMaubinh, setShouldPingMaubinh] = useState(false);
@@ -27,6 +28,7 @@ export function useSetupCraw(
   const [iTime, setITime] = useState(1);
   const [messageHistory, setMessageHistory] = useState<string[]>([]);
   const [shouldConnect, setShouldConnect] = useState(false);
+  const { toast } = useToast();
 
   const iTimeRef = useRef(iTime);
 
@@ -63,6 +65,9 @@ export function useSetupCraw(
         setState,
         user,
         coupleId,
+        setUser: setUser as React.Dispatch<
+          React.SetStateAction<LoginResponseDto>
+        >,
       });
 
       newMsg && setMessageHistory((msgs) => [...msgs, newMsg]);
@@ -84,13 +89,12 @@ export function useSetupCraw(
   // Ping maubinh
   useEffect(() => {
     if (shouldPingMaubinh) {
-      const maubinhPingMessage = () =>
-        `[6,"Simms","channelPlugin",{"cmd":300,"aid":"1","gid":4}]`;
+      const maubinhPingMessage = `[6,"Simms","channelPlugin",{"cmd":300,"aid":"1","gid":4}]`;
 
-      sendMessage(maubinhPingMessage());
+      sendMessage(maubinhPingMessage);
 
       const intervalId = setInterval(() => {
-        sendMessage(maubinhPingMessage());
+        sendMessage(maubinhPingMessage);
         setITime((prevITime) => prevITime + 1);
       }, 6000);
 
@@ -102,8 +106,10 @@ export function useSetupCraw(
     login(bot)
       .then((data: LoginResponse | null) => {
         const user = data?.data[0];
-        setUser(user);
-        user && connectMainGame(user);
+        if (user) {
+          setUser(user);
+          connectMainGame(user);
+        }
       })
       .catch((err: Error) =>
         console.error('Error when calling login function:', err)
@@ -136,12 +142,19 @@ export function useSetupCraw(
     );
   };
 
+  // Auto connect maubinh
+  useEffect(() => {
+    if (!shouldPingMaubinh && user?.status === BotStatus.Initialized) {
+      setTimeout(handleConnectMauBinh, 500);
+    }
+  }, [user]);
+
   // Bot join initial room
   useEffect(() => {
     if (
       room &&
       room.id &&
-      Object.keys(room.cardDesk).length === 0 // Make sure cards isn't received
+      Object.keys(room.cardGame).length === 0 // Make sure cards isn't received
     ) {
       // Host and guess join after created room
       if (room.players.length < 2) {
@@ -154,65 +167,75 @@ export function useSetupCraw(
         }
       }
 
-      if (room.players.length === 2 && me.status === BotStatus.Joined) {
+      if (room.players.length === 2 && user?.status === BotStatus.Joined) {
         if (bot.username === room.owner) {
           // Host ready
           sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
         }
       }
     }
-  }, [state.crawingRoom[coupleId]]);
+  }, [room]);
 
   // Guess ready
   useEffect(() => {
     if (
       room &&
       bot.username !== room.owner &&
-      me?.status === BotStatus.Joined &&
+      user?.status === BotStatus.Joined &&
       isAllHostReady(state) &&
       !room.isFinish
     ) {
       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
     }
-  }, [state.mainBots, state.crawingBots]);
+  }, [state.initialRoom, state.crawingRoom]);
+
+  // Submit
+  useEffect(() => {
+    if (user?.status === BotStatus.Received && !state.foundAt) {
+      // Submit cards
+      sendMessage(
+        `[5,"Simms",${room.id},{"cmd":603,"cs":[${user.currentCard}]}]`
+      );
+    }
+  }, [user]);
 
   // Check cards
   useEffect(() => {
-    if (!state.foundAt) {
-      if (
-        room?.cardDesk[0] &&
-        Object.keys(room.cardDesk[0]).length === 2 &&
-        initRoom.cardDesk[0] &&
-        Object.keys(initRoom.cardDesk[0]).length === 2
-      ) {
-        if (isFoundCards(room.cardDesk[0], initRoom.cardDesk[0])) {
+    if (!state.foundAt && user) {
+      if (room?.cardGame[0] && initRoom.cardGame[0]) {
+        if (isFoundCards(room.cardGame[0], initRoom.cardGame[0])) {
+          // if (coupleId === 'maumau129nbmhkghjh456') {
           setState((pre) => ({
             ...pre,
-            foundAt: state.crawingRoom[coupleId].id,
+            foundAt: room.id,
             foundBy: coupleId,
+            targetAt: initRoom.id,
           }));
+          toast({
+            title: 'Successfully',
+            description: `Found: ${room.id}`,
+          });
+          console.log(`Found: ${room.id}`);
         } else {
-          console.log('Not match!');
-
-          // Submit cards
-          sendMessage(
-            `[5,"Simms",${room.id},{"cmd":603,"cs":[${
-              room.cardDesk[0][bot.username]
-            }]}]`
-          );
+          toast({
+            title: 'Not match',
+            description: 'Finding again...',
+          });
         }
       }
-    } else {
-      console.log('Found: ', state.foundAt);
     }
   }, [room, state.initialRoom]);
 
   useEffect(() => {
     // Leave room
-    if (room?.isFinish && coupleId !== state.foundBy) {
+    if (
+      room?.isFinish &&
+      coupleId !== state.foundBy &&
+      user?.status === BotStatus.Finished
+    ) {
       sendMessage(`[4,"Simms",${room.id}]`);
     }
-  }, [me, state.foundBy, room]);
+  }, [room, user]);
 
   const handleLeaveRoom = () => {
     if (room?.id) {
@@ -225,27 +248,22 @@ export function useSetupCraw(
     if (
       state.shouldRecreateRoom &&
       isHost &&
-      me?.status !== BotStatus.Finding &&
+      room?.isFinish &&
+      user &&
+      user?.status === BotStatus.Left &&
       !state.foundAt
     ) {
       handleCreateRoom();
-      setState((pre) => ({
-        ...pre,
-        crawingBots: {
-          ...pre.crawingBots,
-          [bot.username]: { ...me, status: BotStatus.Finding },
-        },
-      }));
+      setUser({ ...user, status: BotStatus.Finding });
     }
-  }, [state.shouldRecreateRoom, state.foundAt]);
+  }, [state.shouldRecreateRoom, user]);
 
   // Found room submit cards
   useEffect(() => {
-    if (coupleId === state.foundBy) {
-      const cardDesk = room.cardDesk[room.cardDesk.length - 1];
-      const myCards = cardDesk ? cardDesk[bot.username] : null;
+    if (coupleId === state.foundBy && user) {
+      const { status, currentCard: myCards } = user;
       if (
-        me.status === BotStatus.Received &&
+        status === BotStatus.Received &&
         room.players.length === 4 &&
         myCards
       ) {
@@ -258,11 +276,11 @@ export function useSetupCraw(
         // ready for new game
       }
 
-      if (room.isFinish && isHost && me.status === BotStatus.Ready) {
+      if (room.isFinish && isHost && status === BotStatus.Ready) {
         sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
       }
     }
-  }, [state.foundBy, room, me]);
+  }, [state.foundBy, room, user]);
 
   return {
     user,
