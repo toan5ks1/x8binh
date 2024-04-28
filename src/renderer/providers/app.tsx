@@ -24,16 +24,18 @@ export enum BotStatus {
 }
 
 export interface GameCard {
-  [key: string]: number[];
+  cs: number[];
+  dn: string;
 }
 
 export interface Room {
   id?: number;
   owner?: string;
   players: string[];
-  cardDesk: GameCard[];
+  cardGame: GameCard[][];
   shouldOutVote: number;
-  isFinish?: boolean;
+  isFinish: boolean;
+  isHostReady: boolean;
 }
 
 export interface StateProps {
@@ -57,9 +59,26 @@ export interface StateProps {
     };
   };
   foundAt?: number;
+  targetAt?: number;
   foundBy?: string;
   shouldRecreateRoom: boolean;
+  currentGame?: number;
 }
+
+export const defaultState = {
+  initialRoom: {
+    players: [],
+    cardGame: [],
+    shouldOutVote: 0,
+    isFinish: false,
+    isHostReady: false,
+  },
+  mainBots: {},
+  crawingRoom: {},
+  crawingBots: {},
+  waiterBots: {},
+  shouldRecreateRoom: false,
+};
 
 interface AppContextProps {
   state: StateProps;
@@ -67,18 +86,7 @@ interface AppContextProps {
 }
 
 export const AppContext = createContext<AppContextProps>({
-  state: {
-    initialRoom: {
-      players: [],
-      cardDesk: [],
-      shouldOutVote: 0,
-    },
-    mainBots: {},
-    crawingRoom: {},
-    crawingBots: {},
-    waiterBots: {},
-    shouldRecreateRoom: false,
-  },
+  state: defaultState,
   setState: () => {},
 });
 
@@ -86,8 +94,10 @@ const AppProvider = ({ children }: AppProviderProps) => {
   const [state, setState] = useState({
     initialRoom: {
       players: [] as string[],
-      cardDesk: [] as GameCard[],
+      cardGame: [] as GameCard[][],
       shouldOutVote: 0,
+      isFinish: false,
+      isHostReady: false,
     },
     mainBots: {},
     crawingRoom: {},

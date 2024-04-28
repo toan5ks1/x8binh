@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-import { BotStatus, GameCard, StateProps } from '../renderer/providers/app';
+import { GameCard, StateProps } from '../renderer/providers/app';
 
 export enum ServerMessageType {
   JoinGame = 'joinGame',
@@ -78,74 +78,89 @@ export function handleStartActionTimer(message: any) {
 export const defaultRoom = {
   players: [],
   cardDesk: [],
+  cardGame: [],
   shouldOutVote: 0,
+  isFinish: false,
+  isHostReady: false,
 };
 
-export const insertReceivedCards = (
-  cardDesk: GameCard[],
-  botId: string,
-  cardToInsert: number[]
+// export const insertReceivedCards = (
+//   cardDesk: GameCard[],
+//   botId: string,
+//   cardToInsert: number[]
+// ) => {
+//   const cardDeskClone = [...cardDesk];
+//   const lastGameIndex = cardDeskClone.length - 1; // Get the index of the last element
+//   let lastGame = cardDeskClone[lastGameIndex];
+
+//   if (lastGameIndex < 0 || Object.keys(lastGame)?.length === 4) {
+//     cardDeskClone.push({ [botId]: cardToInsert });
+//   } else if (
+//     Object.keys(cardDeskClone[0]).length === 2 &&
+//     lastGameIndex === 0
+//   ) {
+//     // Skip first game
+//     cardDeskClone.push({ [botId]: cardToInsert });
+//   } else {
+//     lastGame[botId] = cardToInsert;
+//   }
+
+//   return cardDeskClone;
+// };
+
+export const getCardsArray = (ps: any) => {
+  return ps.map((item: any) => ({ cs: item.cs, dn: item.dn }));
+};
+
+export const isFoundCards = (
+  cardPlayer1: GameCard[],
+  cardPlayer2: GameCard[]
 ) => {
-  const cardDeskClone = [...cardDesk];
-  const lastGameIndex = cardDeskClone.length - 1; // Get the index of the last element
-  let lastGame = cardDeskClone[lastGameIndex];
-
-  if (lastGameIndex < 0 || Object.keys(lastGame)?.length === 4) {
-    cardDeskClone.push({ [botId]: cardToInsert });
-  } else if (
-    Object.keys(cardDeskClone[0]).length === 2 &&
-    lastGameIndex === 0
-  ) {
-    // Skip first game
-    cardDeskClone.push({ [botId]: cardToInsert });
-  } else {
-    lastGame[botId] = cardToInsert;
-  }
-
-  return cardDeskClone;
-};
-
-export const isFoundCards = (cardPlayer1: GameCard, cardPlayer2: GameCard) => {
-  if (
-    Object.keys(cardPlayer1).length < 2 ||
-    Object.keys(cardPlayer2).length < 2
-  ) {
+  if (cardPlayer1.length < 2 || cardPlayer2.length < 2) {
     return false;
   }
 
-  const cardArray1 = Object.values(cardPlayer1);
-  const cardArray2 = Object.values(cardPlayer2);
-
   const isFound1 =
-    JSON.stringify(cardArray1[0]) === JSON.stringify(cardArray2[0]) ||
-    JSON.stringify(cardArray1[0]) === JSON.stringify(cardArray2[1]);
+    JSON.stringify(cardPlayer1[0].cs) === JSON.stringify(cardPlayer2[0].cs) ||
+    JSON.stringify(cardPlayer1[0].cs) === JSON.stringify(cardPlayer2[1].cs);
   const isFound2 =
-    JSON.stringify(cardArray1[1]) === JSON.stringify(cardArray2[0]) ||
-    JSON.stringify(cardArray1[1]) === JSON.stringify(cardArray2[1]);
+    JSON.stringify(cardPlayer1[1].cs) === JSON.stringify(cardPlayer2[0].cs) ||
+    JSON.stringify(cardPlayer1[1].cs) === JSON.stringify(cardPlayer2[1].cs);
 
   return isFound1 && isFound2;
 };
 
 export const isAllHostReady = (state: StateProps) => {
-  let isMainHostReady = true;
-  let isCrawingHostReady = true;
-  const allCrawingHost = Object.values(state.crawingRoom).map(
-    (room) => room.owner
-  );
-
-  Object.entries(state.mainBots).forEach(([botId, bot]) => {
-    if (botId === state.initialRoom.owner && bot.status !== BotStatus.Ready) {
-      isMainHostReady = false;
-    }
-  });
-  Object.entries(state.crawingBots).forEach(([botId, bot]) => {
-    if (allCrawingHost.includes(botId) && bot.status !== BotStatus.Ready) {
-      isCrawingHostReady = false;
+  let isAllHostReady = state.initialRoom.isHostReady;
+  Object.values(state.crawingRoom).forEach((room) => {
+    if (!room.isHostReady) {
+      isAllHostReady = false;
     }
   });
 
-  return isMainHostReady && isCrawingHostReady;
+  return isAllHostReady;
 };
+
+// export const isAllHostReady = (state: StateProps) => {
+//   let isMainHostReady = true;
+//   let isCrawingHostReady = true;
+//   const allCrawingHost = Object.values(state.crawingRoom).map(
+//     (room) => room.owner
+//   );
+
+//   Object.entries(state.mainBots).forEach(([botId, bot]) => {
+//     if (botId === state.initialRoom.owner && bot.status !== BotStatus.Ready) {
+//       isMainHostReady = false;
+//     }
+//   });
+//   Object.entries(state.crawingBots).forEach(([botId, bot]) => {
+//     if (allCrawingHost.includes(botId) && bot.status !== BotStatus.Ready) {
+//       isCrawingHostReady = false;
+//     }
+//   });
+
+//   return isMainHostReady && isCrawingHostReady;
+// };
 
 export const amIPlaying = (ps: any[], username: string) => {
   const isPlaying = ps.find((obj) => obj.dn === username);

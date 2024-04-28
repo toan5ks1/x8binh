@@ -23,7 +23,7 @@ export const bots = [
   },
 ];
 
-export const crawingBot = [
+export const craws = [
   {
     username: 'maumau129',
     password: 'zxcv123123',
@@ -35,19 +35,8 @@ export const crawingBot = [
     time: 1713005926,
     aff_id: 'hit',
   },
-  // {
-  //   username: 'mjhgg453',
-  //   password: 'zxcv123123',
-  //   app_id: 'rik.vip',
-  //   os: 'Windows',
-  //   device: 'Computer',
-  //   browser: 'chrome',
-  //   fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
-  //   time: 1713005926,
-  //   aff_id: 'hit',
-  // },
   {
-    username: 'nbmhkghjh456',
+    username: 'mjhgg453',
     password: 'zxcv123123',
     app_id: 'rik.vip',
     os: 'Windows',
@@ -112,8 +101,19 @@ export const crawingBot = [
     time: 1713005926,
     aff_id: 'hit',
   },
-  // {
-  //   username: 'luikghyu56',
+  {
+    username: 'cvbrte354',
+    password: 'zxcv123123',
+    app_id: 'rik.vip',
+    os: 'Windows',
+    device: 'Computer',
+    browser: 'chrome',
+    fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
+    time: 1713005926,
+    aff_id: 'hit',
+  },
+  // { het tien
+  //   username: 'nbmhkghjh456',
   //   password: 'zxcv123123',
   //   app_id: 'rik.vip',
   //   os: 'Windows',
@@ -131,6 +131,31 @@ export const crawingBot = [
   //   device: 'Computer',
   //   browser: 'chrome',
   //   fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
+  //   time: 1713005926,
+  //   aff_id: 'hit',
+  // },
+  // { khoa acc
+  //   username: 'luikghyu56',
+  //   password: 'zxcv123123',
+  //   app_id: 'rik.vip',
+  //   os: 'Windows',
+  //   device: 'Computer',
+  //   browser: 'chrome',
+  //   fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
+  //   time: 1713005926,
+  //   aff_id: 'hit',
+  // },
+  // { khoa acc
+  //   username: 'ioytkrttyer456',
+  //   password: 'zxcv123123',
+  //   app_id: 'rik.vip',
+  //   os: 'Windows',
+  //   device: 'Computer',
+  //   browser: 'chrome',
+  //   fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
+  //   time: 1713005926,
+  //   aff_id: 'hit',
+  // },
 ];
 
 export const loginUrl = 'https://bordergw.api-inovated.com/user/login.aspx';
