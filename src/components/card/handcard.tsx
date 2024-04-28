@@ -181,7 +181,10 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
                 ))}
               </div>
 
-              <Label className=" bg-background p-[5px] rounded-[5px] font-semibold">
+              <Label
+                style={{ fontFamily: 'monospace' }}
+                className=" bg-background p-[5px] rounded-[5px] font-semibold"
+              >
                 {evaluation3}
               </Label>
             </div>
@@ -201,7 +204,10 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
                   </DropCard>
                 ))}
               </div>
-              <Label className=" bg-background p-[5px] rounded-[5px] font-semibold">
+              <Label
+                style={{ fontFamily: 'monospace' }}
+                className=" bg-background p-[5px] rounded-[5px] font-semibold"
+              >
                 {evaluation2}
               </Label>
             </div>
@@ -217,7 +223,10 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
                   </DropCard>
                 ))}
               </div>
-              <Label className=" bg-background p-[5px] rounded-[5px] font-semibold">
+              <Label
+                style={{ fontFamily: 'monospace' }}
+                className=" bg-background p-[5px] rounded-[5px] font-semibold"
+              >
                 {evaluation1}
               </Label>
             </div>

@@ -16,6 +16,7 @@ import { Button } from '../../components/ui/button';
 import { Label } from '../../components/ui/label';
 import { ScrollArea } from '../../components/ui/scroll-area';
 import { AppContext } from '../../renderer/providers/app';
+import { HandCard } from '../card/handcard';
 import { useToast } from '../toast/use-toast';
 
 export const TerminalBoard: React.FC<any> = ({ main }) => {
@@ -26,6 +27,8 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   const [isInLobby, setIsInLobby] = useState(false);
   const [currentRoom, setCurrentRoom] = useState('');
   const [currentSit, setCurrentSit] = useState('');
+  const [currentCards, setCurrentCards] = useState<any>();
+
   const parseData = (dataString: string) => {
     try {
       const parsedData = JSON.parse(dataString);
@@ -71,12 +74,13 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
     window.backend.sendMessage(
       'check-position',
       account,
-      `
-        var uuid = __require('GamePlayManager').default.Instance.loginDict.uid;
-        var players = cc.find("Canvas/MainUI/MauBinhController")._components[0].cardGameTableController.gameController.AllPlayers;
-        var uids = Object.keys(players);
-        uids.indexOf(uuid.toString());
-        `
+      // `
+      //   var uuid = __require('GamePlayManager').default.Instance.loginDict.uid;
+      //   var players = cc.find("Canvas/MainUI/MauBinhController")._components[0].cardGameTableController.gameController.AllPlayers;
+      //   var uids = Object.keys(players);
+      //   uids.indexOf(uuid.toString());
+      //   `
+      `cc.find("Canvas/MainUI/MauBinhController")._components[0].cardGameTableController.gameController.state`
     );
   }
   async function outInRoom(account: any): Promise<void> {
@@ -94,7 +98,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
     window.backend.sendMessage(
       'execute-script',
       account,
-      `f12_Joinlobby.default.Instance.onClickIConGame(null,"vgcg_4");`
+      `__require('LobbyViewController').default.Instance.onClickIConGame(null,"vgcg_4");`
     );
   };
 
@@ -216,22 +220,31 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
           setCurrentSit('');
         }
         if (parsedData[0] == 5) {
-          console.log('parsedData', parsedData);
           if (parsedData[1].cmd === 317) {
             checkPosition(main);
+          }
+          if (parsedData[2] === currentRoom) {
+            console.log('Đang trong ván');
           }
           if (parsedData[1].p) {
             if (parsedData[1].p.uid) {
               toast({
                 title: parsedData[1].p.dn,
-                description: 'Đã vào phòng.',
+                description: 'Đã ra khỏi phòng.',
               });
             } else {
               toast({
                 title: parsedData[1].p.dn,
-                description: 'Đã ra khỏi phòng.',
+                description: 'Đã vào phòng.',
               });
             }
+          }
+          if (parsedData[1].cs && parsedData[1].cmd === 600) {
+            toast({
+              title: 'Đã phát bài',
+              description: parsedData[1].cs.toString(),
+            });
+            setCurrentCards(parsedData[1].cs.toString().split(',').map(Number));
           }
         }
 
@@ -315,11 +328,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
           gg.bet = 100;
           gg.onClickTuSapBai();
           gg.bet = tempBet;
-          window.delay(Math.floor(Math.random() * 5000 + 35000)).then(function () {
-            if (autoPlayMode) {
-              window.xepBaiXong();
-            }
-          });
         } catch (e) {
           console.log("Sap bai ERROR: ", e.toString());
         }
@@ -336,7 +344,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   };
 
   return (
-    <div className="flex flex-col terminal relative rounded-md border">
+    <div className="flex flex-col terminal relative rounded-md border ">
       <div className="flex flex-row justify-between bg-[#141414] gap-[10px]">
         <div>
           {currentRoom && (
@@ -476,6 +484,9 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
           />
         ))}
       </ScrollArea>
+      <div className="absolute bottom-0 right-0 w-[20%]">
+        {currentCards && <HandCard cardProp={currentCards} key={0} />}
+      </div>
     </div>
   );
 };
