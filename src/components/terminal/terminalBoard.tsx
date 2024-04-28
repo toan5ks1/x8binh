@@ -1,4 +1,3 @@
-import { PaperPlaneIcon } from '@radix-ui/react-icons';
 import {
   ArrowLeft,
   ArrowRight,
@@ -14,8 +13,6 @@ import {
 } from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react';
 import { Button } from '../../components/ui/button';
-import { Card } from '../../components/ui/card';
-import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { ScrollArea } from '../../components/ui/scroll-area';
 import { AppContext } from '../../renderer/providers/app';
@@ -25,7 +22,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   const { toast } = useToast();
   const [data, setData] = useState<unknown[]>([]);
   const { state } = useContext<any>(AppContext);
-  const [command, setCommand] = useState('');
   const [isLogin, setIsLogin] = useState(false);
   const [isInLobby, setIsInLobby] = useState(false);
   const [currentRoom, setCurrentRoom] = useState('');
@@ -39,7 +35,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
       return [];
     }
   };
-
   const sendMessage = () => {
     console.log('create ROom');
     window.backend.sendMessage('send-message', [
@@ -342,124 +337,128 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
 
   return (
     <div className="flex flex-col terminal relative rounded-md border">
-      <div className="flex flex-row justify-end bg-[#141414] gap-[10px]">
-        {currentRoom && (
+      <div className="flex flex-row justify-between bg-[#141414] gap-[10px]">
+        <div>
+          {currentRoom && (
+            <Label
+              style={{ fontFamily: 'monospace' }}
+              className="flex items-center bg-background border p-[5px] flex-grow justify-center font-bold rounded-sm"
+            >
+              {currentRoom == '19' ? 'Chống vây' : currentRoom}
+            </Label>
+          )}
+          {currentSit && (
+            <Label
+              style={{ fontFamily: 'monospace' }}
+              className="flex items-center bg-background border p-[5px] flex-grow justify-center font-bold rounded-full flex-row gap-[3px]"
+            >
+              <RockingChair className="w-3.5 h-3.5" />
+              {currentSit}
+            </Label>
+          )}
           <Label
             style={{ fontFamily: 'monospace' }}
-            className="flex items-center bg-background border p-[5px] flex-grow justify-center font-bold rounded-sm"
+            className="flex items-center bg-background border !w-[100px] truncate p-[5px] flex-grow justify-center font-bold rounded-sm"
           >
-            {currentRoom == '19' ? 'Chống vây' : currentRoom}
+            {main.username}
           </Label>
-        )}
-        {currentSit && (
-          <Label
+        </div>
+        <div className="flex flex-row gap-2">
+          {isLogin && (
+            <>
+              {isInLobby && (
+                <Button
+                  onClick={() => createRoom(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] py-[0px] flex items-center hover:bg-slate-400 cursor-pointer gap-[2px] px-[5px] h-[30px]"
+                >
+                  <PlusCircle className="h-3.5 w-3.5" />
+                  <span>Create</span>
+                </Button>
+              )}
+
+              {!isInLobby && (
+                <Button
+                  onClick={() => joinLobby(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+                >
+                  <Unplug className="h-3.5 w-3.5" />
+                  <span>Lobby</span>
+                </Button>
+              )}
+
+              {state.initialRoom.id && (
+                <Button
+                  onClick={() => joinRoom(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+                >
+                  <ArrowRight className="h-3.5 w-3.5" />
+                  <span>In</span>
+                </Button>
+              )}
+              {currentRoom && (
+                <>
+                  <Button
+                    onClick={() => invitePlayer(main)}
+                    style={{ fontFamily: 'monospace' }}
+                    className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+                  >
+                    <UserPlus className="h-3.5 w-3.5" />
+                    <span>Invite</span>
+                  </Button>
+                  <Button
+                    onClick={() => arrangeCards(main)}
+                    style={{ fontFamily: 'monospace' }}
+                    className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+                  >
+                    <SortAsc className="h-3.5 w-3.5" />
+                    <span>Arrange</span>
+                  </Button>
+                  <Button
+                    onClick={() => checkPosition(main)}
+                    style={{ fontFamily: 'monospace' }}
+                    className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                    <span>Check Pos</span>
+                  </Button>
+                  <Button
+                    onClick={() => outRoom(main)}
+                    style={{ fontFamily: 'monospace' }}
+                    className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    <span>Out</span>
+                  </Button>
+                  <Button
+                    onClick={() => outInRoom(main)}
+                    style={{ fontFamily: 'monospace' }}
+                    className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+                  >
+                    <RefreshCcw className="h-3.5 w-3.5" />
+                    <span>Out-In</span>
+                  </Button>
+                </>
+              )}
+            </>
+          )}
+          <Button
+            onClick={() => openAccounts(main)}
             style={{ fontFamily: 'monospace' }}
-            className="flex items-center bg-background border p-[5px] flex-grow justify-center font-bold rounded-full flex-row gap-[3px]"
+            className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 cursor-pointer h-[30px]"
           >
-            <RockingChair className="w-3.5 h-3.5" />
-            {currentSit}
-          </Label>
-        )}
-        <Label
-          style={{ fontFamily: 'monospace' }}
-          className="flex items-center bg-background border p-[5px] flex-grow justify-center font-bold rounded-sm"
-        >
-          {main.username}
-        </Label>
-        {isLogin && (
-          <>
-            {isInLobby && (
-              <Button
-                onClick={() => createRoom(main)}
-                style={{ fontFamily: 'monospace' }}
-                className="rounded-[5px] py-[0px] flex items-center hover:bg-slate-400 cursor-pointer gap-[2px] px-[5px] h-[30px]"
-              >
-                <PlusCircle className="h-3.5 w-3.5" />
-                <span>Create</span>
-              </Button>
-            )}
-
-            {!isInLobby && (
-              <Button
-                onClick={() => joinLobby(main)}
-                style={{ fontFamily: 'monospace' }}
-                className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-              >
-                <Unplug className="h-3.5 w-3.5" />
-                <span>Lobby</span>
-              </Button>
-            )}
-
-            {state.initialRoom.id && (
-              <Button
-                onClick={() => joinRoom(main)}
-                style={{ fontFamily: 'monospace' }}
-                className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-              >
-                <ArrowRight className="h-3.5 w-3.5" />
-                <span>In</span>
-              </Button>
-            )}
-            {currentRoom && (
-              <>
-                <Button
-                  onClick={() => invitePlayer(main)}
-                  style={{ fontFamily: 'monospace' }}
-                  className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-                >
-                  <UserPlus className="h-3.5 w-3.5" />
-                  <span>Invite</span>
-                </Button>
-                <Button
-                  onClick={() => arrangeCards(main)}
-                  style={{ fontFamily: 'monospace' }}
-                  className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-                >
-                  <SortAsc className="h-3.5 w-3.5" />
-                  <span>Arrange</span>
-                </Button>
-                <Button
-                  onClick={() => checkPosition(main)}
-                  style={{ fontFamily: 'monospace' }}
-                  className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-                >
-                  <Check className="h-3.5 w-3.5" />
-                  <span>Check Pos</span>
-                </Button>
-                <Button
-                  onClick={() => outRoom(main)}
-                  style={{ fontFamily: 'monospace' }}
-                  className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-                >
-                  <ArrowLeft className="h-3.5 w-3.5" />
-                  <span>Out</span>
-                </Button>
-                <Button
-                  onClick={() => outInRoom(main)}
-                  style={{ fontFamily: 'monospace' }}
-                  className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-                >
-                  <RefreshCcw className="h-3.5 w-3.5" />
-                  <span>Out-In</span>
-                </Button>
-              </>
-            )}
-          </>
-        )}
-        <Button
-          onClick={() => openAccounts(main)}
-          style={{ fontFamily: 'monospace' }}
-          className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 cursor-pointer h-[30px]"
-        >
-          <Chrome className="h-3.5 w-3.5 ml-[3px]" />
-          <span>Open</span>
-        </Button>
-        <Button
-          onClick={clearData}
-          className="  hover:bg-slate-400 rounded-[5px] p-0 border-[2px] flex justify-center items-center cursor-pointer  gap-[2px] px-[7px] h-[30px]"
-        >
-          <TrashIcon className="h-3.5 w-3.5" />
-        </Button>
+            <Chrome className="h-3.5 w-3.5 ml-[3px]" />
+            <span>Open</span>
+          </Button>
+          <Button
+            onClick={clearData}
+            className="  hover:bg-slate-400 rounded-[5px] p-0 border-[2px] flex justify-center items-center cursor-pointer  gap-[2px] px-[7px] h-[30px]"
+          >
+            <TrashIcon className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
 
       <ScrollArea
@@ -477,25 +476,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
           />
         ))}
       </ScrollArea>
-      <div className="sticky bottom-0">
-        <Card className="flex flex-row justify-between p-[5px]">
-          <Input
-            type="text"
-            className="!h-auto"
-            style={{ fontFamily: 'monospace' }}
-            placeholder="Type messsage..."
-            onChange={(e) => setCommand(e.target.value)}
-          />
-          <Button
-            style={{ fontFamily: 'monospace' }}
-            onClick={sendMessage}
-            className="rounded-[5px] px-[25px] flex justify-center gap-[3px] items-center border-[2px] hover:bg-slate-400"
-          >
-            <PaperPlaneIcon />
-            <p>Send</p>
-          </Button>
-        </Card>
-      </div>
     </div>
   );
 };

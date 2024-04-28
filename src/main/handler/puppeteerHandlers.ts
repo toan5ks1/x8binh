@@ -29,11 +29,23 @@ export const setupPuppeteerHandlers = (
     const username = os.userInfo().username;
 
     if (os.platform() === 'win32') {
-      userProfilePath = path.join('C:/Users', username, 'MyPuppeteerProfile');
+      userProfilePath = path.join(
+        'C:/Users/puppeteerProfile',
+        username,
+        'MyPuppeteerProfile'
+      );
     } else if (os.platform() === 'darwin') {
-      userProfilePath = path.join('/Users', username, 'MyPuppeteerProfile');
+      userProfilePath = path.join(
+        '/Users/puppeteerProfile',
+        username,
+        'MyPuppeteerProfile'
+      );
     } else {
-      userProfilePath = path.join('/home', username, 'MyPuppeteerProfile');
+      userProfilePath = path.join(
+        '/home/puppeteerProfile',
+        username,
+        'MyPuppeteerProfile'
+      );
     }
     const browser = await puppeteer.launch({
       headless: false,

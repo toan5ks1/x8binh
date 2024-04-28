@@ -91,8 +91,8 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
 
     const accountsText = accountsUpdate
       .map(
-        (account: { username: any; password: any }) =>
-          `${account.username}|${account.password}`
+        (account: { isSelected: any; username: any; password: any }) =>
+          `${account.username}|${account.password}|${account.isSelected}`
       )
       .join('\n');
 
@@ -186,7 +186,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
           <legend className="-ml-1 px-1 text-sm font-medium">
             {accountType} ACCOUNT
           </legend>
-          <div className="grid gap-3">
+          <div className="flex flex-col gap-3">
             <Label htmlFor={`${accountType}-account`}>Accounts</Label>
             <ScrollArea
               className={` ${

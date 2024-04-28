@@ -234,7 +234,7 @@ export const AccountTable: React.FC<any> = ({
           }
           className="max-w-sm"
         />
-        <div>
+        <div className="flex flex-row justify-end items-center">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -258,9 +258,9 @@ export const AccountTable: React.FC<any> = ({
             </TooltipTrigger>
             <TooltipTrigger asChild>
               <Button
-                variant="outline"
+                variant="ghost"
+                size="icon"
                 onClick={handleDeleteSelectedRows}
-                className="ml-2"
               >
                 <Trash className="w-3.5 h-3.5" />
               </Button>
