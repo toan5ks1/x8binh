@@ -2,6 +2,7 @@ import { PaperPlaneIcon } from '@radix-ui/react-icons';
 import {
   ArrowLeft,
   ArrowRight,
+  Check,
   Chrome,
   PlusCircle,
   RefreshCcw,
@@ -18,8 +19,10 @@ import { Input } from '../../components/ui/input';
 import { Label } from '../../components/ui/label';
 import { ScrollArea } from '../../components/ui/scroll-area';
 import { AppContext } from '../../renderer/providers/app';
+import { useToast } from '../toast/use-toast';
 
 export const TerminalBoard: React.FC<any> = ({ main }) => {
+  const { toast } = useToast();
   const [data, setData] = useState<unknown[]>([]);
   const { state } = useContext<any>(AppContext);
   const [command, setCommand] = useState('');
@@ -54,7 +57,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
     window.backend.sendMessage(
       'execute-script',
       account,
-      `f12_GameController.sendLeaveRoom();`
+      `__require('GameController').default.prototype.sendLeaveRoom();`
     );
     console.log('đã out room');
     setCurrentRoom('');
@@ -68,6 +71,18 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
         `__require('GamePlayManager').default.getInstance().joinRoom(${state.initialRoom.id},0,'',true);`
       );
     }
+  }
+  function checkPosition(account: any): void {
+    window.backend.sendMessage(
+      'check-position',
+      account,
+      `
+        var uuid = __require('GamePlayManager').default.Instance.loginDict.uid;
+        var players = cc.find("Canvas/MainUI/MauBinhController")._components[0].cardGameTableController.gameController.AllPlayers;
+        var uids = Object.keys(players);
+        uids.indexOf(uuid.toString());
+        `
+    );
   }
   async function outInRoom(account: any): Promise<void> {
     if (currentRoom) {
@@ -205,18 +220,22 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
           setCurrentRoom('');
           setCurrentSit('');
         }
-
-        if (parsedData[0] == 5 && parsedData[1].ps) {
-          setCurrentSit(parsedData[1].ps.length);
-        }
         if (parsedData[0] == 5) {
+          console.log('parsedData', parsedData);
+          if (parsedData[1].cmd === 317) {
+            checkPosition(main);
+          }
           if (parsedData[1].p) {
             if (parsedData[1].p.uid) {
-              console.log('Đã có thằng vào phòng', parsedData[1].p.dn);
-              // setCurrentSit((parseInt(currentSit) + 1).toString());
+              toast({
+                title: parsedData[1].p.dn,
+                description: 'Đã vào phòng.',
+              });
             } else {
-              console.log('Đã có thằng rời phòng', parsedData[1].p.dn);
-              // setCurrentSit((parseInt(currentSit) - 1).toString());
+              toast({
+                title: parsedData[1].p.dn,
+                description: 'Đã ra khỏi phòng.',
+              });
             }
           }
         }
@@ -262,16 +281,23 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
       setCurrentRoom(data);
     }
   };
+  const handleCheckPosition = ({ data, username }: any) => {
+    if (username === main.username) {
+      setCurrentSit(parseInt(data + 1).toString());
+    }
+  };
 
   useEffect(() => {
     window.backend.on('websocket-data', handleData);
     window.backend.on('websocket-data-sent', handleDataSent);
     window.backend.on('check-room', handleCheckRoom);
+    window.backend.on('check-position', handleCheckPosition);
 
     return () => {
       window.backend.removeListener('websocket-data', handleData);
       window.backend.removeListener('websocket-data-sent', handleDataSent);
       window.backend.removeListener('check-room', handleCheckRoom);
+      window.backend.removeListener('check-position', handleCheckPosition);
     };
   }, []);
 
@@ -391,6 +417,14 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
                 >
                   <SortAsc className="h-3.5 w-3.5" />
                   <span>Arrange</span>
+                </Button>
+                <Button
+                  onClick={() => checkPosition(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+                >
+                  <Check className="h-3.5 w-3.5" />
+                  <span>Check Pos</span>
                 </Button>
                 <Button
                   onClick={() => outRoom(main)}

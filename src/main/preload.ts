@@ -15,6 +15,7 @@ const validChannels: string[] = [
   'arrange-card',
   'websocket-data-sent',
   'check-room',
+  'check-position',
 ];
 
 contextBridge.exposeInMainWorld('backend', {
