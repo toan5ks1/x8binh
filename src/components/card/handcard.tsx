@@ -155,7 +155,7 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
       >
         {titleInstant && (
           <div className="absolute top-[-20px] left-0 right-0 flex justify-center items-center ">
-            <Label className="shadow-[rgba(6,_24,_44,_0.4)_0px_0px_0px_2px,_rgba(6,_24,_44,_0.65)_0px_4px_6px_-1px,_rgba(255,_255,_255,_0.08)_0px_1px_0px_inset] py-[5px] px-[10px] border bg-background rounded-sm z-[200] flex flex-row gap-[3px] items-center font-bold">
+            <Label className="shadow-[rgba(6,_24,_44,_0.4)_0px_0px_0px_2px,_rgba(6,_24,_44,_0.65)_0px_4px_6px_-1px,_rgba(255,_255,_255,_0.08)_0px_1px_0px_inset] py-[5px] px-[10px] border bg-background rounded-sm z-[49] flex flex-row gap-[3px] items-center font-bold">
               <Star className="w-3.5 h-3.5"></Star>
               {titleInstant}
             </Label>

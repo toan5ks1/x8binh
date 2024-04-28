@@ -30,11 +30,26 @@ export const setupAccountHandlers = (
       let userProfilePath;
       const usernamePc = os.userInfo().username;
       if (os.platform() === 'win32') {
-        userProfilePath = path.join('C:/Users', usernamePc, account.username);
+        userProfilePath = path.join(
+          'C:/Users',
+          usernamePc,
+          'puppeteerProfile',
+          account.username
+        );
       } else if (os.platform() === 'darwin') {
-        userProfilePath = path.join('/Users', usernamePc, account.username);
+        userProfilePath = path.join(
+          '/Users',
+          usernamePc,
+          'puppeteerProfile',
+          account.username
+        );
       } else {
-        userProfilePath = path.join('/home', usernamePc, account.username);
+        userProfilePath = path.join(
+          '/home',
+          usernamePc,
+          'puppeteerProfile',
+          account.username
+        );
       }
       const browser = await puppeteer.launch({
         headless: false,

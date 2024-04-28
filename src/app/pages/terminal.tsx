@@ -1,5 +1,4 @@
 import React from 'react';
-import { AccountSection } from '../../components/account/accountSection';
 import { TerminalBoard } from '../../components/terminal/terminalBoard';
 import { Card } from '../../components/ui/card';
 import useAccountStore from '../../store/accountStore';
@@ -16,12 +15,6 @@ export const TerminalPage: React.FC = () => {
               main.isSelected && <TerminalBoard key={index} main={main} />
           )}
         </Card>
-        <div className="">
-          <AccountSection
-            accountType="MAIN"
-            placeholder="Main account here..."
-          />
-        </div>
       </div>
     </div>
   );

@@ -6,7 +6,6 @@ import { loadExtensions } from './extension/installer';
 import { setupAccountHandlers } from './handler/accountsHandlers';
 import { setupArrangeCardHandlers } from './handler/arrangeCardHandlers';
 import { setupFileHandlers } from './handler/fileHandlers';
-import { setupPuppeteerHandlers } from './handler/puppeteerHandlers';
 import { setupReadHardwareHandlers } from './handler/readHardwareHandler';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
@@ -82,7 +81,7 @@ const createWindow = async () => {
   });
   setupReadHardwareHandlers();
   setupFileHandlers();
-  setupPuppeteerHandlers(mainWindow);
+  // setupPuppeteerHandlers(mainWindow);
   setupAccountHandlers(mainWindow);
   setupArrangeCardHandlers();
 
