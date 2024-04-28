@@ -17,6 +17,7 @@ import {
   DollarSign,
   MoreHorizontal,
   Paperclip,
+  RefreshCcw,
   Save,
   Trash,
 } from 'lucide-react';
@@ -46,7 +47,7 @@ import {
   TableHeader,
   TableRow,
 } from '../ui/table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { Tooltip, TooltipTrigger } from '../ui/tooltip';
 
 export const AccountTable: React.FC<any> = ({
   accountType,
@@ -82,6 +83,21 @@ export const AccountTable: React.FC<any> = ({
     toast({
       title: 'Deleted accounts',
       description: `${selectedRows.length} account(s) deleted.`,
+    });
+  };
+
+  const refreshAccount = () => {
+    window.backend.sendMessage(
+      'read-file',
+      [
+        // `C:/Users/PC/AppData/Local/Programs/electron-react-boilerplate/resources/account/${accountType.toLowerCase()}Account.txt`,
+        `account/${accountType.toLowerCase()}Account.txt`,
+      ],
+      accountType
+    );
+    toast({
+      title: 'Task done',
+      description: `All account was added`,
     });
   };
 
@@ -265,10 +281,11 @@ export const AccountTable: React.FC<any> = ({
                 <Trash className="w-3.5 h-3.5" />
               </Button>
             </TooltipTrigger>
-
-            <TooltipContent side="top">
-              Upload file for {accountType} account
-            </TooltipContent>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={refreshAccount}>
+                <RefreshCcw className="w-3.5 h-3.5" />
+              </Button>
+            </TooltipTrigger>
           </Tooltip>
 
           <DropdownMenu>

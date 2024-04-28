@@ -130,7 +130,6 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
 
   useEffect(() => {
     const handleReadFile = (data: any, accountTypeReceived: any) => {
-      console.log('accountTypeReceived', accountTypeReceived);
       if (accountTypeReceived == accountType) {
         const newAccounts = readValidAccount(data);
 

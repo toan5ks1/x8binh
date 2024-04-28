@@ -114,7 +114,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
           }
           if (btnInvite) {
               btnInvite.on('touchstart', function() {
-                  console.log('Nút đã được nhấn.');
+                  console.log('Đã mời người khác vào.');
               });
           }
           if (btnInvite) {
@@ -135,7 +135,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
           }
           if (btnInvite) {
               btnInvite.on('touchstart', function() {
-                  console.log('Nút đã được nhấn.');
+                  console.log('Đã mời người chơi khác vào');
               });
           }
           if (btnInvite) {
@@ -239,6 +239,13 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
               });
             }
           }
+          if (parsedData[1].cmd === 602 && parsedData[1].hsl == false) {
+            console.log('Đã kết thúc ván bài.');
+            toast({
+              title: 'Thông báo',
+              description: 'Đã kết thúc ván bài.',
+            });
+          }
           if (parsedData[1].cs && parsedData[1].cmd === 600) {
             toast({
               title: 'Đã phát bài',
@@ -247,7 +254,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
             setCurrentCards(parsedData[1].cs.toString().split(',').map(Number));
           }
         }
-
         if (parsedData[0] !== '7' && parsedData[0] != 5) {
           setData((currentData) => [...currentData, parsedData]);
         }
@@ -346,7 +352,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   return (
     <div className="flex flex-col terminal relative rounded-md border ">
       <div className="flex flex-row justify-between bg-[#141414] gap-[10px]">
-        <div>
+        <div className="flex flex-row">
           {currentRoom && (
             <Label
               style={{ fontFamily: 'monospace' }}
@@ -385,16 +391,14 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
                 </Button>
               )}
 
-              {!isInLobby && (
-                <Button
-                  onClick={() => joinLobby(main)}
-                  style={{ fontFamily: 'monospace' }}
-                  className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-                >
-                  <Unplug className="h-3.5 w-3.5" />
-                  <span>Lobby</span>
-                </Button>
-              )}
+              <Button
+                onClick={() => joinLobby(main)}
+                style={{ fontFamily: 'monospace' }}
+                className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+              >
+                <Unplug className="h-3.5 w-3.5" />
+                <span>Lobby</span>
+              </Button>
 
               {state.initialRoom.id && (
                 <Button
