@@ -220,6 +220,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
           setCurrentSit('');
         }
         if (parsedData[0] == 5) {
+          // console.log('parsedData', parsedData);
           if (parsedData[1].cmd === 317) {
             checkPosition(main);
           }

@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from 'react';
 import { BotStatus, StateProps } from '../../renderer/providers/app';
 import { LoginResponseDto } from '../login';
-import { amIPlaying, insertReceivedCards } from '../utils';
+import { amIPlaying } from '../utils';
 
 interface HandleMessageWaiterProps {
   message: any;
@@ -22,9 +22,14 @@ export function handleMessageWaiter({
   let returnMsg;
 
   switch (message[0]) {
+    case 1:
+      if (message[1] === true) {
+        setUser((pre) => ({ ...pre, status: BotStatus.Initialized }));
+      }
+      break;
     case 5:
-      if (message[1].rs && !user.status) {
-        // setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
+      if (message[1].rs && user?.status === BotStatus.Initialized) {
+        setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
         returnMsg = 'Join Maubinh sucessfully!';
       } else if (
         message[1]?.c === 100 ||
@@ -32,29 +37,17 @@ export function handleMessageWaiter({
       ) {
         setUser((pre) => ({ ...pre, status: BotStatus.Ready }));
       } else if (message[1]?.cs?.length > 0 && state.foundBy) {
-        setState((pre) => {
-          const currentRoom = pre.crawingRoom[pre.foundBy!];
-          return {
-            ...pre,
-            crawingRoom: {
-              ...pre.crawingRoom,
-              [pre.foundBy!]: {
-                ...currentRoom,
-                cardDesk: insertReceivedCards(
-                  currentRoom.cardDesk,
-                  caller,
-                  message[1].cs
-                ),
-              },
-            },
-          };
-        });
-        setUser((pre) => ({ ...pre, status: BotStatus.Received }));
+        setUser((pre) => ({
+          ...pre,
+          status: BotStatus.Received,
+          currentCard: message[1].cs,
+        }));
 
         returnMsg = `Card received: ${message[1].cs}`;
       } else if (
-        (message[1].hsl === false || message[1].hsl === true) &&
-        message[1].ps?.length >= 2
+        message[1].hsl === false &&
+        message[1].ps?.length >= 2 &&
+        message[1].cmd === 602
       ) {
         const isPlaying = amIPlaying(message[1].ps, user.fullname);
         setUser((pre) => ({
@@ -91,17 +84,7 @@ export function handleMessageWaiter({
     case 4:
       // Left room response
       if (message[1] === true) {
-        setState((pre) => {
-          return {
-            ...pre,
-            waiterBots: {
-              ...pre.waiterBots,
-              [caller]: {
-                status: BotStatus.Left,
-              },
-            },
-          };
-        });
+        setUser((pre) => ({ ...pre, status: BotStatus.Left }));
         returnMsg = 'Left room successfully!';
       } else {
         returnMsg = message[5] || 'Left room failed!';

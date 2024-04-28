@@ -49,7 +49,7 @@ export const BotCmp = ({
             <TableBody>
               {(messageHistory.length ? messageHistory : ['No message']).map(
                 (tag: any, index: number) => (
-                  <TableRow key={index}>
+                  <TableRow key={index} className="h-2">
                     <TableCell>{JSON.stringify(tag)}</TableCell>
                   </TableRow>
                 )
