@@ -159,6 +159,9 @@ export function handleMessageCrawing({
               ...initRoom,
               shouldOutVote: outVote,
             },
+            crawingRoom: {
+              [coupleId]: defaultRoom,
+            },
           };
         });
         setUser((pre) => ({ ...pre, status: BotStatus.Left }));

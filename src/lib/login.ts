@@ -105,3 +105,18 @@ export async function accountLogin(account: any) {
     return { error: true, message: 'An error occurred during login.' };
   }
 }
+
+export async function openAccounts(account: any) {
+  await window.backend.sendMessage('open-accounts', account);
+}
+
+export function joinRoom(account: any, room?: number): void {
+  console.log('util call', account, room);
+  if (room) {
+    window.backend.sendMessage(
+      'execute-script',
+      account,
+      `__require('GamePlayManager').default.getInstance().joinRoom(${room},0,'',true);`
+    );
+  }
+}

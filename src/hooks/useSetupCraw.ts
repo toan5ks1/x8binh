@@ -8,7 +8,7 @@ import {
   LoginResponseDto,
   login,
 } from '../lib/login';
-import { isAllHostReady, isFoundCards } from '../lib/utils';
+import { isAllHostReady } from '../lib/utils';
 import { AppContext, BotStatus } from '../renderer/providers/app';
 
 export function useSetupCraw(
@@ -20,6 +20,7 @@ export function useSetupCraw(
   const { state, setState } = useContext(AppContext);
   const initRoom = state.initialRoom;
   const room = state.crawingRoom[coupleId];
+
   // const me = state.crawingBots[bot.username];
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
@@ -156,6 +157,7 @@ export function useSetupCraw(
       room.id &&
       Object.keys(room.cardGame).length === 0 // Make sure cards isn't received
     ) {
+      console.log(room);
       // Host and guess join after created room
       if (room.players.length < 2) {
         if (bot.username === room.owner && room.players.length === 0) {
@@ -167,11 +169,13 @@ export function useSetupCraw(
         }
       }
 
-      if (room.players.length === 2 && user?.status === BotStatus.Joined) {
-        if (bot.username === room.owner) {
-          // Host ready
-          sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
-        }
+      if (
+        room.players.length === 2 &&
+        user?.status === BotStatus.Joined &&
+        bot.username === room.owner
+      ) {
+        // Host ready
+        sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
       }
     }
   }, [room]);
@@ -183,7 +187,8 @@ export function useSetupCraw(
       bot.username !== room.owner &&
       user?.status === BotStatus.Joined &&
       isAllHostReady(state) &&
-      !room.isFinish
+      !room.isFinish &&
+      !state.foundAt
     ) {
       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
     }
@@ -203,8 +208,8 @@ export function useSetupCraw(
   useEffect(() => {
     if (!state.foundAt && user) {
       if (room?.cardGame[0] && initRoom.cardGame[0]) {
-        if (isFoundCards(room.cardGame[0], initRoom.cardGame[0])) {
-          // if (coupleId === 'maumau129nbmhkghjh456') {
+        // if (isFoundCards(room.cardGame[0], initRoom.cardGame[0])) {
+        if (true) {
           setState((pre) => ({
             ...pre,
             foundAt: room.id,
@@ -217,10 +222,6 @@ export function useSetupCraw(
           });
           console.log(`Found: ${room.id}`);
         } else {
-          toast({
-            title: 'Not match',
-            description: 'Finding again...',
-          });
         }
       }
     }
@@ -250,8 +251,7 @@ export function useSetupCraw(
       isHost &&
       room?.isFinish &&
       user &&
-      user?.status === BotStatus.Left &&
-      !state.foundAt
+      user?.status !== BotStatus.Finding
     ) {
       handleCreateRoom();
       setUser({ ...user, status: BotStatus.Finding });

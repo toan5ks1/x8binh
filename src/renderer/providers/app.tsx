@@ -62,7 +62,23 @@ export interface StateProps {
   targetAt?: number;
   foundBy?: string;
   shouldRecreateRoom: boolean;
+  currentGame?: number;
 }
+
+export const defaultState = {
+  initialRoom: {
+    players: [],
+    cardGame: [],
+    shouldOutVote: 0,
+    isFinish: false,
+    isHostReady: false,
+  },
+  mainBots: {},
+  crawingRoom: {},
+  crawingBots: {},
+  waiterBots: {},
+  shouldRecreateRoom: false,
+};
 
 interface AppContextProps {
   state: StateProps;
@@ -70,20 +86,7 @@ interface AppContextProps {
 }
 
 export const AppContext = createContext<AppContextProps>({
-  state: {
-    initialRoom: {
-      players: [],
-      cardGame: [],
-      shouldOutVote: 0,
-      isFinish: false,
-      isHostReady: false,
-    },
-    mainBots: {},
-    crawingRoom: {},
-    crawingBots: {},
-    waiterBots: {},
-    shouldRecreateRoom: false,
-  },
+  state: defaultState,
   setState: () => {},
 });
 

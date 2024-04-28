@@ -1,19 +1,32 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { handleMessage } from '../lib/listeners/bot';
 import {
   LoginParams,
   LoginResponse,
   LoginResponseDto,
+  joinRoom,
   login,
+  openAccounts,
 } from '../lib/login';
 import { isAllHostReady } from '../lib/utils';
 import { AppContext, BotStatus } from '../renderer/providers/app';
+import useAccountStore from '../store/accountStore';
 
 export function useSetupBot(bot: LoginParams, isHost: boolean) {
   const [socketUrl, setSocketUrl] = useState('');
   const { state, setState } = useContext(AppContext);
   const room = state.initialRoom;
+  const { accounts } = useAccountStore();
+  const mains = accounts['MAIN'];
+
+  const subJoin = () => {
+    joinRoom(mains[0], room.id);
+  };
+
+  const mainJoin = () => {
+    joinRoom(mains[1], state.targetAt);
+  };
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
   const [shouldPingMaubinh, setShouldPingMaubinh] = useState(false);
@@ -100,12 +113,20 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
         if (user) {
           setUser(user);
           connectMainGame(user);
+          loginSubMain();
         }
       })
       .catch((err: Error) =>
         console.error('Error when calling login function:', err)
       );
   };
+
+  const loginSubMain = useCallback(async () => {
+    if (mains[0] && mains[1] && isHost) {
+      openAccounts(mains[0]);
+      // openAccounts(mains[1]);
+    }
+  }, [mains]);
 
   const connectMainGame = (user: LoginResponseDto) => {
     if (user?.token) {
@@ -158,11 +179,13 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
         }
       }
 
-      if (room.players.length === 2 && user?.status === BotStatus.Joined) {
-        if (bot.username === room.owner) {
-          // Host ready
-          sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
-        }
+      if (
+        room.players.length === 2 &&
+        user?.status === BotStatus.Joined &&
+        bot.username === room.owner
+      ) {
+        // Host ready
+        sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
       }
     }
   }, [room]);
@@ -174,7 +197,8 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       bot.username !== room.owner &&
       user?.status === BotStatus.Joined &&
       isAllHostReady(state) &&
-      !room.isFinish
+      !room.isFinish &&
+      !state.foundAt
     ) {
       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
     }
@@ -199,8 +223,7 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       user?.status === BotStatus.Finished &&
       room.shouldOutVote === numOfCrawer
     ) {
-      console.log(bot.username, 'call leave');
-      sendMessage(`[4,"Simms",${room.id}]`);
+      // sendMessage(`[4,"Simms",${room.id}]`);
     }
   }, [room, user]);
 
@@ -217,26 +240,23 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       isHost &&
       room?.isFinish &&
       user &&
-      user?.status === BotStatus.Left &&
-      !state.foundAt
+      user?.status !== BotStatus.Finding
     ) {
       handleCreateRoom();
       setUser({ ...user, status: BotStatus.Finding });
     }
   }, [state.shouldRecreateRoom, user]);
 
-  // Auto ready for new game
-  // useEffect(() => {
-  //   if (state.foundAt) {
-  //     if (room?.isFinish) {
-  //       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-  //     }
-
-  //     if (room?.isFinish && isHost && user?.status === BotStatus.Ready) {
-  //       sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
-  //     }
-  //   }
-  // }, [state.foundAt, room]);
+  // Call sub join
+  useEffect(() => {
+    if (room.id) {
+      if (isHost) {
+        console.log(bot.username, 'subjoin', room.id);
+        subJoin();
+        // mainJoin();
+      }
+    }
+  }, [room.id]);
 
   // Sub re-join room
   // useEffect(() => {

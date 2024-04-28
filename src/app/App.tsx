@@ -20,9 +20,10 @@ import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio';
 import { Tabs, TabsContent } from '../components/ui/tabs';
-// import { bots } from '../lib/config';
+// import { bots, craws } from '../lib/config';
+import Toolbox from '../components/menu/toolbox';
 import { validateLicense } from '../lib/supabase';
-import { AppContext } from '../renderer/providers/app';
+import { AppContext, defaultState } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
 import { HomePage } from './pages/home';
 import { SettingPage } from './pages/setting';
@@ -30,11 +31,11 @@ import { TerminalPage } from './pages/terminal';
 
 export function App() {
   const [tab, setActiveTab] = useState('all');
-  const { state } = useContext<any>(AppContext);
+  const { state, setState } = useContext<any>(AppContext);
   const { accounts } = useAccountStore();
   const { toast } = useToast();
   const bots = accounts['SUB'];
-  const craws = accounts['BOT'];
+  const craws = accounts['BOT'].filter((item) => item.isSelected === true);
   const [cardDeck, setCardDeck] = useState('4');
   const [loading, setLoading] = useState(false);
   const [isOpenSheet, setIsOpenSheet] = useState(false);
@@ -61,12 +62,14 @@ export function App() {
   };
 
   const onDisconnect = () => {
+    onLeaveRoom();
     setShouldDisconnect(true);
 
     setShouldLogin(false);
     setShouldJoinMB(false);
     setShouldCreateRoom(false);
     setShouldLeave(false);
+    setState(defaultState);
   };
 
   useEffect(() => {
@@ -210,6 +213,7 @@ export function App() {
                   hidden={'find-room' !== tab}
                 >
                   <div className="flex flex-col h-screen w-full">
+                    <Toolbox />
                     <div className="flex flex-col  text-white space-y-4 flex-1 w-full">
                       {/* <div className="grid grid-cols-2 gap-[20px] w-full"> */}
                       {bots.map(
