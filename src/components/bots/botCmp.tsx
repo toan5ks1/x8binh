@@ -29,7 +29,7 @@ export const BotCmp = ({
     setMessageHistory([]);
   };
   return (
-    <Card x-chunk="dashboard-07-chunk-1" className="flex-1">
+    <Card x-chunk="dashboard-07-chunk-1" className="flex-1 p-4">
       <CardHeader className="flex flex-row justify-between items-end px-2 py-0">
         <CardTitle className="text-lg">{name}</CardTitle>
         <CardDescription>

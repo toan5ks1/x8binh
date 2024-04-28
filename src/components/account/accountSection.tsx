@@ -1,14 +1,10 @@
 import { now } from 'lodash';
-import { Paperclip, Save } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { accountLogin } from '../../lib/login';
 import useAccountStore from '../../store/accountStore';
 import { useToast } from '../toast/use-toast';
-import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { ScrollArea } from '../ui/scroll-area';
-import { Textarea } from '../ui/textarea';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import { AccountTable } from './accountTable';
 
 export type AccountDetails = {
@@ -41,12 +37,9 @@ interface AccountSectionProps {
 
 export const AccountSection: React.FC<AccountSectionProps> = ({
   accountType,
-  placeholder,
 }) => {
-  const [textareaValue, setTextareaValue] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const { accounts, addAccount, clearAccounts } = useAccountStore();
+  const { accounts, addAccount } = useAccountStore();
   const { toast } = useToast();
 
   const readValidAccount = (input: string): AccountDetails[] => {
@@ -70,65 +63,74 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
       .filter((account) => account.username);
   };
 
-  const updateFile = async (text: string) => {
+  const accountExists = (newAccount: any) => {
+    return accounts[accountType].some(
+      (account: { username: any }) => account.username === newAccount.username
+    );
+  };
+
+  const addUniqueAccounts = (newAccounts: any) => {
+    newAccounts.forEach((account: { username: any }) => {
+      if (!accountExists(account)) {
+        addAccount(accountType, account);
+      } else {
+        toast({
+          title: 'Warning',
+          description: `Duplicate found: ${account.username} not added`,
+        });
+      }
+    });
+    toast({
+      title: 'Task done',
+      description: `All account was added`,
+    });
+  };
+
+  const updateFile = async () => {
+    const accountsUpdate = accounts[accountType];
+
+    const accountsText = accountsUpdate
+      .map(
+        (account: { username: any; password: any }) =>
+          `${account.username}|${account.password}`
+      )
+      .join('\n');
+
     window.backend.sendMessage(
       'update-file',
-      text,
-      [
-        `account/${accountType.toLowerCase()}Account.txt`,
-        // `C:/Users/PC/AppData/Local/Programs/electron-react-boilerplate/resources/account/${accountType.toLowerCase()}Account.txt`,
-      ],
+      accountsText,
+      [`account/${accountType.toLowerCase()}Account.txt`],
       accountType
     );
-    await clearAccounts();
-    const accountsAfterRead = readValidAccount(text);
-    accountsAfterRead.forEach(async (account) => {
-      var cash = 0;
-      if (account.isSelected) {
-        const data = (await accountLogin(account)) as any;
-        cash = Array.isArray(data?.data) ? data?.data[0].main_balance : 0;
-      }
 
-      addAccount(accountType, {
-        username: account.username,
-        password: account.password,
-        isSelected: account.isSelected,
-        app_id: 'rik.vip',
-        os: 'Windows',
-        device: 'Computer',
-        browser: 'chrome',
-        fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
-        time: now(),
-        aff_id: 'hit',
-        main_balance: cash,
-      });
-    });
-    setIsEditing(false);
     toast({
       title: 'Updated account',
-      description: `All task done for ${accountType.toLowerCase()} account`,
+      description: `All tasks done for ${accountType.toLowerCase()} account`,
     });
   };
 
-  const handleTextAreaChange = (e: { target: { value: any } }) => {
-    const text = e.target.value;
-    setTextareaValue(text);
+  const handleFileChange = (event: any) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const text = e.target.result;
+      const newAccounts = readValidAccount(text);
+      addUniqueAccounts(newAccounts);
+    };
+    reader.onerror = () => {
+      toast({
+        title: 'Error',
+        description: `Failed to read file`,
+      });
+    };
+    reader.readAsText(file);
   };
 
   useEffect(() => {
-    if (!isEditing) {
-      const newTextareaValue = accounts[accountType]
-        .map((account: { username: any; password: any; isSelected: any }) => {
-          return `${account.username}|${account.password}|${account.isSelected}`;
-        })
-        .join('\n');
-
-      setTextareaValue(newTextareaValue);
-    }
-  }, [accounts]);
-
-  useEffect(() => {
-    const handleFileData = (data: any, accountTypeReceived: any) => {
+    const handleReadFile = (data: any, accountTypeReceived: any) => {
+      console.log('accountTypeReceived', accountTypeReceived);
       if (accountTypeReceived == accountType) {
         const newAccounts = readValidAccount(data);
 
@@ -157,12 +159,16 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
             console.error('Setup bot failed:', err);
           }
         });
-        if (JSON.stringify(accountType) !== JSON.stringify(newAccounts)) {
-          setTextareaValue(data.trim());
-        }
       }
     };
-    window.backend.on('read-file', handleFileData);
+    window.backend.on('read-file', handleReadFile);
+
+    return () => {
+      window.backend.removeListener('read-file', handleReadFile);
+    };
+  }, []);
+
+  useEffect(() => {
     window.backend.sendMessage(
       'read-file',
       [
@@ -171,10 +177,6 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
       ],
       accountType
     );
-
-    return () => {
-      window.backend.removeListener('read-file', handleFileData);
-    };
   }, []);
 
   return (
@@ -191,57 +193,20 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
                 accountType == 'MAIN' ? '' : 'h-[450px]'
               } border-t`}
             >
-              <AccountTable accountType={accountType} />
+              <AccountTable
+                accountType={accountType}
+                updateFile={updateFile}
+                fileInputRef={fileInputRef}
+              />
             </ScrollArea>
-            <Textarea
-              id={`${accountType}-account`}
-              placeholder={placeholder}
-              className="min-h-[9.5rem]"
-              value={textareaValue}
-              onChange={(e) => {
-                setIsEditing(true);
-                handleTextAreaChange(e);
-              }}
-            />
             <div className="flex items-center p-3 pt-0">
               <input
                 type="file"
                 accept=".txt"
                 ref={fileInputRef}
-                // onChange={handleFileChange}
+                onChange={handleFileChange}
                 style={{ display: 'none' }}
               />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      if (fileInputRef.current) {
-                        fileInputRef.current.click();
-                      }
-                    }}
-                  >
-                    <Paperclip className="size-4" />
-                    <span className="sr-only">Attach file</span>
-                  </Button>
-                </TooltipTrigger>
-                {isEditing && (
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => updateFile(textareaValue)}
-                    >
-                      <Save className="h-3.5 w-3.5" />
-                    </Button>
-                  </TooltipTrigger>
-                )}
-
-                <TooltipContent side="top">
-                  Upload file for {accountType} account
-                </TooltipContent>
-              </Tooltip>
             </div>
           </div>
         </fieldset>

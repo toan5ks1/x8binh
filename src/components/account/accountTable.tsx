@@ -16,12 +16,16 @@ import {
   ChevronDown,
   DollarSign,
   MoreHorizontal,
+  Paperclip,
+  Save,
+  Trash,
 } from 'lucide-react';
 import * as React from 'react';
 
 import { useState } from 'react';
 import { accountLogin } from '../../lib/login';
 import useAccountStore from '../../store/accountStore';
+import { useToast } from '../toast/use-toast';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
 import {
@@ -42,12 +46,18 @@ import {
   TableHeader,
   TableRow,
 } from '../ui/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
-export const AccountTable: React.FC<any> = ({ accountType }) => {
+export const AccountTable: React.FC<any> = ({
+  accountType,
+  updateFile,
+  fileInputRef,
+}) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const { accounts, updateAccount, removeAccount } = useAccountStore();
+  const { toast } = useToast();
 
   const handleDeleteRow = (rowData: any) => {
     removeAccount(accountType, rowData.username);
@@ -64,11 +74,23 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
     });
   };
 
+  const handleDeleteSelectedRows = () => {
+    const selectedRows = table.getSelectedRowModel().rows;
+    selectedRows.forEach((row: any) => {
+      removeAccount(accountType, row.original.username);
+    });
+    toast({
+      title: 'Deleted accounts',
+      description: `${selectedRows.length} account(s) deleted.`,
+    });
+  };
+
   const columns: ColumnDef<unknown, any>[] = [
     {
       id: 'select',
       header: ({ table }) => (
         <Checkbox
+          className="bg-white"
           checked={
             table.getIsAllPageRowsSelected() ||
             (table.getIsSomePageRowsSelected() && 'indeterminate')
@@ -201,7 +223,7 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
+      <div className="flex items-center py-4 justify-between">
         <Input
           placeholder="Filter username..."
           value={
@@ -212,32 +234,70 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
           }
           className="max-w-sm"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value: any) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                  }
+                }}
+              >
+                <Paperclip className="size-4" />
+                <span className="sr-only">Attach file</span>
+              </Button>
+            </TooltipTrigger>
+
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={updateFile}>
+                <Save className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                onClick={handleDeleteSelectedRows}
+                className="ml-2"
+              >
+                <Trash className="w-3.5 h-3.5" />
+              </Button>
+            </TooltipTrigger>
+
+            <TooltipContent side="top">
+              Upload file for {accountType} account
+            </TooltipContent>
+          </Tooltip>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-auto">
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {table
+                .getAllColumns()
+                .filter((column) => column.getCanHide())
+                .map((column) => {
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value: any) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  );
+                })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
       <div className="rounded-md border">
         <Table>
