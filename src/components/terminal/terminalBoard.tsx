@@ -11,7 +11,7 @@ import {
   Unplug,
   UserPlus,
 } from 'lucide-react';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Button } from '../../components/ui/button';
 import { Label } from '../../components/ui/label';
 import { ScrollArea } from '../../components/ui/scroll-area';
@@ -22,12 +22,25 @@ import { useToast } from '../toast/use-toast';
 export const TerminalBoard: React.FC<any> = ({ main }) => {
   const { toast } = useToast();
   const [data, setData] = useState<unknown[]>([]);
-  const { state } = useContext<any>(AppContext);
+  const { state, setState } = useContext(AppContext);
   const [isLogin, setIsLogin] = useState(false);
   const [isInLobby, setIsInLobby] = useState(false);
   const [currentRoom, setCurrentRoom] = useState('');
   const [currentSit, setCurrentSit] = useState('');
   const [currentCards, setCurrentCards] = useState<any>();
+
+  const findCurrent = useCallback((crCard: number[]) => {
+    let target;
+    const crawledCards = state.crawingRoom[state.foundBy ?? ''].cardGame;
+    if (crawledCards) {
+      crawledCards.forEach((game) => {
+        target = Object.values(game).find(
+          (card) => JSON.stringify(card.cs) === JSON.stringify(crCard)
+        );
+      });
+    }
+    return target ?? 0;
+  }, []);
 
   const parseData = (dataString: string) => {
     try {
@@ -238,6 +251,13 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
                 title: parsedData[1].p.dn,
                 description: 'Đã vào phòng.',
               });
+              setState((pre) => ({
+                ...pre,
+                initialRoom: {
+                  ...pre.initialRoom,
+                  isSubJoin: true,
+                },
+              }));
             }
           }
           if (parsedData[1].cmd === 602 && parsedData[1].hsl == false) {
@@ -248,11 +268,19 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
             });
           }
           if (parsedData[1].cs && parsedData[1].cmd === 600) {
+            const currentCards = parsedData[1].cs
+              .toString()
+              .split(',')
+              .map(Number);
             toast({
               title: 'Đã phát bài',
               description: parsedData[1].cs.toString(),
             });
-            setCurrentCards(parsedData[1].cs.toString().split(',').map(Number));
+            setState((pre) => ({
+              ...pre,
+              currentGame: (pre.currentGame ?? findCurrent(currentCards)) + 1,
+            }));
+            setCurrentCards(currentCards);
           }
         }
         if (parsedData[0] !== '7' && parsedData[0] != 5) {

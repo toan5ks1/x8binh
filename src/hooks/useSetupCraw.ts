@@ -153,12 +153,13 @@ export function useSetupCraw(
   // Bot join initial room
   useEffect(() => {
     if (
+      state.isStart &&
       room &&
       room.id &&
       Object.keys(room.cardGame).length === 0 // Make sure cards isn't received
     ) {
-      console.log(room);
       // Host and guess join after created room
+      console.log('craw create first room');
       if (room.players.length < 2) {
         if (bot.username === room.owner && room.players.length === 0) {
           // Host
@@ -178,7 +179,7 @@ export function useSetupCraw(
         sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
       }
     }
-  }, [room]);
+  }, [room, state.isStart]);
 
   // Guess ready
   useEffect(() => {
@@ -247,16 +248,18 @@ export function useSetupCraw(
   // Recreate room
   useEffect(() => {
     if (
+      state.isStart &&
       state.shouldRecreateRoom &&
       isHost &&
       room?.isFinish &&
       user &&
       user?.status !== BotStatus.Finding
     ) {
+      console.log('craw re-create room');
       handleCreateRoom();
       setUser({ ...user, status: BotStatus.Finding });
     }
-  }, [state.shouldRecreateRoom, user]);
+  }, [state.isStart, state.shouldRecreateRoom, user]);
 
   // Found room submit cards
   useEffect(() => {

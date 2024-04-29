@@ -1,4 +1,13 @@
 import { useContext, useEffect, useState } from 'react';
+import BoardCard from '../../components/card/boardCard';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '../../components/ui/card';
+import { Table, TableBody, TableRow } from '../../components/ui/table';
 import { AppContext } from '../../renderer/providers/app';
 
 export const HomePage: React.FC<any> = (cardDeck) => {
@@ -31,21 +40,13 @@ export const HomePage: React.FC<any> = (cardDeck) => {
 
   return (
     <div className="text-center relative">
-      {/* <div className="py-[20px]">
+      <div className="py-[20px]">
         <Card x-chunk="dashboard-06-chunk-0">
           <CardHeader>
             <CardTitle>All card in room</CardTitle>
-            <CardDescription>
-              Manage your products and view their sales performance.
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
               <TableBody>
                 {cards.map((card, index) => (
                   <TableRow
@@ -71,7 +72,7 @@ export const HomePage: React.FC<any> = (cardDeck) => {
             </div>
           </CardFooter>
         </Card>
-      </div> */}
+      </div>
     </div>
   );
 };

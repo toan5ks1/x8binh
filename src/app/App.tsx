@@ -6,6 +6,7 @@ import {
   PlusCircle,
   ScreenShareOff,
   Settings,
+  Unplug,
 } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -31,7 +32,7 @@ import { TerminalPage } from './pages/terminal';
 
 export function App() {
   const [tab, setActiveTab] = useState('all');
-  const { state, setState } = useContext<any>(AppContext);
+  const { state, setState } = useContext(AppContext);
   const { accounts } = useAccountStore();
   const { toast } = useToast();
   const bots = accounts['SUB'];
@@ -52,11 +53,17 @@ export function App() {
     setShouldDisconnect(false);
   };
 
+  const onJoinMauBinh = () => {
+    setShouldJoinMB(true);
+  };
+
   const onCreatRoom = () => {
+    setState((pre) => ({ ...pre, isStart: true }));
     setShouldCreateRoom(true);
   };
 
   const onLeaveRoom = () => {
+    setState((pre) => ({ ...pre, isStart: false }));
     setShouldLeave(true);
     setShouldCreateRoom(false);
   };
@@ -143,7 +150,7 @@ export function App() {
                         Login
                       </span>
                     </Button>
-                    {/* <Button
+                    <Button
                       onClick={onJoinMauBinh}
                       size="sm"
                       className="h-8 gap-1"
@@ -152,7 +159,7 @@ export function App() {
                       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                         Connect
                       </span>
-                    </Button> */}
+                    </Button>
                     <Button
                       onClick={onCreatRoom}
                       size="sm"
