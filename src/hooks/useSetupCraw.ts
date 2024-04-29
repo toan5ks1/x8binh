@@ -8,7 +8,7 @@ import {
   LoginResponseDto,
   login,
 } from '../lib/login';
-import { isAllHostReady } from '../lib/utils';
+import { isAllHostReady, isFoundCards } from '../lib/utils';
 import { AppContext, BotStatus } from '../renderer/providers/app';
 
 export function useSetupCraw(
@@ -209,8 +209,8 @@ export function useSetupCraw(
   useEffect(() => {
     if (!state.foundAt && user) {
       if (room?.cardGame[0] && initRoom.cardGame[0]) {
-        // if (isFoundCards(room.cardGame[0], initRoom.cardGame[0])) {
-        if (true) {
+        if (isFoundCards(room.cardGame[0], initRoom.cardGame[0])) {
+          // if (true) {
           setState((pre) => ({
             ...pre,
             foundAt: room.id,

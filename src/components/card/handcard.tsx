@@ -117,8 +117,6 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
 
   useEffect(() => {
     setCards(cardProp);
-
-    handleArrange();
     // setEvaluation1('');
     // setEvaluation2('');
     // setEvaluation3('');
@@ -142,7 +140,7 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
     return () => {
       window.backend.removeListener('arrange-card', handleData);
     };
-  }, [idHand]);
+  }, []);
 
   return (
     <DndProvider backend={HTML5Backend}>
