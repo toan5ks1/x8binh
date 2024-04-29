@@ -18,14 +18,10 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
   const { state, setState } = useContext(AppContext);
   const room = state.initialRoom;
   const { accounts } = useAccountStore();
-  const mains = accounts['MAIN'];
+  const subMain = accounts['MAIN'].filter((item: any) => item.isSelected)[0];
 
   const subJoin = () => {
-    joinRoom(mains[0], room.id);
-  };
-
-  const mainJoin = () => {
-    joinRoom(mains[1], state.targetAt);
+    joinRoom(subMain, room.id);
   };
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
@@ -43,7 +39,7 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       shouldReconnect: () => true,
       reconnectInterval: 3000,
       reconnectAttempts: 10,
-      onOpen: () => console.log('Connected'),
+      onOpen: () => pingGame(user!),
     },
     shouldConnect
   );
@@ -78,31 +74,26 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
     }
   }, [lastMessage]);
 
-  // Ping pong
-  useEffect(() => {
-    const pingPongMessage = () => ` ["7", "Simms", "1",${iTimeRef.current}]`;
-
-    const intervalId = setInterval(() => {
-      shouldConnect && sendMessage(pingPongMessage());
-      setITime((prevITime) => prevITime + 1);
-    }, 4000);
-
-    return () => clearInterval(intervalId);
-  }, [sendMessage, shouldConnect]);
-
   // Ping maubinh
   useEffect(() => {
     if (shouldPingMaubinh) {
       const maubinhPingMessage = `[6,"Simms","channelPlugin",{"cmd":300,"aid":"1","gid":4}]`;
+      const pingPongMessage = `["7", "Simms", "1",${iTimeRef.current}]`;
 
-      sendMessage(maubinhPingMessage);
+      const intervalId1 = setInterval(() => {
+        sendMessage(pingPongMessage);
+        setITime((prevITime) => prevITime + 1);
+      }, 4000);
 
-      const intervalId = setInterval(() => {
+      const intervalId2 = setInterval(() => {
         sendMessage(maubinhPingMessage);
         setITime((prevITime) => prevITime + 1);
       }, 6000);
 
-      return () => clearInterval(intervalId);
+      return () => {
+        clearInterval(intervalId1);
+        clearInterval(intervalId2);
+      };
     }
   }, [shouldPingMaubinh]);
 
@@ -122,21 +113,23 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
   };
 
   const loginSubMain = useCallback(async () => {
-    if (mains[0] && mains[1] && isHost) {
-      openAccounts(mains[0]);
-      openAccounts(mains[1]);
+    if (subMain && isHost) {
+      openAccounts(subMain);
     }
-  }, [mains]);
+  }, [subMain]);
 
   const connectMainGame = (user: LoginResponseDto) => {
     if (user?.token) {
       const connectURL = 'wss://cardskgw.ryksockesg.net/websocket';
       setSocketUrl(connectURL);
       setShouldConnect(true);
-      sendMessage(
-        `[1,"Simms","","",{"agentId":"1","accessToken":"${user.token}","reconnect":false}]`
-      );
     }
+  };
+
+  const pingGame = (user: LoginResponseDto) => {
+    sendMessage(
+      `[1,"Simms","","",{"agentId":"1","accessToken":"${user.token}","reconnect":false}]`
+    );
   };
 
   const disconnectGame = () => {
@@ -164,7 +157,6 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
   // Bot join initial room
   useEffect(() => {
     if (
-      state.isStart &&
       !state.foundAt &&
       room.id &&
       Object.keys(room.cardGame).length === 0 // Make sure cards isn't received
@@ -189,7 +181,7 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
         sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
       }
     }
-  }, [state.isStart, room]);
+  }, [room]);
 
   // Guess ready
   useEffect(() => {
@@ -237,7 +229,6 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
   // Recreate room
   useEffect(() => {
     if (
-      state.isStart &&
       state.shouldRecreateRoom &&
       isHost &&
       room?.isFinish &&
@@ -247,16 +238,12 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       handleCreateRoom();
       setUser({ ...user, status: BotStatus.Finding });
     }
-  }, [state.isStart, state.shouldRecreateRoom, user]);
+  }, [state.shouldRecreateRoom, user]);
 
   // Call sub join
   useEffect(() => {
-    if (state.targetAt) {
-      if (isHost) {
-        console.log(bot.username, 'subjoin', state.targetAt);
-        subJoin();
-        // mainJoin();
-      }
+    if (state.targetAt && subMain && isHost) {
+      subJoin();
     }
   }, [state.targetAt]);
 
@@ -267,27 +254,10 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       user?.status === BotStatus.Finished &&
       room.isSubJoin
     ) {
-      // console.log(bot.username, 'subbot leave', state.targetAt);
+      console.log(bot.username, 'subbot leave', state.targetAt);
       sendMessage(`[4,"Simms",${room.id}]`);
     }
   }, [user, state.targetAt, room.isSubJoin]);
-
-  // Sub re-join room
-  // useEffect(() => {
-  //   if (state.targetAt) {
-  //     // Left
-  //     if (user?.status === BotStatus.Finished) {
-  //       return sendMessage(`[4,"Simms",${room.id}]`);
-  //     }
-  //     // re-join
-  //     if (user?.status === BotStatus.Left) {
-  //       console.log(user?.status, room.id);
-  //       isHost
-  //         ? sendMessage(`[3,"Simms",${room.id},""]`)
-  //         : sendMessage(`[3,"Simms",${room.id},"",true]`);
-  //     }
-  //   }
-  // }, [state.targetAt, user]);
 
   return {
     user,

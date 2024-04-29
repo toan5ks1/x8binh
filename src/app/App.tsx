@@ -22,16 +22,15 @@ import { Label } from '../components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio';
 import { Tabs, TabsContent } from '../components/ui/tabs';
 // import { bots, craws } from '../lib/config';
-import Toolbox from '../components/menu/toolbox';
 import { validateLicense } from '../lib/supabase';
-import { AppContext, defaultState } from '../renderer/providers/app';
+import { AppContext } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
 import { HomePage } from './pages/home';
 import { SettingPage } from './pages/setting';
 import { TerminalPage } from './pages/terminal';
 
 export function App() {
-  const [tab, setActiveTab] = useState('all');
+  const [tab, setActiveTab] = useState('find-room');
   const { state, setState } = useContext(AppContext);
   const { accounts } = useAccountStore();
   const { toast } = useToast();
@@ -50,7 +49,6 @@ export function App() {
 
   const onLogin = () => {
     setShouldLogin(true);
-    setShouldDisconnect(false);
   };
 
   const onJoinMauBinh = () => {
@@ -58,25 +56,15 @@ export function App() {
   };
 
   const onCreatRoom = () => {
-    setState((pre) => ({ ...pre, isStart: true }));
     setShouldCreateRoom(true);
   };
 
   const onLeaveRoom = () => {
-    setState((pre) => ({ ...pre, isStart: false }));
     setShouldLeave(true);
-    setShouldCreateRoom(false);
   };
 
   const onDisconnect = () => {
-    onLeaveRoom();
-    setShouldDisconnect(true);
-
-    setShouldLogin(false);
-    setShouldJoinMB(false);
-    setShouldCreateRoom(false);
-    setShouldLeave(false);
-    setState(defaultState);
+    window.location.reload();
   };
 
   useEffect(() => {
@@ -109,8 +97,7 @@ export function App() {
                   <div className="ml-auto flex flex-row items-center gap-2">
                     <div className="h-8 gap-1 flex flex-row justify-center items-center">
                       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        {state.initialRoom.id &&
-                          `Room: ${state.initialRoom.id}`}
+                        {state.targetAt && `Room: ${state.targetAt}`}
                       </span>
                     </div>
                     <RadioGroup
@@ -220,7 +207,7 @@ export function App() {
                   hidden={'find-room' !== tab}
                 >
                   <div className="flex flex-col h-screen w-full">
-                    <Toolbox />
+                    {/* <Toolbox /> */}
                     <div className="flex flex-col  text-white space-y-4 flex-1 w-full">
                       {/* <div className="grid grid-cols-2 gap-[20px] w-full"> */}
                       {bots.map(

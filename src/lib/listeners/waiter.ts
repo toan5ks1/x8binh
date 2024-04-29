@@ -35,6 +35,22 @@ export function handleMessageWaiter({
         message[1]?.c === 100 ||
         (message[1]?.cmd === 5 && message[1]?.dn === fullname)
       ) {
+        if (state.foundBy) {
+          // const room = state.crawingRoom[state.foundBy];
+          // const shouldStartVote = room.shouldStartVote;
+          // setState((pre) => {
+          //   return {
+          //     ...pre,
+          //     crawingRoom: {
+          //       ...pre.crawingRoom,
+          //       [state.foundBy!]: {
+          //         ...room,
+          //         shouldStartVote: shouldStartVote + 1,
+          //       },
+          //     },
+          //   };
+          // });
+        }
         setUser((pre) => ({ ...pre, status: BotStatus.Ready }));
       } else if (message[1]?.cs?.length > 0 && state.foundBy) {
         setUser((pre) => ({
@@ -44,6 +60,14 @@ export function handleMessageWaiter({
         }));
 
         returnMsg = `Card received: ${message[1].cs}`;
+      } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
+        setUser((pre) => ({ ...pre, status: BotStatus.PreFinished }));
+      } else if (
+        message[1]?.cmd === 204 &&
+        user.status === BotStatus.PreFinished
+      ) {
+        setUser((pre) => ({ ...pre, status: BotStatus.Finished }));
+        returnMsg = 'Game finished!';
       } else if (
         message[1].hsl === false &&
         message[1].ps?.length >= 2 &&

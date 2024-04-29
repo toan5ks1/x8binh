@@ -174,6 +174,54 @@ function sortCardsForChinesePoker(cards: any) {
       }
     }
 
+    // let tempRanks = JSON.parse(JSON.stringify(ranks));
+
+    // let straights = 0;
+    // let straightCards = [];
+    // RANKS.forEach((rank) => {
+    //   if (tempRanks?.[rank]?.[0]) {
+    //     straightCards.push(tempRanks[rank][0]);
+    //   } else {
+    //     straightCards = [];
+    //   }
+    //   if (straightCards.length == 5) {
+    //     straights++;
+    //     //remove straight cards from tempRanks
+    //     combinations.push({ type: "Sảnh", cards: straightCards });
+    //     straightCards.forEach((card) => {
+    //       tempRanks[card.substring(0, card.length - 1)].splice(
+    //         tempRanks[card.substring(0, card.length - 1)].indexOf(card),
+    //         1
+    //       );
+    //     });
+    //     straightCards = [];
+    //   }
+    // });
+    // straightCards = [];
+
+    // RANKS.forEach((rank) => {
+    //   if (tempRanks?.[rank]?.[0]) {
+    //     straightCards.push(tempRanks[rank][0]);
+    //   } else {
+    //     straightCards = [];
+    //   }
+
+    //   if (straightCards.length == 5) {
+    //     straights++;
+    //     //remove straight cards from tempRanks
+    //     combinations.push({ type: "Sảnh", cards: straightCards });
+
+    //     straightCards.forEach((card) => {
+    //       tempRanks[card.substring(0, card.length - 1)].splice(
+    //         tempRanks[card.substring(0, card.length - 1)].indexOf(card),
+    //         1
+    //       );
+    //     });
+
+    //     straightCards = [];
+    //   }
+    // });
+
     //tìm nhiều thú nhất (2 đôi)
     for (let rank in ranks) {
       if (ranks[rank].length >= 2) {
@@ -183,6 +231,7 @@ function sortCardsForChinesePoker(cards: any) {
             rankPairs.push([ranks[rank][i], ranks[rank][j]]);
           }
         }
+        // console.log(rankPairs);
         for (let rank2 in ranks) {
           if (ranks[rank2].length >= 2) {
             let rank2Pairs = [];
@@ -546,6 +595,7 @@ function sortCardsForChinesePoker(cards: any) {
             !combination.cards.some((card) => firstSet.cards.includes(card)) &&
             combination.cards.length + thirdSet.cards.length <= 3
         );
+        // console.log("notFullFiveCombinations", notFullFiveCombinations);
         if (notFullFiveCombinations.length > 0) {
           thirdSet.cards.push(
             ...notFullFiveCombinations[notFullFiveCombinations.length - 1].cards
@@ -569,6 +619,8 @@ function sortCardsForChinesePoker(cards: any) {
       (combination) =>
         !combination.cards.some((card) => firstSet.cards.includes(card))
     );
+    console.log('Sắp xếp chi đầu với bộ:', firstSet);
+    console.log('Sắp xếp chi thứ hai với bộ:', secondSet);
 
     // Xóa bộ đã dùng
     firstSet.cards.forEach((card) => {
@@ -618,11 +670,13 @@ function checkInstantWin(cards) {
   }
   // Kiểm tra Lục phé bôn (6 đôi)
   if (checkSixPairs(ranks)) {
-    return { win: true, type: '6 đôi' };
+    return { win: true, type: 'Lục phé bôn' };
   }
   // Kiểm tra Ba thùng và Ba sảnh
   let flushCount = countFlushes(suits);
   let straightCount = countStraights(ranks);
+  console.log('flushCount', flushCount);
+  console.log('straightCount', straightCount);
   if (flushCount == 3) {
     return { win: true, type: 'Ba thùng' };
   }
@@ -632,7 +686,6 @@ function checkInstantWin(cards) {
 
   return { win: false };
 }
-
 // Các hàm hỗ trợ kiểm tra bộ bài
 function checkDragonFlush(cards) {
   let suit = cards[0][1];
@@ -699,18 +752,15 @@ function countStraights(ranks) {
   //clone data from ranks to tempRanks without reference
   let tempRanks = JSON.parse(JSON.stringify(ranks));
 
-  let count = 0;
   let straights = 0;
   let straightCards = [];
   RANKS.forEach((rank) => {
     if (tempRanks?.[rank]?.[0]) {
-      count++;
       straightCards.push(tempRanks[rank][0]);
     } else {
-      count = 0;
       straightCards = [];
     }
-    if (count == 5) {
+    if (straightCards.length == 5) {
       straights++;
       //remove straight cards from tempRanks
       straightCards.forEach((card) => {
@@ -720,20 +770,18 @@ function countStraights(ranks) {
         );
       });
       straightCards = [];
-      count = 0;
     }
   });
   straightCards = [];
 
   RANKS.forEach((rank) => {
     if (tempRanks?.[rank]?.[0]) {
-      count++;
       straightCards.push(tempRanks[rank][0]);
     } else {
-      count = 0;
       straightCards = [];
     }
-    if (count == 5) {
+
+    if (straightCards.length == 5) {
       straights++;
       //remove straight cards from tempRanks
       straightCards.forEach((card) => {
@@ -744,23 +792,21 @@ function countStraights(ranks) {
       });
 
       straightCards = [];
-      count = 0;
     }
   });
+
   straightCards = [];
-  if (count != 2) {
-    return count;
+  if (straights != 2) {
+    return straights;
   }
 
   RANKS.forEach((rank) => {
     if (tempRanks?.[rank]?.[0]) {
-      count++;
       straightCards.push(tempRanks[rank][0]);
     } else {
-      count = 0;
       straightCards = [];
     }
-    if (count == 3) {
+    if (straightCards.length == 3) {
       straights++;
       //remove straight cards from tempRanks
       straightCards.forEach((card) => {
@@ -770,7 +816,6 @@ function countStraights(ranks) {
         );
       });
 
-      count = 0;
       straightCards = [];
     }
   });
@@ -779,6 +824,7 @@ function countStraights(ranks) {
   return straights;
   // return Object.keys(ranks).length >= 5 ? 1 : 0;
 }
+
 function classifyCards(cards) {
   let ranks = {};
   let suits = {};

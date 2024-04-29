@@ -75,11 +75,11 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
     setCurrentSit('');
   };
   function joinRoom(account: any): void {
-    if (state.initialRoom.id) {
+    if (state.targetAt) {
       window.backend.sendMessage(
         'execute-script',
         account,
-        `__require('GamePlayManager').default.getInstance().joinRoom(${state.initialRoom.id},0,'',true);`
+        `__require('GamePlayManager').default.getInstance().joinRoom(${state.targetAt},0,'',true);`
       );
     }
   }

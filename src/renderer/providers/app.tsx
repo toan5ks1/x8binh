@@ -37,6 +37,7 @@ export interface Room {
   isFinish: boolean;
   isHostReady: boolean;
   isSubJoin?: boolean;
+  shouldStartVote: number;
 }
 
 export interface StateProps {
@@ -64,7 +65,6 @@ export interface StateProps {
   foundBy?: string;
   shouldRecreateRoom: boolean;
   currentGame?: number;
-  isStart?: boolean;
 }
 
 export const defaultState = {
@@ -74,13 +74,13 @@ export const defaultState = {
     shouldOutVote: 0,
     isFinish: false,
     isHostReady: false,
+    shouldStartVote: 0,
   },
   mainBots: {},
   crawingRoom: {},
   crawingBots: {},
   waiterBots: {},
   shouldRecreateRoom: false,
-  isStart: false,
 };
 
 interface AppContextProps {
@@ -101,6 +101,7 @@ const AppProvider = ({ children }: AppProviderProps) => {
       shouldOutVote: 0,
       isFinish: false,
       isHostReady: false,
+      shouldStartVote: 0,
     },
     mainBots: {},
     crawingRoom: {},

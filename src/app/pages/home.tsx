@@ -23,6 +23,14 @@ export const HomePage: React.FC<any> = (cardDeck) => {
 
   const { state } = useContext(AppContext);
 
+  // function shuffle(array: any[]) {
+  //   for (let i = array.length - 1; i > 0; i--) {
+  //     const j = Math.floor(Math.random() * (i + 1));
+  //     [array[i], array[j]] = [array[j], array[i]];
+  //   }
+  //   return array;
+  // }
+
   useEffect(() => {
     if (state.foundBy) {
       const desk = state.crawingRoom[state.foundBy].cardGame;
@@ -33,10 +41,21 @@ export const HomePage: React.FC<any> = (cardDeck) => {
         const mappedCard = lastGame.map((gameCard) => gameCard.cs);
         setCards((pre) => [...pre, ([] as number[]).concat(...mappedCard)]);
       }
-
-      // console.log('card', cards);
     }
   }, [state.foundAt, state.crawingRoom]);
+
+  // Hàm tạo mảng bài ngẫu nhiên
+  // const addRandomCards = () => {
+  //   var deck = [
+  //     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+  //     21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38,
+  //     39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
+  //   ];
+  //   shuffle(deck);
+  //   console.log(deck);
+
+  //   setCards((prevCards) => [...prevCards, deck]);
+  // };
 
   return (
     <div className="text-center relative">
@@ -70,6 +89,7 @@ export const HomePage: React.FC<any> = (cardDeck) => {
             <div className="text-xs text-muted-foreground">
               Showing <strong>{cards.length}</strong> of cards
             </div>
+            {/* <Button onClick={addRandomCards}>Add Random Cards</Button> */}
           </CardFooter>
         </Card>
       </div>
