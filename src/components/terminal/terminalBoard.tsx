@@ -161,7 +161,23 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
     await window.backend.sendMessage(
       'execute-script',
       account,
-      `window.sapBaiMinh()`
+      `
+      window.sapBaiMinh = async function () {
+        try {
+          gg = cc
+            .find("Canvas")
+            .getChildByName("MainUI")
+            .getChildByName("MauBinhController")._components[0]
+            .cardGameTableController.gameController;
+          let tempBet = gg.bet;
+          gg.bet = 100;
+          gg.onClickTuSapBai();
+          gg.bet = tempBet;
+        } catch (e) {
+          console.log("Sap bai ERROR: ", e.toString());
+        }
+      };
+      window.sapBaiMinh()`
     );
   }
 
@@ -220,10 +236,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
           setCurrentSit('');
         }
         if (parsedData[0] == 5) {
-          // console.log('parsedData', parsedData);
-          if (parsedData[1].cmd === 317) {
-            checkPosition(main);
-          }
+          checkPosition(main);
           if (parsedData[2] === currentRoom) {
             console.log('Đang trong ván');
           }

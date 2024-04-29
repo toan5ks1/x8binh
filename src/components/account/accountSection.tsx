@@ -126,6 +126,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
       });
     };
     reader.readAsText(file);
+    updateFile();
   };
 
   useEffect(() => {
