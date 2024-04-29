@@ -36,6 +36,7 @@ export interface Room {
   shouldOutVote: number;
   isFinish: boolean;
   isHostReady: boolean;
+  cardDesk: any;
 }
 
 export interface StateProps {
@@ -85,7 +86,7 @@ interface AppContextProps {
   setState: Dispatch<SetStateAction<StateProps>>;
 }
 
-export const AppContext = createContext<AppContextProps>({
+export const AppContext = createContext<any>({
   state: defaultState,
   setState: () => {},
 });
