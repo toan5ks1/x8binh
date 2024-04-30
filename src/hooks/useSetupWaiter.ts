@@ -128,13 +128,6 @@ export function useSetupWaiter(bot: LoginParams) {
     setShouldPingMaubinh(true);
   };
 
-  // Auto connect maubinh
-  // useEffect(() => {
-  //   if (!shouldPingMaubinh && user?.status === BotStatus.Initialized) {
-  //     setTimeout(handleConnectMauBinh, 500);
-  //   }
-  // }, [user]);
-
   // Join found room
   useEffect(() => {
     if (state.foundAt && state.foundBy && user && room) {
@@ -146,22 +139,8 @@ export function useSetupWaiter(bot: LoginParams) {
 
   // Waiter ready
   useEffect(() => {
-    if (
-      // (user?.status === BotStatus.Joined ||
-      //   user?.status === BotStatus.Submitted) &&
-      user?.status === BotStatus.Finished
-      // room?.isFinish
-    ) {
+    if (user?.status === BotStatus.Finished) {
       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-      // setState((pre) => ({
-      //   ...pre,
-      //   crawingRoom: {
-      //     [state.foundBy!]: {
-      //       ...room,
-      //       shouldStartVote: room.shouldStartVote + 1,
-      //     },
-      //   },
-      // }));
     }
   }, [user]);
 

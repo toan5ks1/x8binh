@@ -146,7 +146,7 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
 
   const handleCreateRoom = () => {
     sendMessage(
-      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":100,"Mu":4,"iJ":true,"inc":false,"pwd":""}]`
+      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":${room.roomType},"Mu":4,"iJ":true,"inc":false,"pwd":""}]`
     );
   };
 
