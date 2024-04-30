@@ -24,9 +24,9 @@ const BoardCard: React.FC<any> = ({ indexProps, cards, numPlayers }) => {
   return (
     <TableCell
       key={indexProps}
-      className={`grid grid-cols-1 tablet:grid-cols-2 laptop:grid-cols-4 !w-[100%] gap-[20px] `}
+      className={`grid grid-cols-1 tablet:grid-cols-2 laptop:grid-cols-4 !w-[100%] gap-[10px] `}
     >
-      <Label className="absolute top-[5px] left-[5px] border bg-background rounded-md p-2 z-[8]">
+      <Label className="absolute top-[-10px] left-[-10px] border bg-background rounded-md p-2 z-[20]">
         {indexProps + 1}
       </Label>
       {playerHands.map((hand, index) => (
