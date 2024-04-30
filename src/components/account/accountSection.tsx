@@ -43,7 +43,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
             <Label htmlFor={`${accountType}-account`}>Accounts</Label>
             <ScrollArea
               className={` ${
-                accountType == 'MAIN' ? '' : 'h-[450px]'
+                accountType == 'MAIN' ? '' : 'h-[250px]'
               } border-t`}
             >
               <AccountTable accountType={accountType} />

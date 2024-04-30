@@ -1,3 +1,4 @@
+import { Plus } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import BoardCard from '../../components/card/boardCard';
 import { Button } from '../../components/ui/button';
@@ -91,11 +92,17 @@ export const HomePage: React.FC<any> = (cardDeck) => {
             </Table>
           </CardContent>
           <CardFooter>
-            <div className="text-xs text-muted-foreground flex flex-row gap-2">
+            <div className="text-xs text-muted-foreground flex flex-row gap-2 items-center">
               <Label>
                 Showing <strong>{cards.length}</strong> of cards
               </Label>
-              <Button onClick={addRandomCards}>Add Random Cards</Button>
+              <Button
+                variant="ghost"
+                className="h-8 w-8 p-0"
+                onClick={addRandomCards}
+              >
+                <Plus />
+              </Button>
             </div>
           </CardFooter>
         </Card>
