@@ -77,15 +77,15 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
     );
     // }
   }
-  function joinRoomInput(account: any): void {
-    // if (state.initialRoom.id) {
-    window.backend.sendMessage(
-      'execute-script',
-      account,
-      `__require('GamePlayManager').default.getInstance().joinRoom(${roomToJoin},0,'',true);`
-    );
-    // }
-  }
+  // function joinRoomInput(account: any): void {
+  //   // if (state.initialRoom.id) {
+  //   window.backend.sendMessage(
+  //     'execute-script',
+  //     account,
+  //     `__require('GamePlayManager').default.getInstance().joinRoom(${roomToJoin},0,'',true);`
+  //   );
+  //   // }
+  // }
   function checkPosition(account: any): void {
     window.backend.sendMessage(
       'check-position',
@@ -476,7 +476,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
           />
           <Button
             // onClick={() => joinRoom(main)}
-            onClick={() => joinRoomInput(main)}
+            onClick={() => joinRoom(main)}
             style={{ fontFamily: 'monospace' }}
             className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
           >
