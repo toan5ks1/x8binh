@@ -27,6 +27,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   const [isInLobby, setIsInLobby] = useState(false);
   const [currentRoom, setCurrentRoom] = useState('');
   const [currentSit, setCurrentSit] = useState('');
+  const [roomToJoin, setRoomToJoin] = useState('');
   const [currentCards, setCurrentCards] = useState<any>();
 
   const parseData = (dataString: string) => {
@@ -37,12 +38,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
       console.error('Error parsing data:', error);
       return [];
     }
-  };
-  const sendMessage = () => {
-    console.log('create ROom');
-    window.backend.sendMessage('send-message', [
-      '[6,"Simms","channelPlugin",{"cmd":300,"aid":"1","gid":4}]',
-    ]);
   };
   const createRoom = (account: any): void => {
     window.backend.sendMessage(
@@ -62,13 +57,14 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
     setCurrentSit('');
   };
   function joinRoom(account: any): void {
-    if (state.initialRoom.id) {
-      window.backend.sendMessage(
-        'execute-script',
-        account,
-        `__require('GamePlayManager').default.getInstance().joinRoom(${state.initialRoom.id},0,'',true);`
-      );
-    }
+    // if (state.initialRoom.id) {
+    window.backend.sendMessage(
+      'execute-script',
+      account,
+      // `__require('GamePlayManager').default.getInstance().joinRoom(${state.initialRoom.id},0,'',true);`
+      `__require('GamePlayManager').default.getInstance().joinRoom(${roomToJoin},0,'',true);`
+    );
+    // }
   }
   function checkPosition(account: any): void {
     window.backend.sendMessage(
@@ -265,7 +261,10 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
               title: 'Đã phát bài',
               description: parsedData[1].cs.toString(),
             });
-            setCurrentCards(parsedData[1].cs.toString().split(',').map(Number));
+            setData((currentData) => [
+              ...currentData,
+              parsedData[1].cs.toString().split(',').map(Number),
+            ]);
           }
         }
         if (parsedData[0] !== '7' && parsedData[0] != 5) {
@@ -414,16 +413,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
                 <span>Lobby</span>
               </Button>
 
-              {state.initialRoom.id && (
-                <Button
-                  onClick={() => joinRoom(main)}
-                  style={{ fontFamily: 'monospace' }}
-                  className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-                >
-                  <ArrowRight className="h-3.5 w-3.5" />
-                  <span>In</span>
-                </Button>
-              )}
               {currentRoom && (
                 <>
                   <Button
@@ -470,6 +459,15 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
               )}
             </>
           )}
+          <input onChange={(e) => setRoomToJoin(e.target.value)} />
+          <Button
+            onClick={() => joinRoom(main)}
+            style={{ fontFamily: 'monospace' }}
+            className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+          >
+            <ArrowRight className="h-3.5 w-3.5" />
+            <span>In</span>
+          </Button>
           <Button
             onClick={() => openAccounts(main)}
             style={{ fontFamily: 'monospace' }}

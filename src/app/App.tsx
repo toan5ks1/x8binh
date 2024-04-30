@@ -35,7 +35,7 @@ export function App() {
   const { accounts } = useAccountStore();
   const { toast } = useToast();
   const bots = accounts['SUB'];
-  const craws = accounts['BOT'].filter((item) => item.isSelected === true);
+  const craws = accounts['BOT'].filter((item: any) => item.isSelected === true);
   const [cardDeck, setCardDeck] = useState('4');
   const [loading, setLoading] = useState(false);
   const [isOpenSheet, setIsOpenSheet] = useState(false);
@@ -84,7 +84,7 @@ export function App() {
   return (
     <div>
       <MainSetting setIsOpen={setIsOpenSheet} isOpen={isOpenSheet}>
-        <AccountSection accountType="MAIN" placeholder="Main account here..." />
+        <AccountSection accountType="MAIN" />
       </MainSetting>
       <Tabs value={tab} onValueChange={setActiveTab} defaultValue="all">
         <div className="flex w-full flex-col bg-muted/40">
@@ -217,7 +217,7 @@ export function App() {
                     <div className="flex flex-col  text-white space-y-4 flex-1 w-full">
                       {/* <div className="grid grid-cols-2 gap-[20px] w-full"> */}
                       {bots.map(
-                        (bot, index) =>
+                        (bot: any, index: any) =>
                           index % 2 === 0 &&
                           index < bots.length - 1 && (
                             <MainPlayerStatus
@@ -234,7 +234,7 @@ export function App() {
                           )
                       )}
 
-                      {craws.map((bot, index) => {
+                      {craws.map((bot: any, index: any) => {
                         if (index % 2 === 0 && index < craws.length - 1) {
                           if (index < craws.length - 3) {
                             return (

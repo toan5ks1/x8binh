@@ -9,9 +9,9 @@ const BoardCard: React.FC<any> = ({ indexProps, cards, numPlayers }) => {
       { length: numPlayers },
       () => []
     );
-
     cards.forEach((card: number, index: number) => {
       const playerIndex = index % numPlayers;
+
       playerHands[playerIndex].push(card);
     });
 

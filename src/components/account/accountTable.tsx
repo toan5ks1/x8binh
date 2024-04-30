@@ -17,18 +17,31 @@ import {
   DollarSign,
   MoreHorizontal,
   Paperclip,
+  Plus,
   RefreshCcw,
-  Save,
   Trash,
 } from 'lucide-react';
 import * as React from 'react';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import {
+  addUniqueAccounts,
+  generateAccount,
+  readValidAccount,
+} from '../../lib/account';
+import { readFile, updateFile } from '../../lib/file';
 import { accountLogin } from '../../lib/login';
 import useAccountStore from '../../store/accountStore';
 import { useToast } from '../toast/use-toast';
 import { Button } from '../ui/button';
 import { Checkbox } from '../ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from '../ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -49,16 +62,89 @@ import {
 } from '../ui/table';
 import { Tooltip, TooltipTrigger } from '../ui/tooltip';
 
-export const AccountTable: React.FC<any> = ({
-  accountType,
-  updateFile,
-  fileInputRef,
-}) => {
+export const AccountTable: React.FC<any> = ({ accountType }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const { accounts, updateAccount, removeAccount } = useAccountStore();
+  const [dataTable, setDataTable] = useState<any>([]);
+  const [isDialogOpen, setDialogOpen] = useState(false);
+  const { accounts, updateAccount, addAccount, removeAccount } =
+    useAccountStore();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const usernameRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+
+  const handleAddAccount = () => {
+    if (usernameRef.current && passwordRef.current) {
+      const newAccount = {
+        username: usernameRef.current.value,
+        password: passwordRef.current.value,
+      };
+      addAccount(accountType, newAccount);
+      setDialogOpen(false);
+    }
+  };
+
+  const handleFileChange = (event: any) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e: any) => {
+      const text = e.target.result;
+      const newAccounts = readValidAccount(text);
+      console.log('newAccountshandleFileChange', newAccounts);
+      addUniqueAccounts(newAccounts, accounts, accountType, addAccount);
+    };
+    reader.onerror = () => {
+      toast({
+        title: 'Error',
+        description: `Failed to read file`,
+      });
+    };
+    reader.readAsText(file);
+  };
+
+  useEffect(() => {
+    const handleReadFile = (data: any, accountTypeReceived: any) => {
+      if (accountTypeReceived == accountType) {
+        console.log('accountTypeReceived', accountTypeReceived);
+        console.log('accountType', accountType);
+        console.log('data', data);
+        const newAccounts = readValidAccount(data);
+        if (newAccounts.length > 0) {
+          console.log('newAccounts', newAccounts);
+          newAccounts.map(async (account: any) => {
+            if (account?.username) {
+              try {
+                addAccount(accountType, generateAccount(account));
+              } catch (err) {
+                console.error('Setup bot failed:', err);
+              }
+            }
+          });
+        }
+      }
+    };
+    window.backend.on('read-file', handleReadFile);
+
+    return () => {
+      window.backend.removeListener('read-file', handleReadFile);
+    };
+  }, []);
+
+  useEffect(() => {
+    readFile(accountType);
+  }, []);
+
+  useEffect(() => {
+    if (accounts[accountType]) {
+      console.log('accounts[accountType]', accounts[accountType]);
+      setDataTable(accounts[accountType]);
+      updateFile(accounts[accountType], accountType);
+    }
+  }, [accounts]);
 
   const handleDeleteRow = (rowData: any) => {
     removeAccount(accountType, rowData.username);
@@ -87,17 +173,10 @@ export const AccountTable: React.FC<any> = ({
   };
 
   const refreshAccount = () => {
-    window.backend.sendMessage(
-      'read-file',
-      [
-        // `C:/Users/PC/AppData/Local/Programs/electron-react-boilerplate/resources/account/${accountType.toLowerCase()}Account.txt`,
-        `account/${accountType.toLowerCase()}Account.txt`,
-      ],
-      accountType
-    );
+    readFile(accountType);
     toast({
-      title: 'Task done',
-      description: `All account was added`,
+      title: 'Refreshed ',
+      description: `Table refreshed`,
     });
   };
 
@@ -175,9 +254,22 @@ export const AccountTable: React.FC<any> = ({
           </Button>
         );
       },
-      cell: ({ row }) => (
-        <div className="lowercase">{row.getValue('main_balance')}</div>
-      ),
+      cell: ({ row }) => {
+        const rowData = row.original;
+        return (
+          <div className="lowercase flex flex-row justify-center items-center">
+            {row.getValue('main_balance')}
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => checkBalance(rowData)}
+            >
+              <RefreshCcw className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'password',
@@ -221,7 +313,7 @@ export const AccountTable: React.FC<any> = ({
   ];
 
   const table = useReactTable({
-    data: accounts[accountType],
+    data: dataTable,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -263,15 +355,52 @@ export const AccountTable: React.FC<any> = ({
                 }}
               >
                 <Paperclip className="size-4" />
-                <span className="sr-only">Attach file</span>
               </Button>
             </TooltipTrigger>
-
+            <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setDialogOpen(true)}
+                >
+                  <Plus className="size-4" />
+                  <span className="sr-only">Add account</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogTitle>Add New Account</DialogTitle>
+                <DialogDescription>
+                  Enter the details of the new account.
+                </DialogDescription>
+                <Input
+                  ref={usernameRef}
+                  placeholder="Username"
+                  className="mb-4"
+                />
+                <Input
+                  ref={passwordRef}
+                  type="password"
+                  placeholder="Password"
+                  className="mb-4"
+                />
+                <div className="flex justify-end space-x-2">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAddAccount}>Add Account</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            {/*
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={updateFile}>
+              <Button variant="ghost" size="icon" onClick={() => onSave()}>
                 <Save className="h-3.5 w-3.5" />
               </Button>
-            </TooltipTrigger>
+            </TooltipTrigger> */}
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
@@ -366,6 +495,15 @@ export const AccountTable: React.FC<any> = ({
             )}
           </TableBody>
         </Table>
+      </div>
+      <div className="flex items-center p-3 pt-0">
+        <input
+          type="file"
+          accept=".txt"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+        />
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">

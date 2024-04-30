@@ -90,20 +90,6 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
     [cards]
   );
 
-  const renderCard = useCallback((cardNumber: number, index: number) => {
-    return cardNumber !== 99 ? (
-      <DropCard key={index} id={cardNumber} moveCard={moveCard}>
-        <DraggableCard
-          id={cardNumber}
-          imageUrl={getCardImageUrl(cardNumber)}
-          moveCard={moveCard}
-        />
-      </DropCard>
-    ) : (
-      <div key={index}></div>
-    );
-  }, []);
-
   const handleArrange = (): void => {
     setLoading(true);
     window.backend.sendMessage('arrange-card', cardProp, idHand);
@@ -117,11 +103,7 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
 
   useEffect(() => {
     setCards(cardProp);
-
-    handleArrange();
-    // setEvaluation1('');
-    // setEvaluation2('');
-    // setEvaluation3('');
+    // handleArrange();
   }, [cardProp]);
 
   useEffect(() => {

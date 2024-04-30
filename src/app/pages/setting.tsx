@@ -8,8 +8,8 @@ export const SettingPage: React.FC = () => {
         <h1 className="text-xl font-semibold">Settings</h1>
       </header>
       <main className="grid grid-cols-2 gap-4 overflow-auto p-4 ">
-        <AccountSection accountType="BOT" placeholder="Bot account here..." />
-        <AccountSection accountType="SUB" placeholder="Sub account here..." />
+        <AccountSection accountType="BOT" />
+        <AccountSection accountType="SUB" />
       </main>
     </div>
   );
