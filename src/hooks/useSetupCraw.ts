@@ -218,7 +218,7 @@ export function useSetupCraw(
         }
       }
     }
-  }, [room, state.initialRoom]);
+  }, [room, state.initialRoom, state.foundAt]);
 
   useEffect(() => {
     // Leave room

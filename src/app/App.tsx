@@ -232,17 +232,6 @@ export function App() {
                           )}
                           Quit
                         </Button>
-                        <Button
-                          onClick={onDisconnect}
-                          size="sm"
-                          className="h-8 gap-1 "
-                          variant="destructive"
-                        >
-                          <ScreenShareOff className="h-3.5 w-3.5" />
-                          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                            Disconnect
-                          </span>
-                        </Button>
                       </>
                     ) : (
                       <Button
@@ -259,6 +248,17 @@ export function App() {
                         Login
                       </Button>
                     )}
+                    <Button
+                      onClick={onDisconnect}
+                      size="sm"
+                      className="h-8 gap-1 "
+                      variant="destructive"
+                    >
+                      <ScreenShareOff className="h-3.5 w-3.5" />
+                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                        Disconnect
+                      </span>
+                    </Button>
                     <Button
                       onClick={() => setIsOpenSheet(true)}
                       size="sm"
