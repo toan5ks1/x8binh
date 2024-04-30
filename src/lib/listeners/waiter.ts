@@ -35,22 +35,6 @@ export function handleMessageWaiter({
         message[1]?.c === 100 ||
         (message[1]?.cmd === 5 && message[1]?.dn === fullname)
       ) {
-        if (state.foundBy) {
-          // const room = state.crawingRoom[state.foundBy];
-          // const shouldStartVote = room.shouldStartVote;
-          // setState((pre) => {
-          //   return {
-          //     ...pre,
-          //     crawingRoom: {
-          //       ...pre.crawingRoom,
-          //       [state.foundBy!]: {
-          //         ...room,
-          //         shouldStartVote: shouldStartVote + 1,
-          //       },
-          //     },
-          //   };
-          // });
-        }
         setUser((pre) => ({ ...pre, status: BotStatus.Ready }));
       } else if (message[1]?.cs?.length > 0 && state.foundBy) {
         setUser((pre) => ({

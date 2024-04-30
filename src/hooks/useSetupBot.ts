@@ -9,7 +9,7 @@ import {
   login,
   openAccounts,
 } from '../lib/login';
-import { isAllHostReady } from '../lib/utils';
+import { isAllCrawLeft, isAllHostReady } from '../lib/utils';
 import { AppContext, BotStatus } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
 
@@ -150,13 +150,6 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
     );
   };
 
-  // Auto connect maubinh
-  // useEffect(() => {
-  //   if (!shouldPingMaubinh && user?.status === BotStatus.Initialized) {
-  //     setTimeout(handleConnectMauBinh, 500);
-  //   }
-  // }, [user]);
-
   // Bot join initial room
   useEffect(() => {
     if (
@@ -209,13 +202,12 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
   }, [user]);
 
   useEffect(() => {
-    const numOfCrawer = Object.keys(state.crawingBots).length;
     // Leave room
     if (
       room?.isFinish &&
       !state.foundBy &&
       user?.status === BotStatus.Finished &&
-      room.shouldOutVote === numOfCrawer
+      isAllCrawLeft(state.crawingRoom)
     ) {
       sendMessage(`[4,"Simms",${room.id}]`);
     }

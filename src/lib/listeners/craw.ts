@@ -57,7 +57,7 @@ export function handleMessageCrawing({
         (message[1]?.cmd === 5 && message[1]?.dn === fullname)
       ) {
         const room = state.crawingRoom[coupleId];
-        caller === state.initialRoom.owner &&
+        caller === room.owner &&
           setState((pre) => {
             return {
               ...pre,
@@ -153,13 +153,15 @@ export function handleMessageCrawing({
       // Left room response
       if (message[1] === true) {
         setState((pre) => {
-          const initRoom = pre.initialRoom;
-          const outVote = initRoom.shouldOutVote + 1;
+          const room = pre.crawingRoom[coupleId];
           return {
             ...pre,
-            initialRoom: {
-              ...initRoom,
-              shouldOutVote: outVote,
+            crawingRoom: {
+              ...pre.crawingRoom,
+              [coupleId]: {
+                ...room,
+                players: [...room.players].slice(0, -1),
+              },
             },
           };
         });
