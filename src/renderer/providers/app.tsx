@@ -37,7 +37,6 @@ export interface Room {
   isFinish: boolean;
   isHostReady: boolean;
   isSubJoin?: boolean;
-  shouldStartVote: number;
 }
 
 export interface StateProps {
@@ -74,7 +73,6 @@ export const defaultState = {
     shouldOutVote: 0,
     isFinish: false,
     isHostReady: false,
-    shouldStartVote: 0,
   },
   mainBots: {},
   crawingRoom: {},
@@ -101,7 +99,6 @@ const AppProvider = ({ children }: AppProviderProps) => {
       shouldOutVote: 0,
       isFinish: false,
       isHostReady: false,
-      shouldStartVote: 0,
     },
     mainBots: {},
     crawingRoom: {},

@@ -2,12 +2,12 @@ import {
   ArrowLeft,
   ArrowRight,
   Chrome,
+  Home,
   PlusCircle,
   RefreshCcw,
   RockingChair,
   SortAsc,
   TrashIcon,
-  Unplug,
   UserPlus,
 } from 'lucide-react';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
@@ -399,69 +399,78 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   };
 
   return (
-    <div className="flex flex-col terminal relative rounded-md border ">
-      <div className="flex flex-row justify-between bg-[#141414] gap-[10px]">
-        <div className="flex flex-row">
-          {currentRoom && (
+    <fieldset className=" rounded-lg border p-4">
+      <legend className="-ml-1 px-1 text-sm font-medium">
+        {main.username}
+      </legend>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col justify-between gap-[10px]">
+          <div className="flex justify-end gap-2">
             <Label
               style={{ fontFamily: 'monospace' }}
-              className="flex items-center bg-background border p-[5px] flex-grow justify-center font-bold rounded-sm"
+              className="flex items-center bg-background border p-[5px]  flex-grow justify-start font-bold rounded-sm"
             >
-              {currentRoom == '19' ? 'Chống vây' : currentRoom}
+              Room:
+              {currentRoom == '19'
+                ? 'Chống vây'
+                : currentRoom
+                ? currentRoom
+                : 'Undefined'}
             </Label>
-          )}
-          {currentSit && (
-            <Label
+
+            <div>
+              <Label
+                style={{ fontFamily: 'monospace' }}
+                className="flex items-center bg-background border p-[5px] w-[40px] h-[30px] flex-grow justify-center font-bold rounded-full flex-row gap-[3px]"
+              >
+                <RockingChair className="w-3.5 h-3.5" />
+                {currentSit}
+              </Label>
+            </div>
+          </div>
+          <div className="grid grid-cols-8 gap-2">
+            <Button
+              onClick={() => openAccounts(main)}
               style={{ fontFamily: 'monospace' }}
-              className="flex items-center bg-background border p-[5px] flex-grow justify-center font-bold rounded-full flex-row gap-[3px]"
+              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 cursor-pointer h-[30px]"
             >
-              <RockingChair className="w-3.5 h-3.5" />
-              {currentSit}
-            </Label>
-          )}
-          <Label
-            style={{ fontFamily: 'monospace' }}
-            className="flex items-center bg-background border !w-[100px] truncate p-[5px] flex-grow justify-center font-bold rounded-sm"
-          >
-            {main.username}
-          </Label>
-        </div>
-        <div className="flex flex-row gap-2">
-          <Button
-            onClick={() => createRoom(main)}
-            style={{ fontFamily: 'monospace' }}
-            className="rounded-[5px] py-[0px] flex items-center hover:bg-slate-400 cursor-pointer gap-[2px] px-[5px] h-[30px]"
-          >
-            <PlusCircle className="h-3.5 w-3.5" />
-            <span>Create</span>
-          </Button>
+              <Chrome className="h-3.5 w-3.5 ml-[3px]" />
+              {/* <span>Open</span> */}
+            </Button>
+            <Button
+              onClick={() => joinLobby(main)}
+              style={{ fontFamily: 'monospace' }}
+              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+            >
+              <Home className="h-3.5 w-3.5" />
+              {/* <span>Lobby</span> */}
+            </Button>
+            <Button
+              onClick={() => createRoom(main)}
+              style={{ fontFamily: 'monospace' }}
+              className="rounded-[5px] py-[0px] flex items-center hover:bg-slate-400 cursor-pointer gap-[2px] px-[5px] h-[30px]"
+            >
+              <PlusCircle className="h-3.5 w-3.5" />
+              {/* <span>Create</span> */}
+            </Button>
 
-          <Button
-            onClick={() => joinLobby(main)}
-            style={{ fontFamily: 'monospace' }}
-            className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-          >
-            <Unplug className="h-3.5 w-3.5" />
-            <span>Lobby</span>
-          </Button>
-
-          <Button
-            onClick={() => invitePlayer(main)}
-            style={{ fontFamily: 'monospace' }}
-            className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-          >
-            <UserPlus className="h-3.5 w-3.5" />
-            <span>Invite</span>
-          </Button>
-          <Button
-            onClick={() => arrangeCards(main)}
-            style={{ fontFamily: 'monospace' }}
-            className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-          >
-            <SortAsc className="h-3.5 w-3.5" />
-            <span>Arrange</span>
-          </Button>
-          {/* <Button
+            <Button
+              onClick={() => invitePlayer(main)}
+              style={{ fontFamily: 'monospace' }}
+              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+            >
+              <UserPlus className="h-3.5 w-3.5" />
+              {/* <span>Invite</span> */}
+            </Button>
+            <Button
+              onClick={() => arrangeCards(main)}
+              style={{ fontFamily: 'monospace' }}
+              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+            >
+              <SortAsc className="h-3.5 w-3.5" />
+              {/* <span>Arrange</span> */}
+            </Button>
+            {/* <Button
             onClick={() => checkPosition(main)}
             style={{ fontFamily: 'monospace' }}
             className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
@@ -469,72 +478,69 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
             <Check className="h-3.5 w-3.5" />
             <span>Check Pos</span>
           </Button> */}
-          <input
-            className="w-100"
-            value={roomToJoin}
-            onChange={(e) => setRoomToJoin(e.target.value)}
-          />
-          <Button
-            // onClick={() => joinRoom(main)}
-            onClick={() => joinRoom(main)}
-            style={{ fontFamily: 'monospace' }}
-            className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+            {/* <input
+              className="w-100"
+              value={roomToJoin}
+              onChange={(e) => setRoomToJoin(e.target.value)}
+            /> */}
+            <Button
+              // onClick={() => joinRoom(main)}
+              onClick={() => joinRoom(main)}
+              style={{ fontFamily: 'monospace' }}
+              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+            >
+              <ArrowRight className="h-3.5 w-3.5" />
+              {/* <span>Join</span> */}
+            </Button>
+            <Button
+              onClick={() => outRoom(main)}
+              style={{ fontFamily: 'monospace' }}
+              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              {/* <span>Out</span> */}
+            </Button>
+            <Button
+              onClick={() => outInRoom(main)}
+              style={{ fontFamily: 'monospace' }}
+              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+            >
+              <RefreshCcw className="h-3.5 w-3.5" />
+              {/* <span>Out-In</span> */}
+            </Button>
+          </div>
+        </div>
+        <div className="flex flex-col terminal relative rounded-md border ">
+          <div className="absolute top-4 right-4 z-50">
+            <Button
+              onClick={clearData}
+              className="  hover:bg-slate-400 rounded-[5px] p-0 border-[2px] flex justify-center items-center cursor-pointer  gap-[2px] px-[7px] h-[30px]"
+            >
+              <TrashIcon className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+          <ScrollArea
+            id="messageContainer"
+            className="flex flex-col grow h-full max-w-screen"
           >
-            <ArrowRight className="h-3.5 w-3.5" />
-            <span>Join</span>
-          </Button>
-          <Button
-            onClick={() => outRoom(main)}
-            style={{ fontFamily: 'monospace' }}
-            className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            <span>Out</span>
-          </Button>
-          <Button
-            onClick={() => outInRoom(main)}
-            style={{ fontFamily: 'monospace' }}
-            className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-          >
-            <RefreshCcw className="h-3.5 w-3.5" />
-            <span>Out-In</span>
-          </Button>
-
-          <Button
-            onClick={() => openAccounts(main)}
-            style={{ fontFamily: 'monospace' }}
-            className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 cursor-pointer h-[30px]"
-          >
-            <Chrome className="h-3.5 w-3.5 ml-[3px]" />
-            <span>Open</span>
-          </Button>
-          <Button
-            onClick={clearData}
-            className="  hover:bg-slate-400 rounded-[5px] p-0 border-[2px] flex justify-center items-center cursor-pointer  gap-[2px] px-[7px] h-[30px]"
-          >
-            <TrashIcon className="h-3.5 w-3.5" />
-          </Button>
+            {data.map((item, index) => (
+              <div
+                key={index}
+                className="font-bold text-left command-input"
+                style={{ fontFamily: 'monospace' }}
+                dangerouslySetInnerHTML={{
+                  __html: highlightSyntax(JSON.stringify(item, null, 2)),
+                }}
+              />
+            ))}
+          </ScrollArea>
         </div>
       </div>
-
-      <ScrollArea
-        id="messageContainer"
-        className="flex flex-col grow h-full max-w-screen mb-[30px]"
-      >
-        {data.map((item, index) => (
-          <div
-            key={index}
-            className="font-bold text-left command-input"
-            style={{ fontFamily: 'monospace' }}
-            dangerouslySetInnerHTML={{
-              __html: highlightSyntax(JSON.stringify(item, null, 2)),
-            }}
-          />
-        ))}
-      </ScrollArea>
-      <div className="absolute bottom-0 right-0 w-[20%]">
-        {currentCards && <HandCard cardProp={currentCards} key={0} />}
+      <div className="flex justify-center mt-4">
+        <div className="w-[50%]">
+          {currentCards && <HandCard cardProp={currentCards} key={0} />}
+        </div>
       </div>
-    </div>
+    </fieldset>
   );
 };

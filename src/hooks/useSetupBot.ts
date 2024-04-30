@@ -9,7 +9,7 @@ import {
   login,
   openAccounts,
 } from '../lib/login';
-import { isAllHostReady } from '../lib/utils';
+import { isAllCrawLeft, isAllHostReady } from '../lib/utils';
 import { AppContext, BotStatus } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
 
@@ -150,13 +150,6 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
     );
   };
 
-  // Auto connect maubinh
-  // useEffect(() => {
-  //   if (!shouldPingMaubinh && user?.status === BotStatus.Initialized) {
-  //     setTimeout(handleConnectMauBinh, 500);
-  //   }
-  // }, [user]);
-
   // Bot join initial room
   useEffect(() => {
     if (
@@ -165,14 +158,13 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       Object.keys(room.cardGame).length === 0 // Make sure cards isn't received
     ) {
       // Host and guess join after created room
-      if (room.players.length < 2) {
-        if (bot.username === room.owner && room.players.length === 0) {
-          // Host
-          sendMessage(`[3,"Simms",${room.id},""]`);
-        } else if (bot.username !== room.owner && room.players.length === 1) {
-          // Guess
-          sendMessage(`[3,"Simms",${room.id},"",true]`);
-        }
+
+      if (bot.username === room.owner && room.players.length === 0) {
+        // Host
+        sendMessage(`[3,"Simms",${room.id},""]`);
+      } else if (bot.username !== room.owner && room.players.length === 1) {
+        // Guess
+        sendMessage(`[3,"Simms",${room.id},"",true]`);
       }
 
       if (
@@ -193,7 +185,6 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       bot.username !== room.owner &&
       user?.status === BotStatus.Joined &&
       isAllHostReady(state) &&
-      !room.isFinish &&
       !state.foundAt
     ) {
       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
@@ -211,13 +202,12 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
   }, [user]);
 
   useEffect(() => {
-    const numOfCrawer = Object.keys(state.crawingBots).length;
     // Leave room
     if (
       room?.isFinish &&
       !state.foundBy &&
       user?.status === BotStatus.Finished &&
-      room.shouldOutVote === numOfCrawer
+      isAllCrawLeft(state.crawingRoom)
     ) {
       sendMessage(`[4,"Simms",${room.id}]`);
     }
@@ -257,7 +247,6 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       user?.status === BotStatus.Finished &&
       room.isSubJoin
     ) {
-      console.log(bot.username, 'subbot leave', state.targetAt);
       sendMessage(`[4,"Simms",${room.id}]`);
     }
   }, [user, state.targetAt, room.isSubJoin]);

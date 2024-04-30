@@ -80,34 +80,16 @@ export const defaultRoom = {
   cardDesk: [],
   cardGame: [],
   shouldOutVote: 0,
-  shouldStartVote: 0,
   isFinish: false,
   isHostReady: false,
 };
 
-// export const insertReceivedCards = (
-//   cardDesk: GameCard[],
-//   botId: string,
-//   cardToInsert: number[]
-// ) => {
-//   const cardDeskClone = [...cardDesk];
-//   const lastGameIndex = cardDeskClone.length - 1; // Get the index of the last element
-//   let lastGame = cardDeskClone[lastGameIndex];
-
-//   if (lastGameIndex < 0 || Object.keys(lastGame)?.length === 4) {
-//     cardDeskClone.push({ [botId]: cardToInsert });
-//   } else if (
-//     Object.keys(cardDeskClone[0]).length === 2 &&
-//     lastGameIndex === 0
-//   ) {
-//     // Skip first game
-//     cardDeskClone.push({ [botId]: cardToInsert });
-//   } else {
-//     lastGame[botId] = cardToInsert;
-//   }
-
-//   return cardDeskClone;
-// };
+export const isAllCrawLeft = (rooms: StateProps['crawingRoom']) => {
+  const isNotLeft = Object.values(rooms).find(
+    (room) => room.players.length > 0
+  );
+  return !isNotLeft;
+};
 
 export const getCardsArray = (ps: any) => {
   return ps.map((item: any) => ({ cs: item.cs, dn: item.dn }));
@@ -142,31 +124,7 @@ export const isAllHostReady = (state: StateProps) => {
   return isAllHostReady;
 };
 
-// export const isAllHostReady = (state: StateProps) => {
-//   let isMainHostReady = true;
-//   let isCrawingHostReady = true;
-//   const allCrawingHost = Object.values(state.crawingRoom).map(
-//     (room) => room.owner
-//   );
-
-//   Object.entries(state.mainBots).forEach(([botId, bot]) => {
-//     if (botId === state.initialRoom.owner && bot.status !== BotStatus.Ready) {
-//       isMainHostReady = false;
-//     }
-//   });
-//   Object.entries(state.crawingBots).forEach(([botId, bot]) => {
-//     if (allCrawingHost.includes(botId) && bot.status !== BotStatus.Ready) {
-//       isCrawingHostReady = false;
-//     }
-//   });
-
-//   return isMainHostReady && isCrawingHostReady;
-// };
-
 export const amIPlaying = (ps: any[], username: string) => {
   const isPlaying = ps.find((obj) => obj.dn === username);
   return isPlaying;
 };
-
-// [5,{"ps":[{"uid":"29_24608219","m":43974},{"uid":"29_24437435","m":30449}],"cmd":205}]
-// [5,{"uid":"29_24608219","dn":"Abalaha","cmd":5}]

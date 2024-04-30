@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import BoardCard from '../../components/card/boardCard';
+import { TerminalBoard } from '../../components/terminal/terminalBoard';
 import { Button } from '../../components/ui/button';
 import {
   Card,
@@ -13,6 +14,7 @@ import { Label } from '../../components/ui/label';
 import { Table, TableBody, TableRow } from '../../components/ui/table';
 import { getRandomCards } from '../../lib/card';
 import { AppContext } from '../../renderer/providers/app';
+import useAccountStore from '../../store/accountStore';
 
 export const HomePage: React.FC<any> = (cardDeck) => {
   const [cards, setCards] = useState<number[][]>([
@@ -69,10 +71,15 @@ export const HomePage: React.FC<any> = (cardDeck) => {
     setCards((prevCards) => [...prevCards, getRandomCards()]);
   };
 
+  const { accounts } = useAccountStore();
+
   return (
-    <div className="text-center relative">
-      <div className="py-[20px]">
-        <Card x-chunk="dashboard-06-chunk-0">
+    <div className="relative h-screen">
+      <main className="grid flex-1 gap-4 py-4 tablet:grid-cols-3 relative">
+        <Card
+          className="tablet:col-span-2 text-center border"
+          x-chunk="dashboard-03-chunk-0"
+        >
           <CardHeader>
             <CardTitle>All card in room</CardTitle>
           </CardHeader>
@@ -112,7 +119,19 @@ export const HomePage: React.FC<any> = (cardDeck) => {
             </div>
           </CardFooter>
         </Card>
-      </div>
+        {/* <Sticky scrollElement=".scrollarea"> */}
+        <div>
+          <div className=" sticky top-[90px]">
+            <Card className="w-full flex flex-col gap-4 border-0 ">
+              {accounts['MAIN'].map(
+                (main: any, index: any) =>
+                  main.isSelected && <TerminalBoard key={index} main={main} />
+              )}
+            </Card>
+          </div>
+        </div>
+        {/* </Sticky> */}
+      </main>
     </div>
   );
 };
