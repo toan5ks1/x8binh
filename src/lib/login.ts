@@ -111,13 +111,12 @@ export async function openAccounts(account: any) {
 }
 
 export function joinRoom(account: any, room?: number): void {
-  console.log('util call', account, room);
   if (room) {
-    console.log('room call', room);
+    console.log('room call', account, room);
     window.backend.sendMessage(
       'execute-script',
       account,
-      `__require('GamePlayManager').default.getInstance().joinRoom(${room.toString()},0,'',true);`
+      `__require('GamePlayManager').default.getInstance().joinRoom(${room},0,'',true);`
     );
   }
 }
