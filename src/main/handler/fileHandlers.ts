@@ -15,7 +15,6 @@ export const setupFileHandlers = () => {
   });
 
   ipcMain.on('update-file', (event, data, filePath, accountType) => {
-    console.log('filePath', filePath[0]);
     if (filePath && typeof filePath[0] === 'string') {
       fs.writeFile(filePath[0], data, (err) => {
         if (err) {

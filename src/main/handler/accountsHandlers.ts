@@ -258,7 +258,6 @@ export const setupAccountHandlers = (
       try {
         await page.evaluate(script);
         const result = await instance.page.evaluate(script);
-        console.log('data result', result);
         event.reply('check-position', {
           data: result,
           username: username,
