@@ -57,20 +57,19 @@ export function handleMessageCrawing({
         (message[1]?.cmd === 5 && message[1]?.dn === fullname)
       ) {
         const room = state.crawingRoom[coupleId];
-        const shouldStartVote = room.shouldStartVote;
-        setState((pre) => {
-          return {
-            ...pre,
-            crawingRoom: {
-              ...pre.crawingRoom,
-              [coupleId]: {
-                ...room,
-                isHostReady: caller === room.owner ? true : room.isHostReady,
-                shouldStartVote: shouldStartVote + 1,
+        caller === state.initialRoom.owner &&
+          setState((pre) => {
+            return {
+              ...pre,
+              crawingRoom: {
+                ...pre.crawingRoom,
+                [coupleId]: {
+                  ...room,
+                  isHostReady: true,
+                },
               },
-            },
-          };
-        });
+            };
+          });
         setUser((pre) => ({ ...pre, status: BotStatus.Ready }));
       } else if (message[1]?.cs?.length > 0) {
         setUser((pre) => ({
@@ -94,7 +93,6 @@ export function handleMessageCrawing({
               [coupleId]: {
                 ...pre.crawingRoom[coupleId],
                 isFinish: true,
-                shouldStartVote: 0,
               },
             },
           };

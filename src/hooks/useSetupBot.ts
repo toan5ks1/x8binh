@@ -165,14 +165,13 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       Object.keys(room.cardGame).length === 0 // Make sure cards isn't received
     ) {
       // Host and guess join after created room
-      if (room.players.length < 2) {
-        if (bot.username === room.owner && room.players.length === 0) {
-          // Host
-          sendMessage(`[3,"Simms",${room.id},""]`);
-        } else if (bot.username !== room.owner && room.players.length === 1) {
-          // Guess
-          sendMessage(`[3,"Simms",${room.id},"",true]`);
-        }
+
+      if (bot.username === room.owner && room.players.length === 0) {
+        // Host
+        sendMessage(`[3,"Simms",${room.id},""]`);
+      } else if (bot.username !== room.owner && room.players.length === 1) {
+        // Guess
+        sendMessage(`[3,"Simms",${room.id},"",true]`);
       }
 
       if (
@@ -193,7 +192,6 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       bot.username !== room.owner &&
       user?.status === BotStatus.Joined &&
       isAllHostReady(state) &&
-      !room.isFinish &&
       !state.foundAt
     ) {
       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
@@ -257,7 +255,6 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       user?.status === BotStatus.Finished &&
       room.isSubJoin
     ) {
-      console.log(bot.username, 'subbot leave', state.targetAt);
       sendMessage(`[4,"Simms",${room.id}]`);
     }
   }, [user, state.targetAt, room.isSubJoin]);

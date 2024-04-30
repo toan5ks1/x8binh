@@ -80,7 +80,6 @@ export const defaultRoom = {
   cardDesk: [],
   cardGame: [],
   shouldOutVote: 0,
-  shouldStartVote: 0,
   isFinish: false,
   isHostReady: false,
 };
