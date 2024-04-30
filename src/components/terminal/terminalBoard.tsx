@@ -534,9 +534,11 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
               />
             ))}
           </ScrollArea>
-          <div className="absolute bottom-0 right-0 w-[20%]">
-            {currentCards && <HandCard cardProp={currentCards} key={0} />}
-          </div>
+        </div>
+      </div>
+      <div className="flex justify-center mt-4">
+        <div className="w-[50%]">
+          {currentCards && <HandCard cardProp={currentCards} key={0} />}
         </div>
       </div>
     </fieldset>

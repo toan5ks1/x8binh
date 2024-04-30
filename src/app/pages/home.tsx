@@ -77,7 +77,7 @@ export const HomePage: React.FC<any> = (cardDeck) => {
     <div className="relative h-screen">
       <main className="grid flex-1 gap-4 py-4 tablet:grid-cols-3 relative">
         <Card
-          className="tablet:col-span-2 text-center"
+          className="tablet:col-span-2 text-center border"
           x-chunk="dashboard-03-chunk-0"
         >
           <CardHeader>

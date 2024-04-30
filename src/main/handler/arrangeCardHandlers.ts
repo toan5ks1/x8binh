@@ -125,7 +125,10 @@ function sortCardsForChinesePoker(cards: any) {
   }
 
   // Hàm tìm và lấy bộ
-  function findCombination(ranks, suits) {
+  function findCombination(
+    ranks: { [x: string]: string | any[] },
+    suits: { [x: string]: any[] }
+  ) {
     let combinations = [];
 
     // Tìm tứ quý, cù lũ, sảnh, thùng, sám, đôi

@@ -35,11 +35,9 @@ import { validateLicense } from '../lib/supabase';
 import { AppContext } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
 import { HomePage } from './pages/home';
-import { SettingPage } from './pages/setting';
-import { TerminalPage } from './pages/terminal';
 
 export function App() {
-  const [tab, setActiveTab] = useState('find-room');
+  const [tab, setActiveTab] = useState('all');
   const { state, setState } = useContext(AppContext);
   const { accounts } = useAccountStore();
   const { toast } = useToast();
@@ -97,7 +95,10 @@ export function App() {
   return (
     <div className="h-screen">
       <MainSetting setIsOpen={setIsOpenSheet} isOpen={isOpenSheet}>
+        <h1 className="text-xl font-semibold">Settings</h1>
         <AccountSection accountType="MAIN" />
+        <AccountSection accountType="BOT" />
+        <AccountSection accountType="SUB" />
       </MainSetting>
       <Tabs value={tab} onValueChange={setActiveTab} defaultValue="all">
         <div className="flex w-full flex-col bg-muted/40">
@@ -285,14 +286,6 @@ export function App() {
                 >
                   <HomePage cardDeck={cardDeck} />
                 </TabsContent>
-
-                <TabsContent
-                  forceMount={true}
-                  value="terminal"
-                  hidden={'terminal' !== tab}
-                >
-                  <TerminalPage />
-                </TabsContent>
                 <TabsContent
                   forceMount={true}
                   value="find-room"
@@ -355,13 +348,6 @@ export function App() {
                       })}
                     </div>
                   </div>
-                </TabsContent>
-                <TabsContent
-                  forceMount={true}
-                  value="setting"
-                  hidden={'setting' !== tab}
-                >
-                  <SettingPage />
                 </TabsContent>
               </main>
             </div>
