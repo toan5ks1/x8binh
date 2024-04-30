@@ -39,7 +39,10 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       shouldReconnect: () => true,
       reconnectInterval: 3000,
       reconnectAttempts: 10,
-      onOpen: () => pingGame(user!),
+      onOpen: () => {
+        pingGame(user!);
+        setShouldPingMaubinh(true);
+      },
     },
     shouldConnect
   );

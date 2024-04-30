@@ -40,33 +40,30 @@ export const HomePage: React.FC<any> = (cardDeck) => {
   // }, [state.foundAt, state.crawingRoom]);
   useEffect(() => {
     if (state.foundBy) {
+      // if (true) {
       const desk = state.crawingRoom[state.foundBy].cardGame;
       const lastIndex = desk.length - 1;
       const lastGame = desk[lastIndex];
-      console.log('lasgameArray', lastGame);
 
       if (lastIndex > 0 && cards.length === lastIndex - 1) {
-        const interleavedCards = interleaveArrays(
-          lastGame.map((gameCard) => gameCard.cs)
-        );
-        console.log('interleavedCards', interleavedCards);
-        setCards((pre) => [...pre, ...interleavedCards]);
+        const mappedCard = lastGame.map((gameCard) => gameCard.cs);
+        // const mappedCard = [
+        //   [14, 10, 4, 43, 41, 50, 47, 19, 13, 5, 44, 36, 34],
+        //   [46, 35, 25, 22, 17, 51, 32, 27, 18, 16, 29, 24, 21],
+        //   [42, 26, 12, 39, 37, 38, 28, 15, 11, 8, 0, 45, 33],
+        //   [49, 40, 31, 23, 9, 1, 48, 30, 7, 6, 20, 3, 2],
+        // ];
+        const boBai: number[] = [];
+        for (let i = 0; i < 13; i++) {
+          boBai.push(mappedCard[0][i]);
+          boBai.push(mappedCard[1][i]);
+          boBai.push(mappedCard[2][i]);
+          boBai.push(mappedCard[3][i]);
+        }
+        setCards((pre) => [...pre, boBai]);
       }
     }
   }, [state.foundAt, state.crawingRoom]);
-
-  function interleaveArrays(arrays: any) {
-    const maxLength = Math.max(...arrays.map((arr: any) => arr.length));
-    let result: any = [];
-    for (let i = 0; i < maxLength; i++) {
-      arrays.forEach((arr: any[]) => {
-        if (i < arr.length) {
-          result.push(arr[i]);
-        }
-      });
-    }
-    return result;
-  }
 
   const addRandomCards = () => {
     setCards((prevCards) => [...prevCards, getRandomCards()]);

@@ -7,7 +7,6 @@ import {
   PlusCircle,
   ScreenShareOff,
   Settings,
-  Unplug,
 } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -23,6 +22,7 @@ import { Label } from '../components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio';
 import { Tabs, TabsContent } from '../components/ui/tabs';
 // import { bots, craws } from '../lib/config';
+import { HashLoader } from 'react-spinners';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -228,7 +228,7 @@ export function App() {
                         Login
                       </span>
                     </Button>
-                    <Button
+                    {/* <Button
                       onClick={onJoinMauBinh}
                       size="sm"
                       className="h-8 gap-1"
@@ -237,7 +237,7 @@ export function App() {
                       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                         Connect
                       </span>
-                    </Button>
+                    </Button> */}
                     <Button
                       onClick={onCreatRoom}
                       size="sm"
@@ -367,6 +367,7 @@ export function App() {
           )}
         </div>
       </Tabs>
+      <HashLoader color="#36d7b7" loading={loading} size={150} />
     </div>
   );
 }

@@ -94,7 +94,6 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
     reader.onload = async (e: any) => {
       const text = e.target.result;
       const newAccounts = readValidAccount(text);
-      console.log('newAccountshandleFileChange', newAccounts);
       addUniqueAccounts(newAccounts, accounts, accountType, addAccount);
     };
     reader.onerror = () => {
@@ -109,12 +108,8 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
   useEffect(() => {
     const handleReadFile = (data: any, accountTypeReceived: any) => {
       if (accountTypeReceived == accountType) {
-        console.log('accountTypeReceived', accountTypeReceived);
-        console.log('accountType', accountType);
-        console.log('data', data);
         const newAccounts = readValidAccount(data);
         if (newAccounts.length > 0) {
-          console.log('newAccounts', newAccounts);
           newAccounts.map(async (account: any) => {
             if (account?.username) {
               try {
@@ -140,7 +135,6 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
 
   useEffect(() => {
     if (accounts[accountType]) {
-      console.log('accounts[accountType]', accounts[accountType]);
       setDataTable(accounts[accountType]);
       updateFile(accounts[accountType], accountType);
     }
