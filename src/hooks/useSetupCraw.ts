@@ -39,7 +39,10 @@ export function useSetupCraw(
       shouldReconnect: () => true,
       reconnectInterval: 3000,
       reconnectAttempts: 10,
-      onOpen: () => pingGame(user!),
+      onOpen: () => {
+        pingGame(user!);
+        setShouldPingMaubinh(true);
+      },
     },
     shouldConnect
   );
@@ -141,13 +144,6 @@ export function useSetupCraw(
     );
   };
 
-  // Auto connect maubinh
-  // useEffect(() => {
-  //   if (!shouldPingMaubinh && user?.status === BotStatus.Initialized) {
-  //     setTimeout(handleConnectMauBinh, 500);
-  //   }
-  // }, [user]);
-
   // Bot join initial room
   useEffect(() => {
     if (
@@ -167,7 +163,7 @@ export function useSetupCraw(
       }
 
       if (
-        room.players.length === 2 &&
+        room.players.length >= 2 &&
         user?.status === BotStatus.Joined &&
         bot.username === room.owner
       ) {
@@ -268,29 +264,24 @@ export function useSetupCraw(
         room.players.length === 4 &&
         myCards
       ) {
-        console.log('craw call submit');
         // Submit cards
         sendMessage(`[5,"Simms",${room.id},{"cmd":603,"cs":[${myCards}]}]`);
+        console.log('card', room.cardGame);
       }
     }
   }, [room, user]);
 
   // Found room ready
   useEffect(() => {
-    if (user?.status === BotStatus.Finished) {
-      sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-      // ready for new game
-    }
+    if (coupleId === state.foundBy) {
+      if (user?.status === BotStatus.Finished) {
+        sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
+        // ready for new game
+      }
 
-    if (
-      isHost &&
-      user?.status === BotStatus.Ready &&
-      coupleId === state.foundBy
-    ) {
-      // if (room.shouldStartVote === 4) {
-      //   sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
-      // }
-      sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
+      if (isHost && user?.status === BotStatus.Ready) {
+        sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
+      }
     }
   }, [user]);
 
@@ -306,3 +297,37 @@ export function useSetupCraw(
     disconnectGame,
   };
 }
+// Bot join initial room
+// useEffect(() => {
+//   if (
+//     room &&
+//     room.id &&
+//     Object.keys(room.cardGame).length === 0 // Make sure cards isn't received
+//   ) {
+//     // Host and guess join after created room
+//     // if (room.players.length < 2) {
+//     if (
+//       user?.status === BotStatus.Left ||
+//       user?.status === BotStatus.Connected
+//     ) {
+//       if (bot.username === room.owner) {
+//         //&& room.players.length === 0
+//         // Host
+//         sendMessage(`[3,"Simms",${room.id},""]`);
+//       } else if (bot.username !== room.owner) {
+//         //&& room.players.length === 1
+//         // Guess
+//         sendMessage(`[3,"Simms",${room.id},"",true]`);
+//       }
+//     }
+
+//     if (
+//       room.players.length >= 2 &&
+//       user?.status === BotStatus.Joined &&
+//       bot.username === room.owner
+//     ) {
+//       // Host ready
+//       sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
+//     }
+//   }
+// }, [room]);

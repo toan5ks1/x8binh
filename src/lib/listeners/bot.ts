@@ -131,7 +131,7 @@ export function handleMessage({
         setState((pre) => ({
           ...pre,
           initialRoom: { ...pre.initialRoom, players: [] },
-          shouldRecreateRoom: state.foundAt ? false : true,
+          shouldRecreateRoom: !state.foundAt ? true : false,
         }));
         returnMsg = 'Left room successfully!';
       } else {

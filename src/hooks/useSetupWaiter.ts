@@ -32,6 +32,7 @@ export function useSetupWaiter(bot: LoginParams) {
       reconnectAttempts: 10,
       onOpen: () => {
         pingGame(user!);
+        setShouldPingMaubinh(true);
       },
     },
     shouldConnect
@@ -175,6 +176,7 @@ export function useSetupWaiter(bot: LoginParams) {
         );
       }
     }
+    console.log(room?.cardGame);
   }, [user]);
 
   const handleLeaveRoom = () => {

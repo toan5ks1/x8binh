@@ -33,13 +33,28 @@ export const HomePage: React.FC<any> = (cardDeck) => {
 
   useEffect(() => {
     if (state.foundBy) {
+      // if (true) {
       const desk = state.crawingRoom[state.foundBy].cardGame;
       const lastIndex = desk.length - 1;
       const lastGame = desk[lastIndex];
 
       if (lastIndex > 0 && cards.length === lastIndex - 1) {
         const mappedCard = lastGame.map((gameCard) => gameCard.cs);
-        setCards((pre) => [...pre, ([] as number[]).concat(...mappedCard)]);
+        // const mappedCard = [
+        //   [14, 10, 4, 43, 41, 50, 47, 19, 13, 5, 44, 36, 34],
+        //   [46, 35, 25, 22, 17, 51, 32, 27, 18, 16, 29, 24, 21],
+        //   [42, 26, 12, 39, 37, 38, 28, 15, 11, 8, 0, 45, 33],
+        //   [49, 40, 31, 23, 9, 1, 48, 30, 7, 6, 20, 3, 2],
+        // ];
+        const boBai: number[] = [];
+        for (let i = 0; i < 13; i++) {
+          boBai.push(mappedCard[0][i]);
+          boBai.push(mappedCard[1][i]);
+          boBai.push(mappedCard[2][i]);
+          boBai.push(mappedCard[3][i]);
+        }
+        console.log(boBai);
+        setCards((pre) => [...pre, boBai]);
       }
     }
   }, [state.foundAt, state.crawingRoom]);
