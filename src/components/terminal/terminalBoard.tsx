@@ -1,7 +1,6 @@
 import {
   ArrowLeft,
   ArrowRight,
-  Check,
   Chrome,
   PlusCircle,
   RefreshCcw,
@@ -74,22 +73,30 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
     window.backend.sendMessage(
       'execute-script',
       account,
-      // `__require('GamePlayManager').default.getInstance().joinRoom(${state.initialRoom.id},0,'',true);`
-      `__require('GamePlayManager').default.getInstance().joinRoom(${roomToJoin},0,'',true);`
+      `__require('GamePlayManager').default.getInstance().joinRoom(${state.initialRoom.id},0,'',true);`
     );
     // }
   }
+  // function joinRoomInput(account: any): void {
+  //   // if (state.initialRoom.id) {
+  //   window.backend.sendMessage(
+  //     'execute-script',
+  //     account,
+  //     `__require('GamePlayManager').default.getInstance().joinRoom(${roomToJoin},0,'',true);`
+  //   );
+  //   // }
+  // }
   function checkPosition(account: any): void {
     window.backend.sendMessage(
       'check-position',
       account,
-      // `
-      //   var uuid = __require('GamePlayManager').default.Instance.loginDict.uid;
-      //   var players = cc.find("Canvas/MainUI/MauBinhController")._components[0].cardGameTableController.gameController.AllPlayers;
-      //   var uids = Object.keys(players);
-      //   uids.indexOf(uuid.toString());
-      //   `
-      `cc.find("Canvas/MainUI/MauBinhController")._components[0].cardGameTableController.gameController.state`
+      `
+        var uuid = __require('GamePlayManager').default.Instance.loginDict.uid;
+        var players = cc.find("Canvas/MainUI/MauBinhController")._components[0].cardGameTableController.gameController.AllPlayers;
+        var uids = Object.keys(players);
+        uids.indexOf(uuid.toString());
+        `
+      // `cc.find("Canvas/MainUI/MauBinhController")._components[0].cardGameTableController.gameController.state`
     );
   }
   async function outInRoom(account: any): Promise<void> {
@@ -437,14 +444,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
             <Unplug className="h-3.5 w-3.5" />
             <span>Lobby</span>
           </Button>
-          <Button
-            onClick={() => joinRoom(main)}
-            style={{ fontFamily: 'monospace' }}
-            className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-          >
-            <ArrowRight className="h-3.5 w-3.5" />
-            <span>Join</span>
-          </Button>
 
           <Button
             onClick={() => invitePlayer(main)}
@@ -462,13 +461,27 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
             <SortAsc className="h-3.5 w-3.5" />
             <span>Arrange</span>
           </Button>
-          <Button
+          {/* <Button
             onClick={() => checkPosition(main)}
             style={{ fontFamily: 'monospace' }}
             className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
           >
             <Check className="h-3.5 w-3.5" />
             <span>Check Pos</span>
+          </Button> */}
+          <input
+            className="w-100"
+            value={roomToJoin}
+            onChange={(e) => setRoomToJoin(e.target.value)}
+          />
+          <Button
+            // onClick={() => joinRoom(main)}
+            onClick={() => joinRoom(main)}
+            style={{ fontFamily: 'monospace' }}
+            className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
+          >
+            <ArrowRight className="h-3.5 w-3.5" />
+            <span>Join</span>
           </Button>
           <Button
             onClick={() => outRoom(main)}

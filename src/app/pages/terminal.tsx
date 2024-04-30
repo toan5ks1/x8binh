@@ -9,7 +9,7 @@ export const TerminalPage: React.FC = () => {
   return (
     <div className="text-center h-full">
       <div className="flex flex-col gap-4">
-        <Card className="w-full flex flex-col gap-4">
+        <Card className="w-full flex flex-col gap-4 border-0">
           {accounts['MAIN'].map(
             (main: any, index: any) =>
               main.isSelected && <TerminalBoard key={index} main={main} />
