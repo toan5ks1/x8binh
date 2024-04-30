@@ -66,6 +66,8 @@ export interface StateProps {
   foundBy?: string;
   shouldRecreateRoom: boolean;
   currentGame?: number;
+  isLoggedIn?: boolean;
+  isQuited?: boolean;
 }
 
 export const defaultState = {

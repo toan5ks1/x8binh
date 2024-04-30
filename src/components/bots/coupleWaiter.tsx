@@ -59,12 +59,6 @@ BotStatusProps) => {
     }
   }, [shouldJoinMB]);
 
-  // useEffect(() => {
-  //   if (shouldCreatRoom) {
-  //     hostCreateRoom();
-  //   }
-  // }, [shouldCreatRoom]);
-
   useEffect(() => {
     if (shouldLeave) {
       hostLeaveRoom();

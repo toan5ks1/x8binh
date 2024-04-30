@@ -2,6 +2,7 @@ import {
   DollarSign,
   Hand,
   Loader,
+  Loader2,
   LogIn,
   LogOut,
   PlusCircle,
@@ -10,7 +11,6 @@ import {
 } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HashLoader } from 'react-spinners';
 import { AccountSection } from '../components/account/accountSection';
 import { CoupleCrawStatus } from '../components/bots/coupleCraw';
 import { CoupleWaiterStatus } from '../components/bots/coupleWaiter';
@@ -40,13 +40,13 @@ export function App() {
   const [tab, setActiveTab] = useState('all');
   const { state, setState } = useContext(AppContext);
   const { accounts } = useAccountStore();
-  const { toast } = useToast();
   const bots = accounts['SUB'];
   const craws = accounts['BOT'].filter((item: any) => item.isSelected === true);
   const [cardDeck, setCardDeck] = useState('4');
   const [loading, setLoading] = useState(false);
   const [isOpenSheet, setIsOpenSheet] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const [shouldLogin, setShouldLogin] = useState(false);
   const [shouldJoinMB, setShouldJoinMB] = useState(false);
@@ -54,25 +54,46 @@ export function App() {
   const [shouldLeave, setShouldLeave] = useState(false);
   const [shouldDisconnect, setShouldDisconnect] = useState(false);
 
+  const [isLoging, setIsLoging] = useState(false);
+  const [isFinding, setIsFinding] = useState(false);
+  const [isQuiting, setIsQuiting] = useState(false);
+
   const onLogin = () => {
     setShouldLogin(true);
+    setIsLoging(true);
   };
-
-  // const onJoinMauBinh = () => {
-  //   setShouldJoinMB(true);
-  // };
 
   const onCreatRoom = () => {
     setShouldCreateRoom(true);
+    setIsFinding(true);
   };
 
   const onLeaveRoom = () => {
     setShouldLeave(true);
+    setIsQuiting(true);
   };
 
   const onDisconnect = () => {
     window.location.reload();
   };
+
+  useEffect(() => {
+    if (state.isLoggedIn) {
+      setIsLoging(false);
+    }
+  }, [state.isLoggedIn]);
+
+  useEffect(() => {
+    if (state.foundAt) {
+      setIsFinding(false);
+    }
+  }, [state.foundAt]);
+
+  useEffect(() => {
+    if (state.isQuited) {
+      setIsQuiting(false);
+    }
+  }, [state.isQuited]);
 
   useEffect(() => {
     if (
@@ -181,42 +202,63 @@ export function App() {
                         ))}
                       </DropdownMenuContent>
                     </DropdownMenu>
-                    <Button onClick={onLogin} size="sm" className="h-8 gap-1">
-                      <LogIn className="h-3.5 w-3.5" />
-                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+
+                    {state.isLoggedIn ? (
+                      <>
+                        <Button
+                          onClick={onCreatRoom}
+                          size="sm"
+                          className="h-8 gap-1"
+                          disabled={isFinding}
+                        >
+                          {isFinding ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <PlusCircle className="h-3.5 w-3.5" />
+                          )}
+                          Find room
+                        </Button>
+
+                        <Button
+                          onClick={onLeaveRoom}
+                          size="sm"
+                          className="h-8 gap-1 bg-yellow-500"
+                          disabled={isQuiting}
+                        >
+                          {isQuiting ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <LogOut className="h-3.5 w-3.5" />
+                          )}
+                          Quit
+                        </Button>
+                        <Button
+                          onClick={onDisconnect}
+                          size="sm"
+                          className="h-8 gap-1 "
+                          variant="destructive"
+                        >
+                          <ScreenShareOff className="h-3.5 w-3.5" />
+                          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                            Disconnect
+                          </span>
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        onClick={onLogin}
+                        size="sm"
+                        className="h-8 gap-1"
+                        disabled={isLoging}
+                      >
+                        {isLoging ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <LogIn className="h-3.5 w-3.5" />
+                        )}
                         Login
-                      </span>
-                    </Button>
-                    <Button
-                      onClick={onCreatRoom}
-                      size="sm"
-                      className="h-8 gap-1"
-                    >
-                      <PlusCircle className="h-3.5 w-3.5" />
-                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Create/Join
-                      </span>
-                    </Button>
-                    <Button
-                      onClick={onLeaveRoom}
-                      size="sm"
-                      className="h-8 gap-1"
-                    >
-                      <LogOut className="h-3.5 w-3.5" />
-                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Quit
-                      </span>
-                    </Button>
-                    <Button
-                      onClick={onDisconnect}
-                      size="sm"
-                      className="h-8 gap-1"
-                    >
-                      <ScreenShareOff className="h-3.5 w-3.5" />
-                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Disconnect
-                      </span>
-                    </Button>
+                      </Button>
+                    )}
                     <Button
                       onClick={() => setIsOpenSheet(true)}
                       size="sm"
@@ -240,9 +282,7 @@ export function App() {
                   hidden={'find-room' !== tab}
                 >
                   <div className="flex flex-col h-screen w-full">
-                    {/* <Toolbox /> */}
                     <div className="flex flex-col  text-white space-y-4 flex-1 w-full">
-                      {/* <div className="grid grid-cols-2 gap-[20px] w-full"> */}
                       {bots.map(
                         (bot: any, index: any) =>
                           index % 2 === 0 &&
@@ -302,7 +342,6 @@ export function App() {
           )}
         </div>
       </Tabs>
-      <HashLoader color="#36d7b7" loading={loading} size={150} />
     </div>
   );
 }
