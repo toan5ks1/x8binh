@@ -80,9 +80,15 @@ export const defaultRoom = {
   cardDesk: [],
   cardGame: [],
   shouldOutVote: 0,
-  shouldStartVote: 0,
   isFinish: false,
   isHostReady: false,
+};
+
+export const isAllCrawLeft = (rooms: StateProps['crawingRoom']) => {
+  const isNotLeft = Object.values(rooms).find(
+    (room) => room.players.length > 0
+  );
+  return !isNotLeft;
 };
 
 // export const insertReceivedCards = (
