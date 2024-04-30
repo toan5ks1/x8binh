@@ -196,7 +196,7 @@ export function useSetupCraw(
 
   // Check cards
   useEffect(() => {
-    if (!state.foundAt && user?.status === BotStatus.Received) {
+    if (!state.foundAt) {
       if (room?.cardGame.length && initRoom.cardGame.length) {
         if (isFoundCards(room.cardGame[0], initRoom.cardGame[0])) {
           toast({
@@ -262,7 +262,6 @@ export function useSetupCraw(
       ) {
         // Submit cards
         sendMessage(`[5,"Simms",${room.id},{"cmd":603,"cs":[${myCards}]}]`);
-        console.log('card', room.cardGame);
       }
     }
   }, [room, user]);
@@ -293,37 +292,3 @@ export function useSetupCraw(
     disconnectGame,
   };
 }
-// Bot join initial room
-// useEffect(() => {
-//   if (
-//     room &&
-//     room.id &&
-//     Object.keys(room.cardGame).length === 0 // Make sure cards isn't received
-//   ) {
-//     // Host and guess join after created room
-//     // if (room.players.length < 2) {
-//     if (
-//       user?.status === BotStatus.Left ||
-//       user?.status === BotStatus.Connected
-//     ) {
-//       if (bot.username === room.owner) {
-//         //&& room.players.length === 0
-//         // Host
-//         sendMessage(`[3,"Simms",${room.id},""]`);
-//       } else if (bot.username !== room.owner) {
-//         //&& room.players.length === 1
-//         // Guess
-//         sendMessage(`[3,"Simms",${room.id},"",true]`);
-//       }
-//     }
-
-//     if (
-//       room.players.length >= 2 &&
-//       user?.status === BotStatus.Joined &&
-//       bot.username === room.owner
-//     ) {
-//       // Host ready
-//       sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
-//     }
-//   }
-// }, [room]);

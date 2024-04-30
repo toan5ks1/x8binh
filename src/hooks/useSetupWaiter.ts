@@ -176,7 +176,6 @@ export function useSetupWaiter(bot: LoginParams) {
         );
       }
     }
-    console.log(room?.cardGame);
   }, [user]);
 
   const handleLeaveRoom = () => {
