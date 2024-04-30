@@ -95,7 +95,7 @@ export function App() {
   }
 
   return (
-    <div>
+    <div className="h-screen">
       <MainSetting setIsOpen={setIsOpenSheet} isOpen={isOpenSheet}>
         <AccountSection accountType="MAIN" />
       </MainSetting>
@@ -285,6 +285,7 @@ export function App() {
                 >
                   <HomePage cardDeck={cardDeck} />
                 </TabsContent>
+
                 <TabsContent
                   forceMount={true}
                   value="terminal"
