@@ -12,7 +12,10 @@ const BoardCard: React.FC<any> = ({ indexProps, cards, numPlayers }) => {
     cards.forEach((card: number, index: number) => {
       const playerIndex = index % numPlayers;
 
-      playerHands[playerIndex].push(card);
+      // Chỉ thêm bài vào tay người chơi nếu họ chưa có đủ 13 lá
+      if (playerHands[playerIndex].length < 13) {
+        playerHands[playerIndex].push(card);
+      }
     });
 
     return playerHands;
@@ -23,7 +26,7 @@ const BoardCard: React.FC<any> = ({ indexProps, cards, numPlayers }) => {
       key={indexProps}
       className={`grid grid-cols-1 tablet:grid-cols-2 laptop:grid-cols-4 !w-[100%] gap-[20px] `}
     >
-      <Label className=" absolute top-[5px] left-[5px] border bg-background rounded-md p-2 z-[8]">
+      <Label className="absolute top-[5px] left-[5px] border bg-background rounded-md p-2 z-[8]">
         {indexProps + 1}
       </Label>
       {playerHands.map((hand, index) => (

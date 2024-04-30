@@ -124,7 +124,7 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
     return () => {
       window.backend.removeListener('arrange-card', handleData);
     };
-  }, [idHand]);
+  }, []);
 
   return (
     <DndProvider backend={HTML5Backend}>

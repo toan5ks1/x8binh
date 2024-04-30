@@ -31,7 +31,7 @@ export function handleMessage({
       if (message[1].rs && user?.status === BotStatus.Initialized) {
         setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
         returnMsg = 'Join Maubinh sucessfully!';
-      } else if (message[1].ri) {
+      } else if (message[1].ri && message[1].cmd === 308) {
         // Create room response
         const roomId = message[1]?.ri?.rid;
 
@@ -131,7 +131,7 @@ export function handleMessage({
         setState((pre) => ({
           ...pre,
           initialRoom: { ...pre.initialRoom, players: [] },
-          shouldRecreateRoom: state.foundAt ? false : true,
+          shouldRecreateRoom: !state.foundAt ? true : false,
         }));
         returnMsg = 'Left room successfully!';
       } else {

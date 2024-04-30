@@ -619,8 +619,6 @@ function sortCardsForChinesePoker(cards: any) {
       (combination) =>
         !combination.cards.some((card) => firstSet.cards.includes(card))
     );
-    console.log('Sắp xếp chi đầu với bộ:', firstSet);
-    console.log('Sắp xếp chi thứ hai với bộ:', secondSet);
 
     // Xóa bộ đã dùng
     firstSet.cards.forEach((card) => {
@@ -675,8 +673,6 @@ function checkInstantWin(cards) {
   // Kiểm tra Ba thùng và Ba sảnh
   let flushCount = countFlushes(suits);
   let straightCount = countStraights(ranks);
-  console.log('flushCount', flushCount);
-  console.log('straightCount', straightCount);
   if (flushCount == 3) {
     return { win: true, type: 'Ba thùng' };
   }
@@ -847,11 +843,13 @@ function findCard(cardsInput: any[]) {
 
 export const setupArrangeCardHandlers = () => {
   ipcMain.on('arrange-card', (event, input, position) => {
+    console.log('input Card', input);
     let cards = findCard(input).sort((a, b) => {
       return CARDS.indexOf(a) - CARDS.indexOf(b);
     });
     let result = checkInstantWin(cards);
     let returnCards = sortCardsForChinesePoker(cards);
+    console.log('returnCards', returnCards);
     if (cards.length !== 13) {
       event.reply('arrange-card', {
         error: 'Bạn cần nhập đúng 13 số, mỗi số từ 1 đến 52.',

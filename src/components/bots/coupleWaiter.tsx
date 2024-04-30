@@ -52,12 +52,12 @@ BotStatusProps) => {
     }
   }, [shouldLogin]);
 
-  // useEffect(() => {
-  //   if (shouldJoinMB) {
-  //     connectMbHost();
-  //     connectMbGuess();
-  //   }
-  // }, [shouldJoinMB]);
+  useEffect(() => {
+    if (shouldJoinMB) {
+      connectMbHost();
+      connectMbGuess();
+    }
+  }, [shouldJoinMB]);
 
   // useEffect(() => {
   //   if (shouldCreatRoom) {

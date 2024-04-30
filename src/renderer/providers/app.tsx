@@ -36,7 +36,8 @@ export interface Room {
   shouldOutVote: number;
   isFinish: boolean;
   isHostReady: boolean;
-  cardDesk: any;
+  isSubJoin?: boolean;
+  shouldStartVote: number;
 }
 
 export interface StateProps {
@@ -73,6 +74,7 @@ export const defaultState = {
     shouldOutVote: 0,
     isFinish: false,
     isHostReady: false,
+    shouldStartVote: 0,
   },
   mainBots: {},
   crawingRoom: {},
@@ -86,7 +88,7 @@ interface AppContextProps {
   setState: Dispatch<SetStateAction<StateProps>>;
 }
 
-export const AppContext = createContext<any>({
+export const AppContext = createContext<AppContextProps>({
   state: defaultState,
   setState: () => {},
 });
@@ -99,6 +101,7 @@ const AppProvider = ({ children }: AppProviderProps) => {
       shouldOutVote: 0,
       isFinish: false,
       isHostReady: false,
+      shouldStartVote: 0,
     },
     mainBots: {},
     crawingRoom: {},

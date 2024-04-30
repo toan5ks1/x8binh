@@ -1,4 +1,5 @@
 import {
+  DollarSign,
   Hand,
   Loader,
   LogIn,
@@ -21,22 +22,31 @@ import { Label } from '../components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio';
 import { Tabs, TabsContent } from '../components/ui/tabs';
 // import { bots, craws } from '../lib/config';
-import Toolbox from '../components/menu/toolbox';
+import { HashLoader } from 'react-spinners';
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '../components/ui/dropdown-menu';
 import { validateLicense } from '../lib/supabase';
-import { AppContext, defaultState } from '../renderer/providers/app';
+import { AppContext } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
 import { HomePage } from './pages/home';
 import { SettingPage } from './pages/setting';
 import { TerminalPage } from './pages/terminal';
 
 export function App() {
-  const [tab, setActiveTab] = useState('all');
-  const { state, setState } = useContext<any>(AppContext);
+  const [tab, setActiveTab] = useState('find-room');
+  const { state, setState } = useContext(AppContext);
   const { accounts } = useAccountStore();
   const { toast } = useToast();
   const bots = accounts['SUB'];
   const craws = accounts['BOT'].filter((item: any) => item.isSelected === true);
   const [cardDeck, setCardDeck] = useState('4');
+  const [roomType, setRoomType] = useState('100');
   const [loading, setLoading] = useState(false);
   const [isOpenSheet, setIsOpenSheet] = useState(false);
   const navigate = useNavigate();
@@ -49,7 +59,10 @@ export function App() {
 
   const onLogin = () => {
     setShouldLogin(true);
-    setShouldDisconnect(false);
+  };
+
+  const onJoinMauBinh = () => {
+    setShouldJoinMB(true);
   };
 
   const onCreatRoom = () => {
@@ -58,18 +71,10 @@ export function App() {
 
   const onLeaveRoom = () => {
     setShouldLeave(true);
-    setShouldCreateRoom(false);
   };
 
   const onDisconnect = () => {
-    onLeaveRoom();
-    setShouldDisconnect(true);
-
-    setShouldLogin(false);
-    setShouldJoinMB(false);
-    setShouldCreateRoom(false);
-    setShouldLeave(false);
-    setState(defaultState);
+    window.location.reload();
   };
 
   useEffect(() => {
@@ -80,6 +85,14 @@ export function App() {
       validateLicense(setLoading, toast, navigate);
     }
   }, []);
+
+  const handleRoomTypeChange = (money: string) => {
+    setRoomType(money);
+  };
+
+  function formatCurrency(value: string) {
+    return parseInt(value).toLocaleString('vi-VN');
+  }
 
   return (
     <div>
@@ -102,8 +115,7 @@ export function App() {
                   <div className="ml-auto flex flex-row items-center gap-2">
                     <div className="h-8 gap-1 flex flex-row justify-center items-center">
                       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        {state.initialRoom.id &&
-                          `Room: ${state.initialRoom.id}`}
+                        {state.targetAt && `Room: ${state.targetAt}`}
                       </span>
                     </div>
                     <RadioGroup
@@ -111,9 +123,9 @@ export function App() {
                       onValueChange={(value) => {
                         setCardDeck(value);
                       }}
-                      className="flex flex-row border py-[4px] px-[7px] rounded-[5px]"
+                      className="flex flex-row border py-[4px] px-[7px] rounded-[5px] items-center"
                     >
-                      <Hand className="" />
+                      <Hand className="w-3.5 h-3.5" />
                       <div className="flex items-center space-x-2">
                         <div className="border p-0 px-[4px] rounded-full">
                           <RadioGroupItem
@@ -137,6 +149,79 @@ export function App() {
                         <Label>4</Label>
                       </div>
                     </RadioGroup>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 gap-1"
+                        >
+                          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                            Type: {formatCurrency(roomType)}
+                          </span>
+                          <DollarSign className="h-3.5 w-3.5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Select room type</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuCheckboxItem
+                          checked={roomType === '100'}
+                          onSelect={() => handleRoomTypeChange('100')}
+                        >
+                          {formatCurrency('100')}
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                          checked={roomType === '500'}
+                          onSelect={() => handleRoomTypeChange('500')}
+                        >
+                          {formatCurrency('500')}
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                          checked={roomType === '1000'}
+                          onSelect={() => handleRoomTypeChange('1000')}
+                        >
+                          {formatCurrency('1000')} (1k)
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                          checked={roomType === '2000'}
+                          onSelect={() => handleRoomTypeChange('2000')}
+                        >
+                          {formatCurrency('2000')} (2k)
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                          checked={roomType === '5000'}
+                          onSelect={() => handleRoomTypeChange('5000')}
+                        >
+                          {formatCurrency('5000')} (5k)
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                          checked={roomType === '10000'}
+                          onSelect={() => handleRoomTypeChange('10000')}
+                        >
+                          {formatCurrency('10000')} (10k)
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                          checked={roomType === '20000'}
+                          onSelect={() => handleRoomTypeChange('20000')}
+                        >
+                          {formatCurrency('20000')} (20k)
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                          checked={roomType === '50000'}
+                          onSelect={() => handleRoomTypeChange('50000')}
+                        >
+                          {formatCurrency('50000')} (50k)
+                        </DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem
+                          checked={roomType === '100000'}
+                          onSelect={() => handleRoomTypeChange('100000')}
+                        >
+                          {formatCurrency('100000')} (100k)
+                        </DropdownMenuCheckboxItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                     <Button onClick={onLogin} size="sm" className="h-8 gap-1">
                       <LogIn className="h-3.5 w-3.5" />
                       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -213,7 +298,7 @@ export function App() {
                   hidden={'find-room' !== tab}
                 >
                   <div className="flex flex-col h-screen w-full">
-                    <Toolbox />
+                    {/* <Toolbox /> */}
                     <div className="flex flex-col  text-white space-y-4 flex-1 w-full">
                       {/* <div className="grid grid-cols-2 gap-[20px] w-full"> */}
                       {bots.map(
@@ -282,6 +367,7 @@ export function App() {
           )}
         </div>
       </Tabs>
+      <HashLoader color="#36d7b7" loading={loading} size={150} />
     </div>
   );
 }

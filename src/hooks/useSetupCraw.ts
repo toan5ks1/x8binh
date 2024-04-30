@@ -8,7 +8,7 @@ import {
   LoginResponseDto,
   login,
 } from '../lib/login';
-import { isAllHostReady } from '../lib/utils';
+import { isAllHostReady, isFoundCards } from '../lib/utils';
 import { AppContext, BotStatus } from '../renderer/providers/app';
 
 export function useSetupCraw(
@@ -39,7 +39,10 @@ export function useSetupCraw(
       shouldReconnect: () => true,
       reconnectInterval: 3000,
       reconnectAttempts: 10,
-      onOpen: () => console.log('Connected'),
+      onOpen: () => {
+        pingGame(user!);
+        setShouldPingMaubinh(true);
+      },
     },
     shouldConnect
   );
@@ -75,31 +78,26 @@ export function useSetupCraw(
     }
   }, [lastMessage]);
 
-  // Ping pong
-  useEffect(() => {
-    const pingPongMessage = `["7", "Simms", "1",${iTimeRef.current}]`;
-
-    const intervalId = setInterval(() => {
-      shouldConnect && sendMessage(pingPongMessage);
-      setITime((prevITime) => prevITime + 1);
-    }, 4000);
-
-    return () => clearInterval(intervalId);
-  }, [sendMessage, shouldConnect]);
-
   // Ping maubinh
   useEffect(() => {
     if (shouldPingMaubinh) {
       const maubinhPingMessage = `[6,"Simms","channelPlugin",{"cmd":300,"aid":"1","gid":4}]`;
+      const pingPongMessage = `["7", "Simms", "1",${iTimeRef.current}]`;
 
-      sendMessage(maubinhPingMessage);
+      const intervalId1 = setInterval(() => {
+        sendMessage(pingPongMessage);
+        setITime((prevITime) => prevITime + 1);
+      }, 4000);
 
-      const intervalId = setInterval(() => {
+      const intervalId2 = setInterval(() => {
         sendMessage(maubinhPingMessage);
         setITime((prevITime) => prevITime + 1);
       }, 6000);
 
-      return () => clearInterval(intervalId);
+      return () => {
+        clearInterval(intervalId1);
+        clearInterval(intervalId2);
+      };
     }
   }, [shouldPingMaubinh]);
 
@@ -122,10 +120,13 @@ export function useSetupCraw(
       const connectURL = 'wss://cardskgw.ryksockesg.net/websocket';
       setSocketUrl(connectURL);
       setShouldConnect(true);
-      sendMessage(
-        `[1,"Simms","","",{"agentId":"1","accessToken":"${user.token}","reconnect":false}]`
-      );
     }
+  };
+
+  const pingGame = (user: LoginResponseDto) => {
+    sendMessage(
+      `[1,"Simms","","",{"agentId":"1","accessToken":"${user.token}","reconnect":false}]`
+    );
   };
 
   const disconnectGame = () => {
@@ -143,13 +144,6 @@ export function useSetupCraw(
     );
   };
 
-  // Auto connect maubinh
-  // useEffect(() => {
-  //   if (!shouldPingMaubinh && user?.status === BotStatus.Initialized) {
-  //     setTimeout(handleConnectMauBinh, 500);
-  //   }
-  // }, [user]);
-
   // Bot join initial room
   useEffect(() => {
     if (
@@ -157,7 +151,6 @@ export function useSetupCraw(
       room.id &&
       Object.keys(room.cardGame).length === 0 // Make sure cards isn't received
     ) {
-      console.log(room);
       // Host and guess join after created room
       if (room.players.length < 2) {
         if (bot.username === room.owner && room.players.length === 0) {
@@ -170,7 +163,7 @@ export function useSetupCraw(
       }
 
       if (
-        room.players.length === 2 &&
+        room.players.length >= 2 &&
         user?.status === BotStatus.Joined &&
         bot.username === room.owner
       ) {
@@ -207,21 +200,25 @@ export function useSetupCraw(
   // Check cards
   useEffect(() => {
     if (!state.foundAt && user) {
-      if (room?.cardGame[0] && initRoom.cardGame[0]) {
-        // if (isFoundCards(room.cardGame[0], initRoom.cardGame[0])) {
-        if (true) {
+      if (room?.cardGame.length && initRoom.cardGame.length) {
+        if (isFoundCards(room.cardGame[0], initRoom.cardGame[0])) {
+          // if (true) {
+          toast({
+            title: 'Successfully',
+            description: `Found: ${room.id}`,
+          });
           setState((pre) => ({
             ...pre,
             foundAt: room.id,
             foundBy: coupleId,
             targetAt: initRoom.id,
           }));
-          toast({
-            title: 'Successfully',
-            description: `Found: ${room.id}`,
-          });
           console.log(`Found: ${room.id}`);
         } else {
+          toast({
+            title: 'Not match',
+            description: `Finding again...`,
+          });
         }
       }
     }
@@ -247,16 +244,16 @@ export function useSetupCraw(
   // Recreate room
   useEffect(() => {
     if (
+      room?.isFinish &&
       state.shouldRecreateRoom &&
       isHost &&
-      room?.isFinish &&
       user &&
       user?.status !== BotStatus.Finding
     ) {
-      handleCreateRoom();
       setUser({ ...user, status: BotStatus.Finding });
+      handleCreateRoom();
     }
-  }, [state.shouldRecreateRoom, user]);
+  }, [state.shouldRecreateRoom]);
 
   // Found room submit cards
   useEffect(() => {
@@ -269,18 +266,24 @@ export function useSetupCraw(
       ) {
         // Submit cards
         sendMessage(`[5,"Simms",${room.id},{"cmd":603,"cs":[${myCards}]}]`);
+        console.log('card', room.cardGame);
       }
+    }
+  }, [room, user]);
 
-      if (room.isFinish) {
+  // Found room ready
+  useEffect(() => {
+    if (coupleId === state.foundBy) {
+      if (user?.status === BotStatus.Finished) {
         sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
         // ready for new game
       }
 
-      if (room.isFinish && isHost && status === BotStatus.Ready) {
+      if (isHost && user?.status === BotStatus.Ready) {
         sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
       }
     }
-  }, [state.foundBy, room, user]);
+  }, [user]);
 
   return {
     user,
@@ -294,3 +297,37 @@ export function useSetupCraw(
     disconnectGame,
   };
 }
+// Bot join initial room
+// useEffect(() => {
+//   if (
+//     room &&
+//     room.id &&
+//     Object.keys(room.cardGame).length === 0 // Make sure cards isn't received
+//   ) {
+//     // Host and guess join after created room
+//     // if (room.players.length < 2) {
+//     if (
+//       user?.status === BotStatus.Left ||
+//       user?.status === BotStatus.Connected
+//     ) {
+//       if (bot.username === room.owner) {
+//         //&& room.players.length === 0
+//         // Host
+//         sendMessage(`[3,"Simms",${room.id},""]`);
+//       } else if (bot.username !== room.owner) {
+//         //&& room.players.length === 1
+//         // Guess
+//         sendMessage(`[3,"Simms",${room.id},"",true]`);
+//       }
+//     }
+
+//     if (
+//       room.players.length >= 2 &&
+//       user?.status === BotStatus.Joined &&
+//       bot.username === room.owner
+//     ) {
+//       // Host ready
+//       sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
+//     }
+//   }
+// }, [room]);

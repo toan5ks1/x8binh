@@ -30,7 +30,10 @@ export function useSetupWaiter(bot: LoginParams) {
       shouldReconnect: () => true,
       reconnectInterval: 3000,
       reconnectAttempts: 10,
-      onOpen: () => console.log('Connected'),
+      onOpen: () => {
+        pingGame(user!);
+        setShouldPingMaubinh(true);
+      },
     },
     shouldConnect
   );
@@ -65,31 +68,26 @@ export function useSetupWaiter(bot: LoginParams) {
     }
   }, [lastMessage]);
 
-  // Ping pong
-  useEffect(() => {
-    const pingPongMessage = `["7", "Simms", "1",${iTimeRef.current}]`;
-
-    const intervalId = setInterval(() => {
-      shouldConnect && sendMessage(pingPongMessage);
-      setITime((prevITime) => prevITime + 1);
-    }, 4000);
-
-    return () => clearInterval(intervalId);
-  }, [sendMessage, shouldConnect]);
-
   // Ping maubinh
   useEffect(() => {
     if (shouldPingMaubinh) {
       const maubinhPingMessage = `[6,"Simms","channelPlugin",{"cmd":300,"aid":"1","gid":4}]`;
+      const pingPongMessage = `["7", "Simms", "1",${iTimeRef.current}]`;
 
-      sendMessage(maubinhPingMessage);
+      const intervalId1 = setInterval(() => {
+        sendMessage(pingPongMessage);
+        setITime((prevITime) => prevITime + 1);
+      }, 4000);
 
-      const intervalId = setInterval(() => {
+      const intervalId2 = setInterval(() => {
         sendMessage(maubinhPingMessage);
         setITime((prevITime) => prevITime + 1);
       }, 6000);
 
-      return () => clearInterval(intervalId);
+      return () => {
+        clearInterval(intervalId1);
+        clearInterval(intervalId2);
+      };
     }
   }, [shouldPingMaubinh]);
 
@@ -112,10 +110,13 @@ export function useSetupWaiter(bot: LoginParams) {
       const connectURL = 'wss://cardskgw.ryksockesg.net/websocket';
       setSocketUrl(connectURL);
       setShouldConnect(true);
-      sendMessage(
-        `[1,"Simms","","",{"agentId":"1","accessToken":"${user.token}","reconnect":false}]`
-      );
     }
+  };
+
+  const pingGame = (user: LoginResponseDto) => {
+    sendMessage(
+      `[1,"Simms","","",{"agentId":"1","accessToken":"${user.token}","reconnect":false}]`
+    );
   };
 
   const disconnectGame = () => {
@@ -146,13 +147,23 @@ export function useSetupWaiter(bot: LoginParams) {
   // Waiter ready
   useEffect(() => {
     if (
-      (user?.status === BotStatus.Joined ||
-        user?.status === BotStatus.Submitted) &&
-      room?.isFinish
+      // (user?.status === BotStatus.Joined ||
+      //   user?.status === BotStatus.Submitted) &&
+      user?.status === BotStatus.Finished
+      // room?.isFinish
     ) {
       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
+      // setState((pre) => ({
+      //   ...pre,
+      //   crawingRoom: {
+      //     [state.foundBy!]: {
+      //       ...room,
+      //       shouldStartVote: room.shouldStartVote + 1,
+      //     },
+      //   },
+      // }));
     }
-  }, [user, room]);
+  }, [user]);
 
   // Crawing
   useEffect(() => {
@@ -165,6 +176,7 @@ export function useSetupWaiter(bot: LoginParams) {
         );
       }
     }
+    console.log(room?.cardGame);
   }, [user]);
 
   const handleLeaveRoom = () => {

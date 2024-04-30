@@ -11,7 +11,6 @@ const updateFile = async (accountsUpdate: any, accountType: string) => {
     )
     .join('\n');
   if (accountsText) {
-    console.log('accountsText', accountsText);
     window.backend.sendMessage(
       'update-file',
       accountsText,

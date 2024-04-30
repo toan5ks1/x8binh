@@ -33,7 +33,7 @@ export function handleMessageCrawing({
       if (message[1].rs && user?.status === BotStatus.Initialized) {
         setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
         returnMsg = 'Join Maubinh sucessfully!';
-      } else if (message[1].ri) {
+      } else if (message[1].ri && message[1].cmd === 308) {
         // Create room response
         const roomId = message[1]?.ri?.rid;
 
@@ -57,16 +57,20 @@ export function handleMessageCrawing({
         (message[1]?.cmd === 5 && message[1]?.dn === fullname)
       ) {
         const room = state.crawingRoom[coupleId];
-        caller === room.owner &&
-          setState((pre) => {
-            return {
-              ...pre,
-              crawingRoom: {
-                ...pre.crawingRoom,
-                [coupleId]: { ...room, isHostReady: true },
+        const shouldStartVote = room.shouldStartVote;
+        setState((pre) => {
+          return {
+            ...pre,
+            crawingRoom: {
+              ...pre.crawingRoom,
+              [coupleId]: {
+                ...room,
+                isHostReady: caller === room.owner ? true : room.isHostReady,
+                shouldStartVote: shouldStartVote + 1,
               },
-            };
-          });
+            },
+          };
+        });
         setUser((pre) => ({ ...pre, status: BotStatus.Ready }));
       } else if (message[1]?.cs?.length > 0) {
         setUser((pre) => ({
@@ -78,7 +82,6 @@ export function handleMessageCrawing({
         returnMsg = `Card received: ${message[1].cs}`;
       } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
         setUser((pre) => ({ ...pre, status: BotStatus.PreFinished }));
-        // returnMsg = 'Game pre finished!';
       } else if (
         message[1]?.cmd === 204 &&
         user.status === BotStatus.PreFinished
@@ -91,6 +94,7 @@ export function handleMessageCrawing({
               [coupleId]: {
                 ...pre.crawingRoom[coupleId],
                 isFinish: true,
+                shouldStartVote: 0,
               },
             },
           };
@@ -158,9 +162,6 @@ export function handleMessageCrawing({
             initialRoom: {
               ...initRoom,
               shouldOutVote: outVote,
-            },
-            crawingRoom: {
-              [coupleId]: defaultRoom,
             },
           };
         });
