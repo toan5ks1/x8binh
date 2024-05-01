@@ -67,13 +67,18 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [dataTable, setDataTable] = useState<any>([]);
-  const [isDialogOpen, setDialogOpen] = useState(false);
+  const [isDialogAddAccountOpen, setDialogAddAccountOpen] = useState(false);
+  const [isDialogProxyOpen, setDialogProxyOpen] = useState(false);
+  const [rowSelected, setRowSelected] = useState<any>();
+  const [errorAddProxy, setErrorAddProxy] = useState<any>();
   const { accounts, updateAccount, addAccount, removeAccount } =
     useAccountStore();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const proxyRef = useRef<HTMLInputElement>(null);
+  const portRef = useRef<HTMLInputElement>(null);
 
   const handleAddAccount = () => {
     if (usernameRef.current && passwordRef.current) {
@@ -82,10 +87,28 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
         password: passwordRef.current.value,
       };
       addAccount(accountType, newAccount);
-      setDialogOpen(false);
+      setDialogAddAccountOpen(false);
     }
   };
+  const handleAddProxy = (row: any) => {
+    if (!proxyRef.current?.value) {
+      setErrorAddProxy('Please input proxy');
+      return;
+    }
+    if (!portRef.current?.value) {
+      setErrorAddProxy('Please input port');
+      return;
+    }
 
+    if (proxyRef.current && portRef.current && row) {
+      const newProxy = {
+        proxy: proxyRef.current.value,
+        port: portRef.current.value,
+      };
+      updateAccount(accountType, row.username, newProxy);
+      setDialogProxyOpen(false);
+    }
+  };
   const handleFileChange = (event: any) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -248,6 +271,7 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
           </Button>
         );
       },
+
       cell: ({ row }) => {
         const rowData = row.original;
         return (
@@ -290,7 +314,7 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="z-[1000]">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleDeleteRow(rowData)}>
@@ -299,6 +323,16 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
               <DropdownMenuItem onClick={() => checkBalance(rowData)}>
                 Check balance
               </DropdownMenuItem>
+              {accountType == 'MAIN' && (
+                <DropdownMenuItem
+                  onClick={() => {
+                    setDialogProxyOpen(true);
+                    setRowSelected(rowData);
+                  }}
+                >
+                  Set proxy
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -306,13 +340,55 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
     },
   ];
 
+  const cashIndex = columns.findIndex(
+    (col: any) => col.accessorKey === 'main_balance'
+  );
+
+  if (accountType === 'MAIN') {
+    columns.splice(
+      cashIndex + 1,
+      0,
+      {
+        accessorKey: 'proxy',
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            className="px-0"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Proxy
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
+        cell: ({ row }) => (
+          <div className="text-center">{row.getValue('proxy')}</div>
+        ),
+      },
+      {
+        accessorKey: 'port',
+        header: ({ column }) => (
+          <Button
+            variant="ghost"
+            className="px-0"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          >
+            Port
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
+        cell: ({ row }) => (
+          <div className="text-center">{row.getValue('port')}</div>
+        ),
+      }
+    );
+  }
+
   const table = useReactTable({
     data: dataTable,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    // getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
@@ -336,6 +412,7 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
           }
           className="max-w-sm"
         />
+
         <div className="flex flex-row justify-end items-center">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -351,50 +428,21 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
                 <Paperclip className="size-4" />
               </Button>
             </TooltipTrigger>
-            <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
+            <Dialog
+              open={isDialogAddAccountOpen}
+              onOpenChange={setDialogAddAccountOpen}
+            >
               <DialogTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setDialogOpen(true)}
+                  onClick={() => setDialogAddAccountOpen(true)}
                 >
                   <Plus className="size-4" />
                   <span className="sr-only">Add account</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogTitle>Add New Account</DialogTitle>
-                <DialogDescription>
-                  Enter the details of the new account.
-                </DialogDescription>
-                <Input
-                  ref={usernameRef}
-                  placeholder="Username"
-                  className="mb-4"
-                />
-                <Input
-                  ref={passwordRef}
-                  type="password"
-                  placeholder="Password"
-                  className="mb-4"
-                />
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    variant="secondary"
-                    onClick={() => setDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handleAddAccount}>Add Account</Button>
-                </div>
-              </DialogContent>
             </Dialog>
-            {/*
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={() => onSave()}>
-                <Save className="h-3.5 w-3.5" />
-              </Button>
-            </TooltipTrigger> */}
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
@@ -505,6 +553,61 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
       </div>
+      <Dialog open={isDialogProxyOpen} onOpenChange={setDialogProxyOpen}>
+        <DialogContent>
+          <DialogTitle>Add proxy</DialogTitle>
+          <DialogDescription className={`${errorAddProxy && 'text-red-500'}`}>
+            {errorAddProxy
+              ? errorAddProxy
+              : 'Enter the details of the new proxy.'}
+          </DialogDescription>
+          <Input ref={proxyRef} placeholder="Proxy" className="mb-4" />
+          <Input
+            ref={portRef}
+            type="password"
+            placeholder="Port"
+            className="mb-4"
+          />
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="secondary"
+              onClick={() => setDialogProxyOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={() => handleAddProxy(rowSelected)}>
+              Set proxy
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={isDialogAddAccountOpen}
+        onOpenChange={setDialogAddAccountOpen}
+      >
+        <DialogContent>
+          <DialogTitle>Add New Account</DialogTitle>
+          <DialogDescription>
+            Enter the details of the new account.
+          </DialogDescription>
+          <Input ref={usernameRef} placeholder="Username" className="mb-4" />
+          <Input
+            ref={passwordRef}
+            type="password"
+            placeholder="Password"
+            className="mb-4"
+          />
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="secondary"
+              onClick={() => setDialogAddAccountOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleAddAccount}>Add Account</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
