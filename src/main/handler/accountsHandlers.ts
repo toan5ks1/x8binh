@@ -1,8 +1,8 @@
 const { ipcMain } = require('electron');
 const os = require('os');
-const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-puppeteer.use(StealthPlugin());
+const puppeteer = require('puppeteer');
+// const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+// puppeteer.use(StealthPlugin());
 import path from 'path';
 
 interface WebSocketCreatedData {
@@ -16,7 +16,6 @@ interface WebSocketFrameReceivedData {
     payloadData: string;
   };
 }
-
 export const setupAccountHandlers = (
   mainWindow: Electron.CrossProcessExports.BrowserWindow
 ) => {
@@ -54,8 +53,22 @@ export const setupAccountHandlers = (
       const browser = await puppeteer.launch({
         headless: false,
         defaultViewport: null,
-        args: ['about:blank'],
         userDataDir: userProfilePath,
+        ignoreHTTPSErrors: true,
+        acceptInsecureCerts: true,
+        args: [
+          'about:blank',
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-infobars',
+          '--window-position=0,0',
+          '--ignore-certifcate-errors',
+          '--ignore-certifcate-errors-spki-list',
+          '--remote-debugging-port=42796',
+          // '--proxy-server=socks5://hndc35.proxyno1.com:42796',
+          // `--proxy-auth=hihivuive:Tienhn123`,
+          // `--host-resolver-rules=${hostResolverRules}`,
+        ],
       });
       const pages = await browser.pages();
 
@@ -177,7 +190,10 @@ export const setupAccountHandlers = (
       `);
 
       return { browser, page };
-    } catch (error) {}
+    } catch (error) {
+    } finally {
+      return true;
+    }
   }
 
   ipcMain.on('open-accounts', async (event, account) => {
