@@ -24,6 +24,8 @@ export const setupAccountHandlers = (
   async function startPuppeteerForAccount(account: {
     username: string;
     password: string;
+    proxy: string;
+    port: string;
   }) {
     try {
       let userProfilePath;
@@ -66,13 +68,19 @@ export const setupAccountHandlers = (
           '--ignore-certifcate-errors-spki-list',
           '--remote-debugging-port=42796',
           // '--proxy-server=socks5://hndc35.proxyno1.com:42796',
-          // `--proxy-auth=hihivuive:Tienhn123`,
+          `${
+            account.proxy && `--proxy-server=${account.proxy}:${account.port}`
+          }`,
           // `--host-resolver-rules=${hostResolverRules}`,
         ],
       });
       const pages = await browser.pages();
 
       const page = pages[0];
+      // await page.authenticate({
+      //   username: PROXY_USERNAME,
+      //   password: PROXY_PASSWORD,
+      // });
       await page.evaluateOnNewDocument(() => {
         const coresOptions = [1, 2, 4, 8, 16, 32];
         const randomIndex = Math.floor(Math.random() * coresOptions.length);

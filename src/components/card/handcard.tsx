@@ -103,7 +103,7 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
 
   useEffect(() => {
     setCards(cardProp);
-    // handleArrange();
+    handleArrange();
   }, [cardProp]);
 
   useEffect(() => {
