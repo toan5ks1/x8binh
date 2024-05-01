@@ -6,6 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 import { GameCard, StateProps } from '../renderer/providers/app';
+import { roomTypes } from './config';
 
 export enum ServerMessageType {
   JoinGame = 'joinGame',
@@ -82,6 +83,7 @@ export const defaultRoom = {
   shouldOutVote: 0,
   isFinish: false,
   isHostReady: false,
+  roomType: roomTypes[0],
 };
 
 export const isAllCrawLeft = (rooms: StateProps['crawingRoom']) => {

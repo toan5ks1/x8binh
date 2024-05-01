@@ -1,6 +1,7 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { useToast } from '../components/toast/use-toast';
+import { roomTypes } from '../lib/config';
 import { handleMessageCrawing } from '../lib/listeners/craw';
 import {
   LoginParams,
@@ -20,8 +21,7 @@ export function useSetupCraw(
   const { state, setState } = useContext(AppContext);
   const initRoom = state.initialRoom;
   const room = state.crawingRoom[coupleId];
-
-  // const me = state.crawingBots[bot.username];
+  const roomType = roomTypes[0];
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
   const [shouldPingMaubinh, setShouldPingMaubinh] = useState(false);
@@ -140,7 +140,7 @@ export function useSetupCraw(
 
   const handleCreateRoom = (): void => {
     sendMessage(
-      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":100,"Mu":4,"iJ":true,"inc":false,"pwd":""}]`
+      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":${roomType},"Mu":4,"iJ":true,"inc":false,"pwd":""}]`
     );
   };
 
@@ -218,7 +218,7 @@ export function useSetupCraw(
         }
       }
     }
-  }, [room, state.initialRoom]);
+  }, [room, state.initialRoom, state.foundAt]);
 
   useEffect(() => {
     // Leave room

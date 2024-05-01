@@ -5,6 +5,7 @@ import {
   SetStateAction,
   useState,
 } from 'react';
+import { roomTypes } from '../../lib/config';
 
 interface AppProviderProps {
   children: ReactNode;
@@ -37,6 +38,7 @@ export interface Room {
   isFinish: boolean;
   isHostReady: boolean;
   isSubJoin?: boolean;
+  roomType: number;
 }
 
 export interface StateProps {
@@ -64,6 +66,8 @@ export interface StateProps {
   foundBy?: string;
   shouldRecreateRoom: boolean;
   currentGame?: number;
+  isLoggedIn?: boolean;
+  isQuited?: boolean;
 }
 
 export const defaultState = {
@@ -73,6 +77,7 @@ export const defaultState = {
     shouldOutVote: 0,
     isFinish: false,
     isHostReady: false,
+    roomType: roomTypes[0],
   },
   mainBots: {},
   crawingRoom: {},
@@ -99,6 +104,7 @@ const AppProvider = ({ children }: AppProviderProps) => {
       shouldOutVote: 0,
       isFinish: false,
       isHostReady: false,
+      roomType: roomTypes[0],
     },
     mainBots: {},
     crawingRoom: {},

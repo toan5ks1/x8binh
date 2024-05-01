@@ -2,6 +2,7 @@ import {
   DollarSign,
   Hand,
   Loader,
+  Loader2,
   LogIn,
   LogOut,
   PlusCircle,
@@ -18,11 +19,6 @@ import MainSetting from '../components/menu/mainSetting';
 import { SideBar } from '../components/sidebar/sidebar';
 import { useToast } from '../components/toast/use-toast';
 import { Button } from '../components/ui/button';
-import { Label } from '../components/ui/label';
-import { RadioGroup, RadioGroupItem } from '../components/ui/radio';
-import { Tabs, TabsContent } from '../components/ui/tabs';
-// import { bots, craws } from '../lib/config';
-import { HashLoader } from 'react-spinners';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -31,6 +27,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
+import { Label } from '../components/ui/label';
+import { RadioGroup, RadioGroupItem } from '../components/ui/radio';
+import { Tabs, TabsContent } from '../components/ui/tabs';
+import { roomTypes } from '../lib/config';
 import { validateLicense } from '../lib/supabase';
 import { AppContext } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
@@ -40,14 +40,13 @@ export function App() {
   const [tab, setActiveTab] = useState('all');
   const { state, setState } = useContext(AppContext);
   const { accounts } = useAccountStore();
-  const { toast } = useToast();
   const bots = accounts['SUB'];
   const craws = accounts['BOT'].filter((item: any) => item.isSelected === true);
   const [cardDeck, setCardDeck] = useState('4');
-  const [roomType, setRoomType] = useState('100');
   const [loading, setLoading] = useState(false);
   const [isOpenSheet, setIsOpenSheet] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const [shouldLogin, setShouldLogin] = useState(false);
   const [shouldJoinMB, setShouldJoinMB] = useState(false);
@@ -55,25 +54,46 @@ export function App() {
   const [shouldLeave, setShouldLeave] = useState(false);
   const [shouldDisconnect, setShouldDisconnect] = useState(false);
 
+  const [isLoging, setIsLoging] = useState(false);
+  const [isFinding, setIsFinding] = useState(false);
+  const [isQuiting, setIsQuiting] = useState(false);
+
   const onLogin = () => {
     setShouldLogin(true);
-  };
-
-  const onJoinMauBinh = () => {
-    setShouldJoinMB(true);
+    setIsLoging(true);
   };
 
   const onCreatRoom = () => {
     setShouldCreateRoom(true);
+    setIsFinding(true);
   };
 
   const onLeaveRoom = () => {
     setShouldLeave(true);
+    setIsQuiting(true);
   };
 
   const onDisconnect = () => {
     window.location.reload();
   };
+
+  useEffect(() => {
+    if (state.isLoggedIn) {
+      setIsLoging(false);
+    }
+  }, [state.isLoggedIn]);
+
+  useEffect(() => {
+    if (state.foundAt) {
+      setIsFinding(false);
+    }
+  }, [state.foundAt]);
+
+  useEffect(() => {
+    if (state.isQuited) {
+      setIsQuiting(false);
+    }
+  }, [state.isQuited]);
 
   useEffect(() => {
     if (
@@ -84,12 +104,16 @@ export function App() {
     }
   }, []);
 
-  const handleRoomTypeChange = (money: string) => {
-    setRoomType(money);
+  const handleRoomTypeChange = (money: number) => {
+    setState((pre) => ({
+      ...pre,
+      initialRoom: { ...pre.initialRoom, roomType: money },
+    }));
   };
 
-  function formatCurrency(value: string) {
-    return parseInt(value).toLocaleString('vi-VN');
+  function formatCurrency(value: number) {
+    const cash = value / 1000;
+    return cash < 1 ? value : `${value} (${cash}k)`;
   }
 
   return (
@@ -158,111 +182,77 @@ export function App() {
                           className="h-8 gap-1"
                         >
                           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                            Type: {formatCurrency(roomType)}
+                            {formatCurrency(state.initialRoom.roomType)}
                           </span>
                           <DollarSign className="h-3.5 w-3.5" />
                         </Button>
                       </DropdownMenuTrigger>
 
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Select room type</DropdownMenuLabel>
+                        <DropdownMenuLabel>Room Type</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuCheckboxItem
-                          checked={roomType === '100'}
-                          onSelect={() => handleRoomTypeChange('100')}
-                        >
-                          {formatCurrency('100')}
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                          checked={roomType === '500'}
-                          onSelect={() => handleRoomTypeChange('500')}
-                        >
-                          {formatCurrency('500')}
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                          checked={roomType === '1000'}
-                          onSelect={() => handleRoomTypeChange('1000')}
-                        >
-                          {formatCurrency('1000')} (1k)
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                          checked={roomType === '2000'}
-                          onSelect={() => handleRoomTypeChange('2000')}
-                        >
-                          {formatCurrency('2000')} (2k)
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                          checked={roomType === '5000'}
-                          onSelect={() => handleRoomTypeChange('5000')}
-                        >
-                          {formatCurrency('5000')} (5k)
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                          checked={roomType === '10000'}
-                          onSelect={() => handleRoomTypeChange('10000')}
-                        >
-                          {formatCurrency('10000')} (10k)
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                          checked={roomType === '20000'}
-                          onSelect={() => handleRoomTypeChange('20000')}
-                        >
-                          {formatCurrency('20000')} (20k)
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                          checked={roomType === '50000'}
-                          onSelect={() => handleRoomTypeChange('50000')}
-                        >
-                          {formatCurrency('50000')} (50k)
-                        </DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem
-                          checked={roomType === '100000'}
-                          onSelect={() => handleRoomTypeChange('100000')}
-                        >
-                          {formatCurrency('100000')} (100k)
-                        </DropdownMenuCheckboxItem>
+                        {roomTypes.map((rType) => (
+                          <DropdownMenuCheckboxItem
+                            key={rType}
+                            checked={state.initialRoom.roomType === rType}
+                            onSelect={() => handleRoomTypeChange(rType)}
+                          >
+                            {formatCurrency(rType)}
+                          </DropdownMenuCheckboxItem>
+                        ))}
                       </DropdownMenuContent>
                     </DropdownMenu>
-                    <Button onClick={onLogin} size="sm" className="h-8 gap-1">
-                      <LogIn className="h-3.5 w-3.5" />
-                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+
+                    {state.isLoggedIn ? (
+                      <>
+                        <Button
+                          onClick={onCreatRoom}
+                          size="sm"
+                          className="h-8 gap-1"
+                          disabled={isFinding}
+                        >
+                          {isFinding ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <PlusCircle className="h-3.5 w-3.5" />
+                          )}
+                          Find room
+                        </Button>
+
+                        <Button
+                          onClick={onLeaveRoom}
+                          size="sm"
+                          className="h-8 gap-1 bg-yellow-500"
+                          disabled={isQuiting}
+                        >
+                          {isQuiting ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <LogOut className="h-3.5 w-3.5" />
+                          )}
+                          Quit
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        onClick={onLogin}
+                        size="sm"
+                        className="h-8 gap-1"
+                        disabled={isLoging}
+                      >
+                        {isLoging ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <LogIn className="h-3.5 w-3.5" />
+                        )}
                         Login
-                      </span>
-                    </Button>
-                    {/* <Button
-                      onClick={onJoinMauBinh}
-                      size="sm"
-                      className="h-8 gap-1"
-                    >
-                      <Unplug className="h-3.5 w-3.5" />
-                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Connect
-                      </span>
-                    </Button> */}
-                    <Button
-                      onClick={onCreatRoom}
-                      size="sm"
-                      className="h-8 gap-1"
-                    >
-                      <PlusCircle className="h-3.5 w-3.5" />
-                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Create/Join
-                      </span>
-                    </Button>
-                    <Button
-                      onClick={onLeaveRoom}
-                      size="sm"
-                      className="h-8 gap-1"
-                    >
-                      <LogOut className="h-3.5 w-3.5" />
-                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Quit
-                      </span>
-                    </Button>
+                      </Button>
+                    )}
                     <Button
                       onClick={onDisconnect}
                       size="sm"
-                      className="h-8 gap-1"
+                      className="h-8 gap-1 "
+                      variant="destructive"
                     >
                       <ScreenShareOff className="h-3.5 w-3.5" />
                       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -292,9 +282,7 @@ export function App() {
                   hidden={'find-room' !== tab}
                 >
                   <div className="flex flex-col h-screen w-full">
-                    {/* <Toolbox /> */}
                     <div className="flex flex-col  text-white space-y-4 flex-1 w-full">
-                      {/* <div className="grid grid-cols-2 gap-[20px] w-full"> */}
                       {bots.map(
                         (bot: any, index: any) =>
                           index % 2 === 0 &&
@@ -354,7 +342,6 @@ export function App() {
           )}
         </div>
       </Tabs>
-      <HashLoader color="#36d7b7" loading={loading} size={150} />
     </div>
   );
 }

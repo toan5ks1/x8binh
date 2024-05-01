@@ -30,6 +30,7 @@ export function handleMessageWaiter({
     case 5:
       if (message[1].rs && user?.status === BotStatus.Initialized) {
         setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
+        setState((pre) => ({ ...pre, isLoggedIn: true }));
         returnMsg = 'Join Maubinh sucessfully!';
       } else if (
         message[1]?.c === 100 ||
@@ -93,6 +94,7 @@ export function handleMessageWaiter({
       // Left room response
       if (message[1] === true) {
         setUser((pre) => ({ ...pre, status: BotStatus.Left }));
+        setState((pre) => ({ ...pre, isQuited: true }));
         returnMsg = 'Left room successfully!';
       } else {
         returnMsg = message[5] || 'Left room failed!';
