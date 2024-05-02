@@ -16,6 +16,8 @@ interface DraggableCardProps {
 interface HandCardProps {
   cardProp: number[];
   key: number;
+  isShowPlayer: boolean;
+  player: string;
 }
 
 const DraggableCard: React.FC<DraggableCardProps> = ({
@@ -56,10 +58,13 @@ const DropCard: React.FC<DropCardProps> = ({ id, children, moveCard }) => {
   return <div ref={drop}>{children}</div>;
 };
 
-export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
+export const HandCard: React.FC<HandCardProps> = ({
+  cardProp,
+  isShowPlayer,
+  player,
+}) => {
   const idHand = useId();
   const [cards, setCards] = useState<number[]>(cardProp);
-  console.log('cards', cards);
   const [part1, setPart1] = useState<number[]>(cards.slice(0, 5));
   const [part2, setPart2] = useState<number[]>(cards.slice(5, 10));
   const [part3, setPart3] = useState<number[]>([...cards.slice(10, 13)]);
@@ -235,6 +240,7 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
                 {evaluation1}
               </Label>
             </div>
+            {isShowPlayer && <p>{player}</p>}
             <div className="absolute top-0 right-0">
               <Button className="p-0 px-[5px]" onClick={() => handleArrange()}>
                 <RotateCw />

@@ -10,12 +10,11 @@ import {
   TrashIcon,
   UserPlus,
 } from 'lucide-react';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Button } from '../../components/ui/button';
 import { Label } from '../../components/ui/label';
 import { ScrollArea } from '../../components/ui/scroll-area';
 import { highlightSyntax } from '../../lib/terminal';
-import { areArraysEqual } from '../../lib/utils';
 import { AppContext } from '../../renderer/providers/app';
 import { HandCard } from '../card/handcard';
 import { useToast } from '../toast/use-toast';
@@ -27,7 +26,7 @@ import {
   inviteCommand,
 } from './commandTerminal';
 
-export const TerminalBoard: React.FC<any> = ({ main }) => {
+export const TerminalBoard: React.FC<any> = ({ main, index }) => {
   const { toast } = useToast();
   const [data, setData] = useState<unknown[]>([]);
   const { state, setState } = useContext(AppContext);
@@ -38,22 +37,28 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   const [currentCards, setCurrentCards] = useState<any>();
   const [autoInvite, setAutoInvite] = useState(false);
 
-  const toggleAutoInvite = () => {
-    setAutoInvite(!autoInvite);
-  };
+  // const findCurrent = useCallback((crCard: number[]) => {
+  //   let target;
+  //   const crawledCards = state.crawingRoom[state.foundBy ?? '']?.cardGame ?? [];
+  //   if (crawledCards.length) {
+  //     crawledCards.forEach((game) => {
+  //       target = Object.values(game).find((card) =>
+  //         areArraysEqual(card.cs, crCard)
+  //       );
+  //     });
+  //   }
+  //   return target ?? 0;
+  // }, []);
 
-  const findCurrent = useCallback((crCard: number[]) => {
-    let target;
-    const crawledCards = state.crawingRoom[state.foundBy ?? '']?.cardGame ?? [];
-    if (crawledCards.length) {
-      crawledCards.forEach((game) => {
-        target = Object.values(game).find((card) =>
-          areArraysEqual(card.cs, crCard)
-        );
-      });
-    }
-    return target ?? 0;
-  }, []);
+  useEffect(() => {
+    setState((pre) => ({
+      ...pre,
+      currentGame: {
+        ...pre.currentGame,
+        sheet: { [currentSit]: main.username },
+      },
+    }));
+  }, [currentSit]);
 
   const parseData = (dataString: string) => {
     try {
@@ -174,11 +179,22 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
               }));
             }
           }
-          if (parsedData[1].cmd === 602 && parsedData[1].hsl == false) {
+          if (
+            parsedData[1].cmd === 602 &&
+            (parsedData[1].hsl == false || parsedData[1].hsl == true)
+          ) {
             toast({
               title: 'Thông báo',
               description: 'Đã kết thúc ván bài.',
             });
+            index === 0 &&
+              setState((pre) => ({
+                ...pre,
+                currentGame: {
+                  ...pre.currentGame,
+                  number: pre.currentGame.number + 1,
+                },
+              }));
           }
           if (parsedData[1].cs && parsedData[1].cmd === 600) {
             const currentCards = parsedData[1].cs
@@ -196,7 +212,10 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
             ]);
             setState((pre) => ({
               ...pre,
-              currentGame: (pre.currentGame ?? findCurrent(currentCards)) + 1,
+              currentGame: {
+                ...pre.currentGame,
+                number: !pre.currentGame.number ? 1 : pre.currentGame.number,
+              },
             }));
             setCurrentCards(currentCards);
             arrangeCards(main);
@@ -406,7 +425,14 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
       </div>
       <div className="flex justify-center mt-4">
         <div className="w-[50%]">
-          {currentCards && <HandCard cardProp={currentCards} key={0} />}
+          {currentCards && (
+            <HandCard
+              cardProp={currentCards}
+              key={0}
+              isShowPlayer={false}
+              player={main.username}
+            />
+          )}
         </div>
       </div>
     </fieldset>

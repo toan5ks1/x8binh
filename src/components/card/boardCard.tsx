@@ -3,7 +3,12 @@ import { HandCard } from '../card/handcard';
 import { Label } from '../ui/label';
 import { TableCell } from '../ui/table';
 
-const BoardCard: React.FC<any> = ({ indexProps, cards, numPlayers }) => {
+const BoardCard: React.FC<any> = ({
+  indexProps,
+  cards,
+  numPlayers,
+  currentGame,
+}) => {
   const playerHands = useMemo(() => {
     const playerHands: number[][] = Array.from(
       { length: numPlayers },
@@ -30,7 +35,12 @@ const BoardCard: React.FC<any> = ({ indexProps, cards, numPlayers }) => {
         {indexProps + 1}
       </Label>
       {playerHands.map((hand, index) => (
-        <HandCard key={index} cardProp={hand} />
+        <HandCard
+          key={index}
+          cardProp={hand}
+          isShowPlayer={indexProps + 1 === currentGame.number}
+          player={currentGame.sheet[(index + 1).toString()]}
+        />
       ))}
     </TableCell>
   );
