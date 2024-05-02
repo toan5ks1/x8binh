@@ -37,10 +37,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   const [currentCards, setCurrentCards] = useState<any>();
   const [autoInvite, setAutoInvite] = useState(false);
 
-  const toggleAutoInvite = () => {
-    setAutoInvite(!autoInvite);
-  };
-
   const findCurrent = useCallback((crCard: number[]) => {
     let target;
     const crawledCards = state.crawingRoom[state.foundBy ?? '']?.cardGame ?? [];
