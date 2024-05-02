@@ -100,7 +100,7 @@ export function handleMessageCrawing({
         setUser((pre) => ({ ...pre, status: BotStatus.Finished }));
         returnMsg = 'Game finished!';
       } else if (
-        message[1].hsl === false &&
+        (message[1].hsl === false || message[1].hsl === true) &&
         message[1].ps?.length >= 2 &&
         message[1].cmd === 602
       ) {
@@ -163,6 +163,7 @@ export function handleMessageCrawing({
                 players: [...room.players].slice(0, -1),
               },
             },
+            isQuited: true,
           };
         });
         setUser((pre) => ({ ...pre, status: BotStatus.Left }));

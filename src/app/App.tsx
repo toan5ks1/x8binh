@@ -1,22 +1,20 @@
 import {
+  Bot,
   DollarSign,
   Hand,
   Loader,
   Loader2,
   LogIn,
   LogOut,
-  PlusCircle,
   ScreenShareOff,
+  SearchCheck,
   Settings,
 } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AccountSection } from '../components/account/accountSection';
-import { CoupleCrawStatus } from '../components/bots/coupleCraw';
-import { CoupleWaiterStatus } from '../components/bots/coupleWaiter';
-import { MainPlayerStatus } from '../components/bots/mainPlayer';
+import { FindRoomSheet } from '../components/menu/findRoom';
 import MainSetting from '../components/menu/mainSetting';
-import { SideBar } from '../components/sidebar/sidebar';
 import { useToast } from '../components/toast/use-toast';
 import { Button } from '../components/ui/button';
 import {
@@ -29,7 +27,6 @@ import {
 } from '../components/ui/dropdown-menu';
 import { Label } from '../components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio';
-import { Tabs, TabsContent } from '../components/ui/tabs';
 import { roomTypes } from '../lib/config';
 import { validateLicense } from '../lib/supabase';
 import { AppContext } from '../renderer/providers/app';
@@ -37,19 +34,19 @@ import useAccountStore from '../store/accountStore';
 import { HomePage } from './pages/home';
 
 export function App() {
-  const [tab, setActiveTab] = useState('all');
+  // const [tab, setActiveTab] = useState('all');
   const { state, setState } = useContext(AppContext);
   const { accounts } = useAccountStore();
-  const bots = accounts['SUB'];
+  const bots = accounts['SUB'].filter((item: any) => item.isSelected === true);
   const craws = accounts['BOT'].filter((item: any) => item.isSelected === true);
   const [cardDeck, setCardDeck] = useState('4');
   const [loading, setLoading] = useState(false);
   const [isOpenSheet, setIsOpenSheet] = useState(false);
+  const [isOpenBotSheet, setIsOpenBotSheet] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const [shouldLogin, setShouldLogin] = useState(false);
-  const [shouldJoinMB, setShouldJoinMB] = useState(false);
   const [shouldCreatRoom, setShouldCreateRoom] = useState(false);
   const [shouldLeave, setShouldLeave] = useState(false);
   const [shouldDisconnect, setShouldDisconnect] = useState(false);
@@ -70,7 +67,8 @@ export function App() {
 
   const onLeaveRoom = () => {
     setShouldLeave(true);
-    setIsQuiting(true);
+    state.isQuited === false && setIsQuiting(true);
+    setIsFinding(false);
   };
 
   const onDisconnect = () => {
@@ -119,25 +117,49 @@ export function App() {
   return (
     <div className="h-screen">
       <MainSetting setIsOpen={setIsOpenSheet} isOpen={isOpenSheet}>
-        <h1 className="text-xl font-semibold">Settings</h1>
         <AccountSection accountType="MAIN" />
         <AccountSection accountType="BOT" />
         <AccountSection accountType="SUB" />
       </MainSetting>
-      <Tabs value={tab} onValueChange={setActiveTab} defaultValue="all">
-        <div className="flex w-full flex-col bg-muted/40">
-          <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-            <SideBar />
-          </aside>
-          {loading ? (
-            <div className="h-screen w-full flex justify-center items-center">
-              <Loader className="w-6.5 h-6.5 animate-spin"></Loader>
-            </div>
-          ) : (
-            <div className="flex flex-col sm:gap-4 sm:pl-14">
-              <main className="grid flex-1 items-start gap-4 bg-background sm:px-6 sm:py-0 md:gap-8">
-                <div className="flex items-center sticky top-0 py-[15px] bg-background border-b z-[9] px-[10px]">
-                  <div className="ml-auto flex flex-row items-center gap-2">
+      {/* <Tabs value={tab} onValueChange={setActiveTab} defaultValue="all"> */}
+      <div className="flex w-full flex-col">
+        {/* <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
+          <SideBar />
+        </aside> */}
+        {loading ? (
+          <div className="h-screen w-full flex justify-center items-center">
+            <Loader className="w-6.5 h-6.5 animate-spin"></Loader>
+          </div>
+        ) : (
+          <div className="flex flex-col sm:gap-4">
+            <main className="grid flex-1 items-start gap-4 bg-background sm:px-6 sm:py-0 md:gap-8">
+              <div className="flex items-center sticky top-0 py-[15px] bg-background border-b z-[9] px-[10px]">
+                <div className="ml-auto w-full flex items-center gap-2 justify-between">
+                  {/* <Sheet>
+                    <SheetTrigger asChild>
+                      <Button size="sm" className="h-8 gap-1">
+                        <Bot />
+                      </Button>
+                    </SheetTrigger> */}
+                  <Button
+                    onClick={() => setIsOpenBotSheet(true)}
+                    size="sm"
+                    className="h-8 gap-1"
+                  >
+                    <Bot />
+                  </Button>
+                  <FindRoomSheet
+                    bots={bots}
+                    craws={craws}
+                    shouldLogin={shouldLogin}
+                    shouldCreatRoom={shouldCreatRoom}
+                    shouldLeave={shouldLeave}
+                    shouldDisconnect={shouldDisconnect}
+                    setIsOpen={setIsOpenBotSheet}
+                    isOpen={isOpenBotSheet}
+                  />
+                  {/* </Sheet> */}
+                  <div className="flex gap-2 items-center">
                     <div className="h-8 gap-1 flex flex-row justify-center items-center">
                       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                         {state.targetAt && `Room: ${state.targetAt}`}
@@ -202,7 +224,9 @@ export function App() {
                         ))}
                       </DropdownMenuContent>
                     </DropdownMenu>
+                  </div>
 
+                  <div className="flex gap-2 items-center">
                     {state.isLoggedIn ? (
                       <>
                         <Button
@@ -214,7 +238,7 @@ export function App() {
                           {isFinding ? (
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />
                           ) : (
-                            <PlusCircle className="h-3.5 w-3.5" />
+                            <SearchCheck className="h-3.5 w-3.5" />
                           )}
                           Find room
                         </Button>
@@ -230,7 +254,7 @@ export function App() {
                           ) : (
                             <LogOut className="h-3.5 w-3.5" />
                           )}
-                          Quit
+                          Cancel
                         </Button>
                       </>
                     ) : (
@@ -268,80 +292,20 @@ export function App() {
                     </Button>
                   </div>
                 </div>
+              </div>
 
-                <TabsContent
+              {/* <TabsContent
                   forceMount={true}
                   value="all"
                   hidden={'all' !== tab}
                 >
-                  <HomePage cardDeck={cardDeck} />
-                </TabsContent>
-                <TabsContent
-                  forceMount={true}
-                  value="find-room"
-                  hidden={'find-room' !== tab}
-                >
-                  <div className="flex flex-col h-screen w-full">
-                    <div className="flex flex-col  text-white space-y-4 flex-1 w-full">
-                      {bots.map(
-                        (bot: any, index: any) =>
-                          index % 2 === 0 &&
-                          index < bots.length - 1 && (
-                            <MainPlayerStatus
-                              key={index}
-                              index={index}
-                              craw1={bot}
-                              craw2={bots[index + 1]}
-                              shouldLogin={shouldLogin}
-                              shouldJoinMB={shouldJoinMB}
-                              shouldCreatRoom={shouldCreatRoom}
-                              shouldLeave={shouldLeave}
-                              shouldDisconnect={shouldDisconnect}
-                            />
-                          )
-                      )}
-
-                      {craws.map((bot: any, index: any) => {
-                        if (index % 2 === 0 && index < craws.length - 1) {
-                          if (index < craws.length - 3) {
-                            return (
-                              <CoupleCrawStatus
-                                key={index}
-                                index={index}
-                                craw1={bot}
-                                craw2={craws[index + 1]}
-                                shouldLogin={shouldLogin}
-                                shouldJoinMB={shouldJoinMB}
-                                shouldCreatRoom={shouldCreatRoom}
-                                shouldLeave={shouldLeave}
-                                shouldDisconnect={shouldDisconnect}
-                              />
-                            );
-                          } else {
-                            return (
-                              <CoupleWaiterStatus
-                                key={index}
-                                index={index}
-                                craw1={bot}
-                                craw2={craws[index + 1]}
-                                shouldLogin={shouldLogin}
-                                shouldJoinMB={shouldJoinMB}
-                                shouldCreatRoom={shouldCreatRoom}
-                                shouldLeave={shouldLeave}
-                                shouldDisconnect={shouldDisconnect}
-                              />
-                            );
-                          }
-                        }
-                      })}
-                    </div>
-                  </div>
-                </TabsContent>
-              </main>
-            </div>
-          )}
-        </div>
-      </Tabs>
+                </TabsContent> */}
+              <HomePage cardDeck={cardDeck} />
+            </main>
+          </div>
+        )}
+      </div>
+      {/* </Tabs> */}
     </div>
   );
 }

@@ -15,6 +15,7 @@ import { Button } from '../../components/ui/button';
 import { Label } from '../../components/ui/label';
 import { ScrollArea } from '../../components/ui/scroll-area';
 import { highlightSyntax } from '../../lib/terminal';
+import { areArraysEqual } from '../../lib/utils';
 import { AppContext } from '../../renderer/providers/app';
 import { HandCard } from '../card/handcard';
 import { useToast } from '../toast/use-toast';
@@ -34,9 +35,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   const [isInLobby, setIsInLobby] = useState(false);
   const [currentRoom, setCurrentRoom] = useState('');
   const [currentSit, setCurrentSit] = useState('');
-  const [currentCards, setCurrentCards] = useState<any>([
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
-  ]);
+  const [currentCards, setCurrentCards] = useState<any>();
   const [autoInvite, setAutoInvite] = useState(false);
 
   const toggleAutoInvite = () => {
@@ -48,8 +47,8 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
     const crawledCards = state.crawingRoom[state.foundBy ?? '']?.cardGame ?? [];
     if (crawledCards.length) {
       crawledCards.forEach((game) => {
-        target = Object.values(game).find(
-          (card) => JSON.stringify(card.cs) === JSON.stringify(crCard)
+        target = Object.values(game).find((card) =>
+          areArraysEqual(card.cs, crCard)
         );
       });
     }
