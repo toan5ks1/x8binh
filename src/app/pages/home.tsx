@@ -44,6 +44,7 @@ export const HomePage: React.FC<any> = (cardDeck) => {
 
   const addRandomCards = () => {
     setCards((prevCards) => [...prevCards, getRandomCards()]);
+    console.log(getRandomCards());
   };
 
   const { accounts } = useAccountStore();

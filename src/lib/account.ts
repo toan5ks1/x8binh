@@ -8,7 +8,9 @@ const readValidAccount = (input: string): any => {
     .split('\n')
     .map((line) => {
       if (line != '') {
-        const [username, password, IsSelected] = line.trim().split('|');
+        const [username, password, IsSelected, proxy, port] = line
+          .trim()
+          .split('|');
         return {
           username,
           password: password || '',
@@ -16,6 +18,8 @@ const readValidAccount = (input: string): any => {
           os: 'Windows',
           device: 'Computer',
           browser: 'chrome',
+          proxy: proxy,
+          port: port,
           fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
           time: now(),
           aff_id: 'hit',
@@ -85,6 +89,8 @@ const generateAccount = (account: any) => {
     device: 'Computer',
     browser: 'chrome',
     fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
+    proxy: account.proxy,
+    port: account.port,
     time: now(),
     aff_id: 'hit',
     main_balance: 0,

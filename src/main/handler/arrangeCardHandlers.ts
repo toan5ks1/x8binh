@@ -1,866 +1,594 @@
 import { ipcMain } from 'electron';
 
-const RANKS = [
-  '2',
-  '3',
-  '4',
-  '5',
-  '6',
-  '7',
-  '8',
-  '9',
-  '10',
-  'J',
-  'Q',
-  'K',
-  'A',
-];
-const SUITS = ['♠', '♣', '♦', '♥'];
-const CARDS = [
-  'A♠', // 0: A bích
-  'A♣', // 1: Þt chuồn
-  'A♦', // 2: Þt rô
-  'A♥', // 3: Þt cơ
-  '2♠', // 4: 2 bích
-  '2♣', // 5: 2 chuồn
-  '2♦', // 6: 2 rô
-  '2♥', // 7: 2 cơ
-  '3♠', // 8: 3 bích
-  '3♣', // 9: 3 chuồn
-  '3♦', // 10: 3 rô
-  '3♥', // 11: 3 cơ
-  '4♠',
-  '4♣',
-  '4♦',
-  '4♥',
-  '5♠',
-  '5♣',
-  '5♦',
-  '5♥',
-  '6♠',
-  '6♣',
-  '6♦',
-  '6♥',
-  '7♠',
-  '7♣',
-  '7♦',
-  '7♥',
-  '8♠',
-  '8♣',
-  '8♦',
-  '8♥',
-  '9♠',
-  '9♣',
-  '9♦',
-  '9♥',
-  '10♠',
-  '10♣',
-  '10♦',
-  '10♥',
-  'J♠',
-  'J♣',
-  'J♦',
-  'J♥',
-  'Q♠',
-  'Q♣',
-  'Q♦',
-  'Q♥',
-  'K♠',
-  'K♣',
-  'K♦',
-  'K♥',
-];
-const SUITS_COLORS = {
-  '♠': 'black',
-  '♣': 'black',
-  '♦': 'red',
-  '♥': 'red',
-};
-
-function convertToDefaultType(cards: any) {
-  return cards.map((card: any) => {
-    return CARDS.findIndex((value) => value == card);
+function listSodu(t) {
+  for (var e = [], i = 0; i < t.length; i++) {
+    var n = Math.floor(t[i] / 4) + 1;
+    0 === n && (n = 13), e.push(n);
+  }
+  return listSort(e), e;
+}
+function listSort(t) {
+  t.sort(function (t, e) {
+    return t > e ? 1 : t < e ? -1 : 0;
   });
 }
-
-function sortCardsForChinesePoker(cards: any) {
-  // Hàm phụ trợ để phân loại bài
-  function classifyCards(cards: any) {
-    let ranks = {} as any;
-    let suits = {} as any;
-    cards.forEach((card: any) => {
-      let rank = card.substring(0, card.length - 1);
-      let suit = card[card.length - 1];
-      if (!ranks[rank]) ranks[rank] = [];
-      if (!suits[suit]) suits[suit] = [];
-      ranks[rank].push(card);
-      suits[suit].push(card);
-    });
-    //sort ranks by RANKS order and suits by SUITS order
-    ranks = Object.keys(ranks)
-      .sort((a, b) => RANKS.indexOf(a) - RANKS.indexOf(b))
-      .reduce((obj: any, key) => {
-        obj[key] = ranks[key];
-        return obj;
-      }, {});
-    //sort suits by SUITS order
-    suits = Object.keys(suits)
-      .sort((a, b) => SUITS.indexOf(a) - SUITS.indexOf(b))
-      .reduce((obj: any, key) => {
-        obj[key] = suits[key];
-        return obj;
-      }, {});
-
-    //sort cards by RANKS order inside each suit
-    for (let suit in suits) {
-      suits[suit] = suits[suit].sort((a: string, b: string) => {
-        return (
-          RANKS.indexOf(a.substring(0, a.length - 1)) -
-          RANKS.indexOf(b.substring(0, b.length - 1))
-        );
-      });
+function sortSanhTangDan(t) {
+  t.sort(function (t, e) {
+    return t.N > e.N ? 1 : t.N < e.N ? -1 : 0;
+  });
+}
+function sortSanhGiamDan(t) {
+  t.sort(function (t, e) {
+    return t.N > e.N ? -1 : t.N < e.N ? 1 : 0;
+  });
+}
+function sortThungGiamDan(t) {
+  t.sort(function (t, e) {
+    return t.S > e.S ? 1 : t.S < e.S ? -1 : t.N > e.N ? -1 : t.N < e.N ? 1 : 0;
+  });
+}
+function sortVector2(t) {
+  t.sort(function (t, e) {
+    return t.S > e.S ? 1 : t.S < e.S ? -1 : t.N > e.N ? -1 : t.N < e.N ? 1 : 0;
+  });
+}
+function sortVector(t) {
+  t.sort(function (t, e) {
+    return t.N > e.N ? 1 : t.N < e.N ? -1 : 0;
+  });
+}
+function checkTPS(t) {
+  if (t.length < 5) return 0;
+  var e = t.slice();
+  return (
+    sortVector(e), checkThung(t) > 0 && checkSanh(t) > 0 ? 544 + e[4].N : 0
+  );
+}
+function checkDoi(t) {
+  var e = 0,
+    i = t.slice();
+  sortVector(i);
+  for (var n = 0; n < i.length - 1; ++n)
+    if (i[n].N === i[n + 1].N) {
+      e = 68 + i[n].N;
+      break;
     }
-
-    return { ranks, suits };
+  return e;
+}
+function checkThu(t) {
+  var e = 0;
+  if (t.length <= 3) return 0;
+  var i = t.slice();
+  sortVector(i);
+  for (var n = 0, o = [], a = 0; a < i.length - 1; ++a) {
+    for (var s = a + 1; s < i.length && i[a].N === i[s].N; ++s) n++;
+    1 === n && (o.push(i[a]), o.push(i[a + 1]), (a += 1)), (n = 0);
   }
-
-  // Hàm tìm và lấy bộ
-  function findCombination(
-    ranks: { [x: string]: string | any[] },
-    suits: { [x: string]: any[] }
+  return 4 === o.length && (e = 136 + o[3].N), e;
+}
+function checkSam(t) {
+  var e = 0,
+    i = t.slice();
+  sortVector(i);
+  for (var n = 0, o = 0; o < i.length - 1; ++o) {
+    for (var a = o + 1; a < i.length && i[o].N === i[a].N; ++a) n++;
+    if (2 === n) {
+      e = 204 + i[o].N;
+      break;
+    }
+    n = 0;
+  }
+  return e;
+}
+function checkSanh(t) {
+  var e = 0;
+  if (t.length < 5) return 0;
+  var i = t.slice();
+  sortVector(i);
+  for (
+    var n = 0, o = 0, a = 0, s = indexA(i) > 0, r = 0;
+    r < i.length - 1;
+    ++r
   ) {
-    let combinations = [];
+    var c = i[r + 1].N - i[r].N;
 
-    // Tìm tứ quý, cù lũ, sảnh, thùng, sám, đôi
-    for (let rank in ranks) {
-      if (ranks[rank].length === 4) {
-        //check if rank is A
-        if (rank === 'A') {
-          combinations.push({ type: 'Tứ Quý A', cards: ranks[rank] });
-        } else combinations.push({ type: 'Tứ Quý', cards: ranks[rank] });
-      }
-      if (ranks[rank].length === 3) {
-        combinations.push({ type: 'Sám', cards: ranks[rank] });
-      }
-      // if (ranks[rank].length === 2) {
-      //   combinations.push({ type: "Đôi", cards: ranks[rank] });
-      // }
-      //sort theo thứ tự ["Đôi", "Sám", "Tứ Quý"]
+    if (
+      (c > 1
+        ? ((n = 0), (o = 0), (a = i[r + 1].N))
+        : 1 === c &&
+          (n++, (o = i[r].N), r === i.length - 2 && (n++, (o = i[r + 1].N))),
+      s && ((3 === n && 4 === o) || (4 === n && 5 === o)))
+    )
+      return 277;
+    if (5 === n) break;
+  }
+  if (5 === n) {
+    if (((e = 272 + o), s && 2 === a)) return 277;
+    if (s && 10 === a) return 286;
+  }
+  return e;
+}
+
+// function sortVector2(t) {
+//   t.sort(function (t, e) {
+//     return t.S > e.S ? 1 : t.S < e.S ? -1 : t.N > e.N ? -1 : t.N < e.N ? 1 : 0;
+//   });
+// }
+
+function checkCuLu(t) {
+  if (t.length < 5) return 0;
+  var e = t.slice();
+  sortVector(e);
+  for (var i = 0, n = -1, o = 0, a = 0; a < e.length - 1; ++a) {
+    for (var s = a + 1; s < e.length && e[a].N === e[s].N; ++s) i++;
+    if (2 === i) {
+      (n = a), (i = 0), (o = e[a].N);
+      break;
     }
-
-    //tìm nhiều đôi nhất (1 đôi). Trong 1 trường hợp có tứ quý, sẽ có 4 combinations đôi được tạo ra
-    for (let rank in ranks) {
-      if (ranks[rank].length >= 2) {
-        for (let i = 0; i < ranks[rank].length - 1; i++) {
-          for (let j = i + 1; j < ranks[rank].length; j++) {
-            combinations.push({
-              type: 'Đôi',
-              cards: [ranks[rank][i], ranks[rank][j]],
-            });
-          }
-        }
-      }
-    }
-
-    //tìm nhiều sảnh nhất
-    for (let i = 0; i < RANKS.length - 4; i++) {
-      let straight = [];
-      let count = 0;
-      for (let j = i; j < i + 5; j++) {
-        if (ranks[RANKS[j]]) {
-          straight.push(ranks[RANKS[j]][0]);
-          count++;
-        }
-      }
-      if (count === 5) {
-        combinations.push({ type: 'Sảnh', cards: straight });
-      }
-    }
-
-    // let tempRanks = JSON.parse(JSON.stringify(ranks));
-
-    // let straights = 0;
-    // let straightCards = [];
-    // RANKS.forEach((rank) => {
-    //   if (tempRanks?.[rank]?.[0]) {
-    //     straightCards.push(tempRanks[rank][0]);
-    //   } else {
-    //     straightCards = [];
-    //   }
-    //   if (straightCards.length == 5) {
-    //     straights++;
-    //     //remove straight cards from tempRanks
-    //     combinations.push({ type: "Sảnh", cards: straightCards });
-    //     straightCards.forEach((card) => {
-    //       tempRanks[card.substring(0, card.length - 1)].splice(
-    //         tempRanks[card.substring(0, card.length - 1)].indexOf(card),
-    //         1
-    //       );
-    //     });
-    //     straightCards = [];
-    //   }
-    // });
-    // straightCards = [];
-
-    // RANKS.forEach((rank) => {
-    //   if (tempRanks?.[rank]?.[0]) {
-    //     straightCards.push(tempRanks[rank][0]);
-    //   } else {
-    //     straightCards = [];
-    //   }
-
-    //   if (straightCards.length == 5) {
-    //     straights++;
-    //     //remove straight cards from tempRanks
-    //     combinations.push({ type: "Sảnh", cards: straightCards });
-
-    //     straightCards.forEach((card) => {
-    //       tempRanks[card.substring(0, card.length - 1)].splice(
-    //         tempRanks[card.substring(0, card.length - 1)].indexOf(card),
-    //         1
-    //       );
-    //     });
-
-    //     straightCards = [];
-    //   }
-    // });
-
-    //tìm nhiều thú nhất (2 đôi)
-    for (let rank in ranks) {
-      if (ranks[rank].length >= 2) {
-        let rankPairs = [];
-        for (let i = 0; i < ranks[rank].length - 1; i++) {
-          for (let j = i + 1; j < ranks[rank].length; j++) {
-            rankPairs.push([ranks[rank][i], ranks[rank][j]]);
-          }
-        }
-        // console.log(rankPairs);
-        for (let rank2 in ranks) {
-          if (ranks[rank2].length >= 2) {
-            let rank2Pairs = [];
-            for (let i = 0; i < ranks[rank2].length - 1; i++) {
-              for (let j = i + 1; j < ranks[rank2].length; j++) {
-                rank2Pairs.push([ranks[rank2][i], ranks[rank2][j]]);
-              }
-            }
-            //conmpare 2 pairs from 2 ranks if not the same rank and not the same pair of cards push to combinations
-            rankPairs.forEach((pair) => {
-              rank2Pairs.forEach((pair2) => {
-                //check if 2 pairs are not the same rank and not the same pair of cards
-                if (
-                  pair[0].substring(0, pair[0].length - 1) !==
-                    pair2[0].substring(0, pair2[0].length - 1) &&
-                  pair[1].substring(0, pair[1].length - 1) !==
-                    pair2[1].substring(0, pair2[1].length - 1) &&
-                  pair[0].substring(0, pair[0].length - 1) !==
-                    pair2[1].substring(0, pair2[1].length - 1) &&
-                  pair[1].substring(0, pair[1].length - 1) !==
-                    pair2[0].substring(0, pair2[0].length - 1)
-                ) {
-                  combinations.push({
-                    type: 'Thú',
-                    cards: pair.concat(pair2),
-                  });
-                }
-              });
-            });
-          }
-        }
-      }
-    }
-
-    //tìm nhiều cù lũ nhất (3 la cùng 1 rank và 2 la cùng 1 rank)
-    for (let rank in ranks) {
-      if (ranks[rank].length === 3) {
-        for (let rank2 in ranks) {
-          if (rank !== rank2 && ranks[rank2].length >= 2) {
-            combinations.push({
-              type: 'Cù Lũ',
-              cards: ranks[rank].concat(ranks[rank2].slice(0, 2)),
-            });
-          }
-        }
-      }
-    }
-
-    //tìm nhiều thùng nhất
-    for (let suit in suits) {
-      let numOfCards = suits[suit].length;
-      if (suits[suit].length >= 5) {
-        combinations.push({ type: 'Thùng', cards: suits[suit].slice(0, 5) });
-        numOfCards -= 5;
-      }
-      if (numOfCards >= 5) {
-        combinations.push({ type: 'Thùng', cards: suits[suit].slice(5, 10) });
-        numOfCards -= 5;
-      }
-    }
-
-    //tim nhieu thùng phá sảnh nhất (sảnh đồng chất) 5 lá tuần tự theo RANKS order và cùng 1 suit
-    for (let suit in suits) {
-      let straight = [];
-      const suitRanksIndex = suits[suit].map((card) =>
-        RANKS.indexOf(card.substring(0, card.length - 1))
-      );
-      for (let i = 0; i <= suitRanksIndex.length - 5; i++) {
-        let isValidSubset = true;
-        for (let j = i; j < i + 5 - 1; j++) {
-          if (suitRanksIndex[j + 1] - suitRanksIndex[j] !== 1) {
-            isValidSubset = false;
-            break;
-          }
-        }
-        if (isValidSubset) {
-          straight = suits[suit].slice(i, i + 5);
-          const sequence = ['10', 'J', 'Q', 'K', 'A'];
-          if (
-            straight.every((card, index) =>
-              card.includes(sequence[index] + suit)
-            )
-          ) {
-            combinations.push({ type: 'Thùng Phá Sảnh Lớn', cards: straight });
-          } else {
-            combinations.push({ type: 'Thùng Phá Sảnh', cards: straight });
-          }
-        }
-      }
-    }
-    combinations.sort((a, b) => {
-      return (
-        [
-          'Đôi',
-          'Thú',
-          'Sám',
-          'Sảnh',
-          'Thùng',
-          'Cù Lũ',
-          'Tứ Quý',
-          'Tứ Quý A',
-          'Thùng Phá Sảnh',
-          'Thùng Phá Sảnh Lớn',
-        ].indexOf(a.type) -
-        [
-          'Đôi',
-          'Thú',
-          'Sám',
-          'Sảnh',
-          'Thùng',
-          'Cù Lũ',
-          'Tứ Quý',
-          'Tứ Quý A',
-          'Thùng Phá Sảnh',
-          'Thùng Phá Sảnh Lớn',
-        ].indexOf(b.type)
-      );
-    });
-    return combinations;
+    i = 0;
+  }
+  if (-1 !== n) {
+    e.splice(n, 3);
+    for (a = 0; a < e.length - 1; ++a)
+      if (e[a].N === e[a + 1].N) return 408 + o;
+  }
+  return 0;
+}
+function checkTuQuy(t) {
+  if (t.length < 4) return 0;
+  var e = 0,
+    i = t.slice();
+  sortVector(i);
+  for (var n = 0, o = 0; o < i.length - 1; ++o) {
+    for (var a = o + 1; a < i.length && i[o].N === i[a].N; ++a) n++;
+    if (3 === n) return o, (n = 0), 476 + i[o].N;
+    n = 0;
+  }
+  return e;
+}
+function checkThung(t) {
+  if (t.length < 5) return 0;
+  var e = t.slice();
+  sortVector2(e);
+  for (var i = 0, n = 0; n < e.length - 1; ++n) {
+    for (var o = n + 1; o < e.length && e[n].S === e[o].S; ++o) i++;
+    if (4 === i) return 340 + e[0].N;
+    i = 0;
   }
 
-  // Sắp xếp bộ bài
-  let { ranks, suits } = classifyCards(cards);
-  let combinations = findCombination(ranks, suits);
+  return 0;
+}
 
-  const combinations2 = combinations;
-
-  let firstSet = null;
-  let secondSet = null;
-  let thirdSet = null;
-  if (combinations.length > 0) {
-    if (combinations[combinations.length - 1].cards.length == 5) {
-      firstSet = combinations[combinations.length - 1];
-      combinations = combinations.filter(
-        (combination) =>
-          !combination.cards.some((card) => firstSet.cards.includes(card))
-      );
-      if (combinations.length > 0) {
-        secondSet = combinations[combinations.length - 1];
-        combinations = combinations.filter(
-          (combination) =>
-            !combination.cards.some((card) => secondSet.cards.includes(card))
-        );
-      } else {
-        secondSet = { type: 'Mậu thầu', cards: [] };
-      }
-      while (secondSet.cards.length < 5) {
-        //filter notFullFiveCombinations that don't have any card in secondSet
-        let notFullFiveCombinations = combinations.filter(
-          (combination) =>
-            !combination.cards.some((card) => secondSet.cards.includes(card)) &&
-            !combination.cards.some((card) => firstSet.cards.includes(card)) &&
-            combination.cards.length + secondSet.cards.length <= 5
-        );
-        if (notFullFiveCombinations.length > 0) {
-          secondSet.cards.push(
-            ...notFullFiveCombinations[notFullFiveCombinations.length - 1].cards
-          );
-        }
-        if (notFullFiveCombinations.length == 0) {
-          const cardsLeft = cards.filter(
-            (card) =>
-              !firstSet.cards.includes(card) && !secondSet.cards.includes(card)
-          );
-          cardsLeft.forEach((card) => {
-            if (
-              !combinations.some((combination) =>
-                combination.cards.includes(card)
-              ) &&
-              secondSet.cards.length < 5
-            ) {
-              secondSet.cards.push(card);
-            }
-          });
-          if (secondSet.cards.length < 5) {
-            secondSet.cards.push(
-              ...cardsLeft.slice(0, 5 - secondSet.cards.length)
-            );
-          }
-        }
-      }
-      combinations = combinations.filter(
-        (combination) =>
-          !combination.cards.some((card) => secondSet.cards.includes(card)) &&
-          ['Đôi', 'Sám'].includes(combination.type)
-      );
-      if (combinations.length > 0) {
-        thirdSet = combinations[combinations.length - 1];
-        combinations = combinations.filter(
-          (combination) =>
-            !combination.cards.some((card) => thirdSet.cards.includes(card))
-        );
-      } else {
-        thirdSet = { type: 'Mậu thầu', cards: [] };
-      }
-      while (thirdSet.cards.length < 3) {
-        //filter notFullFiveCombinations that don't have any card in thirdSet
-        let notFullFiveCombinations = combinations.filter(
-          (combination) =>
-            !combination.cards.some((card) => thirdSet.cards.includes(card)) &&
-            !combination.cards.some((card) => secondSet.cards.includes(card)) &&
-            !combination.cards.some((card) => firstSet.cards.includes(card)) &&
-            combination.cards.length + thirdSet.cards.length <= 3
-        );
-        if (notFullFiveCombinations.length > 0) {
-          thirdSet.cards.push(
-            ...notFullFiveCombinations[notFullFiveCombinations.length - 1].cards
-          );
-        }
-        if (notFullFiveCombinations.length == 0) {
-          const cardsLeft = cards.filter(
-            (card) =>
-              !firstSet.cards.includes(card) &&
-              !secondSet.cards.includes(card) &&
-              !thirdSet.cards.includes(card)
-          );
-          cardsLeft.forEach((card) => {
-            if (
-              !combinations.some((combination) =>
-                combination.cards.includes(card)
-              ) &&
-              thirdSet.cards.length < 3
-            ) {
-              thirdSet.cards.push(card);
-            }
-          });
-          if (thirdSet.cards.length < 3)
-            thirdSet.cards.push(
-              ...cardsLeft.slice(0, 3 - thirdSet.cards.length)
-            );
-        }
-      }
-    } else {
-      firstSet = combinations[combinations.length - 1];
-      secondSet = { type: 'Mậu thầu', cards: [] };
-      while (firstSet.cards.length < 5) {
-        //filter notFullFiveCombinations that don't have any card in firstSet
-        let notFullFiveCombinations = combinations.filter(
-          (combination) =>
-            !combination.cards.some((card) => firstSet.cards.includes(card)) &&
-            combination.cards.length + firstSet.cards.length <= 5
-        );
-        if (notFullFiveCombinations.length > 0) {
-          firstSet.cards.push(
-            ...notFullFiveCombinations[notFullFiveCombinations.length - 1].cards
-          );
-          combinations = combinations.filter(
-            (combination) =>
-              combination.cards !==
-              !combination.cards.some((card) => firstSet.cards.includes(card))
-          );
-          notFullFiveCombinations = notFullFiveCombinations.filter(
-            (combination) =>
-              !combination.cards.some((card) =>
-                firstSet.cards.includes(card)
-              ) && combination.cards.length + firstSet.cards.length <= 5
-          );
-        }
-        if (notFullFiveCombinations.length == 0) {
-          const cardsLeft = cards.filter(
-            (card) => !firstSet.cards.includes(card)
-          );
-          //check if cardsLeft is in combination
-          cardsLeft.forEach((card) => {
-            if (
-              !combinations.some((combination) =>
-                combination.cards.includes(card)
-              ) &&
-              firstSet.cards.length < 5
-            ) {
-              firstSet.cards.push(card);
-            }
-          });
-          if (firstSet.cards.length < 5)
-            firstSet.cards.push(
-              ...cardsLeft.slice(0, 5 - firstSet.cards.length)
-            );
-        }
-      }
-      combinations = combinations.filter(
-        (combination) =>
-          !combination.cards.some((card) => firstSet.cards.includes(card))
-      );
-      if (combinations.length > 0) {
-        secondSet = combinations[combinations.length - 1];
-        combinations = combinations.filter(
-          (combination) =>
-            !combination.cards.some((card) => secondSet.cards.includes(card))
-        );
-      } else {
-        secondSet = { type: 'Mậu thầu', cards: [] };
-      }
-      while (secondSet.cards.length < 5) {
-        //filter notFullFiveCombinations that don't have any card in secondSet
-        let notFullFiveCombinations = combinations.filter(
-          (combination) =>
-            !combination.cards.some((card) => secondSet.cards.includes(card)) &&
-            !combination.cards.some((card) => firstSet.cards.includes(card)) &&
-            combination.cards.length + secondSet.cards.length <= 5
-        );
-        if (notFullFiveCombinations.length > 0) {
-          secondSet.cards.push(
-            ...notFullFiveCombinations[notFullFiveCombinations.length - 1].cards
-          );
-          combinations = combinations.filter(
-            (combination) =>
-              combination.cards !==
-              !combination.cards.some((card) => secondSet.cards.includes(card))
-          );
-          notFullFiveCombinations = notFullFiveCombinations.filter(
-            (combination) =>
-              !combination.cards.some((card) =>
-                secondSet.cards.includes(card)
-              ) && combination.cards.length + secondSet.cards.length <= 5
-          );
-        }
-        if (notFullFiveCombinations.length == 0) {
-          const cardsLeft = cards.filter(
-            (card) =>
-              !firstSet.cards.includes(card) && !secondSet.cards.includes(card)
-          );
-          cardsLeft.forEach((card) => {
-            if (
-              !combinations.some((combination) =>
-                combination.cards.includes(card)
-              ) &&
-              secondSet.cards.length < 5
-            ) {
-              secondSet.cards.push(card);
-            }
-          });
-          if (firstSet.cards.length < 5) {
-            secondSet.cards.push(
-              ...cardsLeft.slice(0, 5 - secondSet.cards.length)
-            );
-          }
-        }
-      }
-
-      combinations = combinations.filter(
-        (combination) =>
-          !combination.cards.some((card) => secondSet.cards.includes(card)) &&
-          ['Đôi', 'Sám'].includes(combination.type)
-      );
-
-      if (combinations.length > 0) {
-        thirdSet = combinations[combinations.length - 1];
-        combinations = combinations.filter(
-          (combination) =>
-            !combination.cards.some((card) => thirdSet.cards.includes(card))
-        );
-      } else {
-        thirdSet = { type: 'Mậu thầu', cards: [] };
-      }
-      while (thirdSet.cards.length < 3) {
-        //filter notFullFiveCombinations that don't have any card in thirdSet
-        let notFullFiveCombinations = combinations.filter(
-          (combination) =>
-            !combination.cards.some((card) => thirdSet.cards.includes(card)) &&
-            !combination.cards.some((card) => secondSet.cards.includes(card)) &&
-            !combination.cards.some((card) => firstSet.cards.includes(card)) &&
-            combination.cards.length + thirdSet.cards.length <= 3
-        );
-        // console.log("notFullFiveCombinations", notFullFiveCombinations);
-        if (notFullFiveCombinations.length > 0) {
-          thirdSet.cards.push(
-            ...notFullFiveCombinations[notFullFiveCombinations.length - 1].cards
-          );
-        }
-
-        if (notFullFiveCombinations.length == 0) {
-          const cardsLeft = cards.filter(
-            (card) =>
-              !firstSet.cards.includes(card) &&
-              !secondSet.cards.includes(card) &&
-              !thirdSet.cards.includes(card)
-          );
-          thirdSet.cards.push(...cardsLeft.slice(0, 3 - thirdSet.cards.length));
-        }
-      }
-    }
-
-    //filter combinations that don't have any card in firstSet
-    combinations = combinations.filter(
-      (combination) =>
-        !combination.cards.some((card) => firstSet.cards.includes(card))
-    );
-
-    // Xóa bộ đã dùng
-    firstSet.cards.forEach((card) => {
-      cards = cards.filter((c) => c !== card);
-    });
-    secondSet.cards.forEach((card) => {
-      cards = cards.filter((c) => c !== card);
-    });
+function checkSanhRong(t) {
+  if (t.length < 13) return -1;
+  for (var e = listSodu(t), i = 0; i < e.length; i++)
+    if (e[i] !== i + 1) return !1;
+  return !0;
+}
+function checkAndMoveTuQuy(t, e) {
+  if (4 === t.length && e.length > 3) {
+    var i = getComBo(e, 3);
+    i.length > 0
+      ? (t.push(e[0]), e.splice(0, 1), e.push(i[0]), e.push(i[1]), e.push(i[2]))
+      : (i = getComBo(e, 2)).length > 0
+      ? (t.push(e[0]), e.splice(0, 1), e.push(i[0]), e.push(i[1]))
+      : (t.push(e[0]), e.splice(0, 1));
   }
-  firstSet.cards = convertToDefaultType(firstSet?.cards);
-  secondSet.cards = convertToDefaultType(secondSet.cards);
-  thirdSet.cards = convertToDefaultType(thirdSet?.cards);
+}
+function checkSanhRongDongHoa(t) {
+  if (t.length < 13) return -1;
+  if (checkSanhRong(t)) {
+    for (var e = (t[0] % 4) + 1 > 2, i = 0; i < t.length; i++) {
+      if (e && (t[i] % 4) + 1 <= 2) return -1;
+      if (0 == e && (t[i] % 4) + 1 > 2) return -1;
+    }
+    return 15;
+  }
+  return -1;
+}
+function indexA(t) {
+  for (var e = 0; e < t.length; ++e) if (14 === t[e].N) return e;
+  return 0;
+}
+function getMark(t) {
+  var e = 0;
+  if ((e = checkTPS(t)) > 0) {
+    console.log('TPS:', e);
+    return e;
+  } else if ((e = checkTuQuy(t)) > 0) {
+    console.log('Tứ quý:', e);
+    return e;
+  } else if ((e = checkCuLu(t)) > 0) {
+    console.log('Cửu lũ:', e);
+    return e;
+  } else if ((e = checkThung(t)) > 0) {
+    console.log('Thùng:', e);
+    return e;
+  } else if ((e = checkSanh(t)) > 0) {
+    console.log('Sảnh:', e);
+    return e;
+  } else if ((e = checkSam(t)) > 0) {
+    console.log('Sám cô:', e);
+    return e;
+  } else if ((e = checkThu(t)) > 0) {
+    console.log('Thú:', e);
+    return e;
+  } else if ((e = checkDoi(t)) > 0) {
+    console.log('Thú:', e);
+    return e;
+  } else {
+    console.log('Đôi:', e);
+    return e;
+  }
+}
+
+function BinhSanhRong(t) {
+  if (t.length < 13) return -1;
+  for (var e = listSodu(t), i = 0; i < e.length; i++)
+    if (e[i] !== i + 1) return -1;
+  return 14;
+}
+function BinhDongHoa(t) {
+  if (t.length < 13) return -1;
+  for (var e = t[0] % 4, i = 0 === e || 1 === e, n = 1; n < t.length; ++n) {
+    var o = t[n] % 4;
+    if (i !== (0 === o || 1 === o)) return -1;
+  }
+  return 13;
+}
+function getMarkMauBinh(t, e, i, n) {
+  listSort(t);
+  if (15 === checkSanhRongDongHoa(t)) return 15;
+  if (14 === BinhSanhRong(t)) return 14;
+  if (13 === BinhDongHoa(t)) return 13;
+  var o = Binh6Doi(t);
+  return 16 === o
+    ? 16
+    : 12 === o
+    ? 12
+    : 11 === Binh3Thung(e, i, n)
+    ? 11
+    : 10 === Binh3Sanh(e, i, n)
+    ? 10
+    : 0;
+}
+
+function Binh3Thung(t, e, i) {
+  return checkThung(e) <= 0 || checkThung(i) <= 0
+    ? -1
+    : 3 !== t.length
+    ? -1
+    : t[0].S === t[1].S && t[0].S === t[2].S
+    ? 11
+    : -1;
+}
+
+function Binh3Sanh(t, e, i) {
+  return checkSanh(e) <= 0 || checkSanh(i) <= 0
+    ? -1
+    : 3 !== t.length
+    ? -1
+    : (sortVector(t),
+      12 === t[0].N && 13 === t[1].N && 14 === t[2].N
+        ? 10
+        : 2 === t[0].N && 3 === t[1].N && 14 === t[2].N
+        ? 10
+        : t[0].N + 1 === t[1].N && t[1].N + 1 === t[2].N
+        ? 10
+        : -1);
+}
+
+function Binh6Doi(t) {
+  if (t.length < 13) return -1;
+  for (var e = 0, i = 0, n = 0, o = 0; o < 12; ++o) {
+    for (var a = Math.floor(t[o] / 4) + 1, s = o + 1; s < 13; ++s) {
+      if (a !== Math.floor(t[s] / 4) + 1) break;
+      n++;
+    }
+    n >= 1 && n <= 2
+      ? ((e += 1), n > 1 && (i += 1), (o += n), (n = 0))
+      : n > 2 && ((e += 2), (o += n), (n = 0));
+  }
+  return e >= 6 ? (i > 0 ? 16 : 12) : -1;
+}
+
+function sapXep2(t, e) {
+  void 0 === e && (e = -1);
+  var i,
+    o = [],
+    a = [];
+  (o = getchi(t, e)),
+    (a = getchi(t)),
+    (i = t),
+    checkAndMoveTuQuy(o, i),
+    checkAndMoveTuQuy(a, i);
+  var s = getMark(o),
+    r = getMark(a),
+    c = getMark(i);
+
+  if (r > s || (s === r && soSanhMauThau(a, o))) {
+    var l = o;
+    (o = a), (a = l);
+    var h = s;
+    (s = r), (r = h);
+  }
+  for (var u = [], d = [], p = 0; p < i.length; ++p)
+    d.push(i[p]), u.push(i[p].serverCode);
+  for (p = 0; p < a.length; ++p) d.push(a[p]), u.push(a[p].serverCode);
+  for (p = 0; p < o.length; ++p) d.push(o[p]), u.push(o[p].serverCode);
   return {
-    cards: firstSet.cards.concat(secondSet.cards).concat(thirdSet.cards),
-    chi1: firstSet,
-    chi2: secondSet,
-    chi3: thirdSet,
-    combinations: combinations2,
+    list: d,
+    // p: s + r + c,
+    mark3: s,
+    mark2: r,
+    mark1: c,
+    mb: getMarkMauBinh(u, i, a, o),
   };
 }
-
-function checkInstantWin(cards) {
-  let { ranks, suits } = classifyCards(cards);
-
-  // Kiểm tra Rồng cuốn (đồng chất từ 2 đến A)
-  if (checkDragonFlush(cards)) {
-    return { win: true, type: 'Rồng cuốn' };
+function soSanhMauThau(t, e) {
+  sortVector(t), sortVector(e);
+  for (var i = Math.min(t.length, e.length), n = 0; n < i; ++n) {
+    var o = t[t.length - 1 - n].N,
+      a = e[e.length - 1 - n].N;
+    if (o > a) return !0;
+    if (o < a) return !1;
   }
-
-  // Kiểm tra 13 lá đồng màu theo SUITS_COLORS
-  let suitColors = {};
-  for (let suit in suits) {
-    if (!suitColors[SUITS_COLORS[suit]]) suitColors[SUITS_COLORS[suit]] = [];
-    suitColors[SUITS_COLORS[suit]].push(suits[suit]);
-  }
-  if (Object.values(suitColors).some((group) => group.length == 13)) {
-    return { win: true, type: '13 lá đồng màu' };
-  }
-
-  // Kiểm tra Sảnh rồng (không đồng chất từ 2 đến A)
-  if (checkStraightFlush(ranks)) {
-    return { win: true, type: 'Sảnh rồng' };
-  }
-  // Kiểm tra Năm đôi 1 sám
-  if (checkFivePairsOneTrio(ranks)) {
-    return { win: true, type: 'Năm đôi 1 sám' };
-  }
-  // Kiểm tra Lục phé bôn (6 đôi)
-  if (checkSixPairs(ranks)) {
-    return { win: true, type: 'Lục phé bôn' };
-  }
-  // Kiểm tra Ba thùng và Ba sảnh
-  let flushCount = countFlushes(suits);
-  let straightCount = countStraights(ranks);
-  if (flushCount == 3) {
-    return { win: true, type: 'Ba thùng' };
-  }
-  if (straightCount == 3) {
-    return { win: true, type: 'Ba sảnh' };
-  }
-
-  return { win: false };
-}
-// Các hàm hỗ trợ kiểm tra bộ bài
-function checkDragonFlush(cards) {
-  let suit = cards[0][1];
-  for (let i = 1; i < cards.length; i++) {
-    if (cards[i][1] !== suit) return false;
-  }
-  return true; // Tất cả cùng chất
+  return !1;
 }
 
-function checkStraightFlush(ranks) {
-  const sequence = [
-    '2',
-    '3',
-    '4',
-    '5',
-    '6',
-    '7',
-    '8',
-    '9',
-    '10',
-    'J',
-    'Q',
-    'K',
-    'A',
-  ];
-  return sequence.every((rank) => ranks[rank] && ranks[rank].length == 1);
-}
-
-function checkFivePairsOneTrio(ranks) {
-  let pairs = 0;
-  let trios = 0;
-  Object.values(ranks).forEach((group) => {
-    if (group.length == 2) pairs++;
-    if (group.length == 4) pairs += 2;
-    if (group.length == 3) trios++;
-  });
-  return pairs == 5 && trios == 1;
-}
-
-function checkSixPairs(ranks) {
-  let pairs = 0;
-  Object.values(ranks).forEach((group) => {
-    if (group.length >= 2) pairs++;
-  });
-  return pairs == 6;
-}
-
-function countFlushes(suits) {
-  // check 3 thùng (2 thùng 5 lá và 1 thùng 3 lá )
-  const flush5Card = Object.values(suits).filter(
-    (group) => group.length >= 5
-  ).length;
-  const flush3Card = Object.values(suits).filter(
-    (group) => group.length >= 3
-  ).length;
-  if (flush5Card == 2 && flush3Card == 1) {
-    return 3;
-  }
-}
-
-function countStraights(ranks) {
-  // Logic to count number of straights
-  // This is a simplification; you would need more comprehensive logic to detect all straights\
-  //clone data from ranks to tempRanks without reference
-  let tempRanks = JSON.parse(JSON.stringify(ranks));
-
-  let straights = 0;
-  let straightCards = [];
-  RANKS.forEach((rank) => {
-    if (tempRanks?.[rank]?.[0]) {
-      straightCards.push(tempRanks[rank][0]);
-    } else {
-      straightCards = [];
+function getchi(t, e) {
+  void 0 === e && (e = -1);
+  var i = [],
+    n = getThungPS(t);
+  if (n.length > 0) return n;
+  if ((n = getComBo(t, 4)).length > 0) return n;
+  if (1 !== e) {
+    var o = getComBo(t, 3);
+    if (o.length > 0) {
+      var a = getComBo(t, 2);
+      if (a.length > 0) for (var s = 0; s < a.length; ++s) o.push(a[s]);
+      if (5 === o.length) return o;
+      for (s = 0; s < o.length; ++s) t.push(o[s]);
     }
-    if (straightCards.length == 5) {
-      straights++;
-      //remove straight cards from tempRanks
-      straightCards.forEach((card) => {
-        tempRanks[card.substring(0, card.length - 1)].splice(
-          tempRanks[card.substring(0, card.length - 1)].indexOf(card),
-          1
-        );
-      });
-      straightCards = [];
+  }
+  if (2 !== e && (n = getThung(t)).length > 0) return n;
+  if ((n = getSanh(t)).length > 0) return n;
+  var r = getComBo(t, 3);
+  if (r.length > 0) {
+    sortSanhTangDan(t);
+    for (s = 0; s < 2; ++s) r.push(t[s]);
+    return t.splice(0, 2), r;
+  }
+  var c = getComBo(t, 2, !0);
+  if (c.length > 0) {
+    var l = getComBo(t, 2);
+    if (l.length > 0) for (s = 0; s < l.length; ++s) c.push(l[s]);
+    else {
+      sortSanhTangDan(t);
+      for (s = 0; s < 3; ++s) c.push(t[s]);
+      t.splice(0, 3);
     }
-  });
-  straightCards = [];
+    return c;
+  }
+  sortSanhTangDan(t);
+  for (s = 0; s < 4; ++s) i.push(t[s]);
+  return t.splice(0, 4), i.push(t[t.length - 1]), t.splice(t.length - 1, 1), i;
+}
 
-  RANKS.forEach((rank) => {
-    if (tempRanks?.[rank]?.[0]) {
-      straightCards.push(tempRanks[rank][0]);
-    } else {
-      straightCards = [];
+function getThungPS(t) {
+  sortThungGiamDan(t);
+  for (var e = [0, 0, 0, 0], i = 0; i < t.length; ++i) {
+    var n = t[i];
+    if (n.S > 4 || n.S < 1) return [];
+    e[n.S - 1]++;
+  }
+  var o = 0;
+  for (i = 0; i < e.length; ++i) {
+    if (e[i] >= 5)
+      for (var a = 0, s = t[o].N, r = o; r < o + e[i] - 1; ++r) {
+        if (
+          (1 === Math.abs(t[r + 1].N - t[r].N)
+            ? a++
+            : ((a = 0), (s = t[r + 1].N)),
+          a >= 4)
+        ) {
+          for (var c = [], l = 0; l < 5; ++l) c.push(t[r + 1 - 4 + l]);
+          return t.splice(r + 1 - 4, 5), c;
+        }
+        if (3 === a && 5 === s && 14 === t[o].N) {
+          for (c = [], l = 0; l < 4; ++l) c.push(t[r + 1 - 3 + l]);
+          return t.splice(r + 1 - 3, 4), c.push(t[o]), t.splice(o, 1), c;
+        }
+      }
+    o += e[i];
+  }
+  return [];
+}
+
+function getThung(t) {
+  sortThungGiamDan(t);
+  for (var e = [0, 0, 0, 0], i = 0; i < t.length; ++i) {
+    var n = t[i];
+    if (n.S > 4 || n.S < 1) return [];
+    e[n.S - 1]++;
+  }
+  var o = 0;
+  for (i = 0; i < e.length; ++i) {
+    if (e[i] >= 5) {
+      for (var a = [], s = o; s < o + 5; ++s) a.push(t[s]);
+      return t.splice(o, 5), a;
     }
+    o += e[i];
+  }
+  return [];
+}
 
-    if (straightCards.length == 5) {
-      straights++;
-      //remove straight cards from tempRanks
-      straightCards.forEach((card) => {
-        tempRanks[card.substring(0, card.length - 1)].splice(
-          tempRanks[card.substring(0, card.length - 1)].indexOf(card),
-          1
-        );
-      });
-
-      straightCards = [];
+function getComBo(t, e, i) {
+  if ((void 0 === i && (i = !1), t.length < e)) return [];
+  e > 2 || i ? sortSanhGiamDan(t) : sortSanhTangDan(t);
+  for (var n = 0, o = 0; o < t.length - 1; ++o) {
+    for (var a = o + 1; a < t.length && t[o].N === t[a].N; ++a) n++;
+    if (n === e - 1) {
+      var s = [];
+      for (a = o; a < o + e; ++a) s.push(t[a]);
+      return t.splice(o, e), s;
     }
-  });
+    n = 0;
+  }
+  return [];
+}
 
-  straightCards = [];
-  if (straights != 2) {
-    return straights;
+function getSanh(t) {
+  sortSanhGiamDan(t);
+  for (var e, i, n = 0, o = getXiIndex(t), a = 0; a < t.length - 1; ++a) {
+    var s = t[a];
+    (e = s.N), (i = s.N), (n = 0);
+    for (var r = a + 1; r < t.length; ++r) {
+      var c = t[r],
+        l = Math.abs(c.N - e);
+      if ((1 === l && (n++, (e = c.N)), l > 1)) break;
+      if (4 === n) {
+        (d = []).push(s), t.splice(a, 1), (e = s.N);
+        for (var h = a; h < t.length; ++h) {
+          var u = t[h];
+          if (
+            1 === Math.abs(u.N - e) &&
+            (d.push(u), (e = u.N), t.splice(h, 1), (h -= 1), 0 === --n)
+          )
+            return d;
+        }
+      } else if (o >= 0 && 3 === n && 5 === i) {
+        var d;
+        (d = []).push(s), t.splice(a, 1), (e = s.N);
+        for (h = a; h < t.length; ++h) {
+          u = t[h];
+          if (
+            1 === Math.abs(u.N - e) &&
+            (d.push(u), (e = u.N), t.splice(h, 1), (h -= 1), 0 === --n)
+          )
+            return (o = getXiIndex(t)), d.push(t[o]), t.splice(o, 1), d;
+        }
+      }
+    }
+  }
+  return [];
+}
+
+function getXiIndex(t) {
+  for (var e = 0; e < t.length; ++e) if (14 === t[e].N) return e;
+  return -1;
+}
+
+function getTextOfListCard(t) {
+  return t > 544
+    ? 'Thùng Phá Sảnh'
+    : t > 476
+    ? 'Tứ Quý'
+    : t > 408
+    ? 'Cù lũ'
+    : t > 340
+    ? 'Thùng'
+    : t > 272
+    ? 'Sảnh'
+    : t > 204
+    ? 'Sám cô'
+    : t > 136
+    ? 'Thú'
+    : t > 68
+    ? 'Đôi'
+    : 'Mậu Thầu';
+}
+
+function getTextofMauBinh(t) {
+  return 10 === t
+    ? '3 Sảnh'
+    : 11 === t
+    ? '3 Thùng'
+    : 12 === t
+    ? '6 Đôi'
+    : 13 === t
+    ? 'Đồngng Hoa'
+    : 14 === t
+    ? 'Sảnh Rồng'
+    : 15 === t
+    ? 'Sảnh Rồng Đồng Hoa'
+    : 16 === t
+    ? '5 Đôi 1 Sám Cô'
+    : '';
+}
+
+function decodeCard2(cardCode) {
+  const suits = ['bich', 'chuon', 'ro', 'co']; // Mảng biểu tượng các chất
+  const s = (cardCode % 4) + 1; // Chất của lá bài, từ 1 đến 4
+  let n = Math.floor(cardCode / 4) + 1; // Số của lá bài, từ 1 đến 13
+
+  // Giả sử Ace là số 14 thay vì số 1
+  if (n === 0) {
+    n = 14;
   }
 
-  RANKS.forEach((rank) => {
-    if (tempRanks?.[rank]?.[0]) {
-      straightCards.push(tempRanks[rank][0]);
-    } else {
-      straightCards = [];
-    }
-    if (straightCards.length == 3) {
-      straights++;
-      //remove straight cards from tempRanks
-      straightCards.forEach((card) => {
-        tempRanks[card.substring(0, card.length - 1)].splice(
-          tempRanks[card.substring(0, card.length - 1)].indexOf(card),
-          1
-        );
-      });
+  // Tạo chuỗi thông tin biểu tượng cho mỗi lá
+  const suitSymbol = suits[s - 1]; // Lấy biểu tượng chất tương ứng
 
-      straightCards = [];
-    }
-  });
-
-  straightCards = [];
-  return straights;
-  // return Object.keys(ranks).length >= 5 ? 1 : 0;
+  return { serverCode: cardCode, N: n, S: s, suitSymbol: suitSymbol };
 }
 
-function classifyCards(cards) {
-  let ranks = {};
-  let suits = {};
-  cards.forEach((card) => {
-    let rank = card.substring(0, card.length - 1);
-    let suit = card[card.length - 1];
-    if (!ranks[rank]) ranks[rank] = [];
-    if (!suits[suit]) suits[suit] = [];
-    ranks[rank].push(card);
-    suits[suit].push(card);
-  });
-  return { ranks, suits };
+function getCardNumBer(t) {
+  for (var e = [], i = 0; i < t.length; ++i) e.push(t[i].serverCode);
+  return e;
 }
 
-function findCard(cardsInput: any[]) {
-  return cardsInput.map((card) => {
-    return CARDS[card];
-  });
+function sapXep(t) {
+  if (13 !== t.length) return getCardNumBer(t);
+  var e = t.slice();
+  sortVector(e);
+  var i = t.slice();
+  sortVector2(i);
+  for (var n = [0, 0, 0, 0], o = 0; o < i.length; ++o) {
+    var a = i[o];
+    if (a.S > 4 || a.S < 1) return [];
+    n[a.S - 1]++;
+  }
+  return getCardNumBer(i);
+}
+
+function mBaiSapXep(t) {
+  if (13 !== t.length) return [];
+  var e = t.map((cardCode) => decodeCard2(cardCode));
+  var n = sapXep2(e);
+  var sortedList = n.list;
+  var result;
+  if (n.mark3 > 544 || n.mark3 > 476) sortedList = n.list;
+  if (n.mb > 0) sortedList = n.list;
+  else if (n.mark3 > 408 || n.mark3 > 340) {
+    var o = t.map((cardCode) => decodeCard2(cardCode));
+    var a = -1;
+    n.mark3 > 408 ? (a = 1) : n.mark3 > 340 && (a = 2);
+    var s = sapXep2(o, a);
+    // n.mark3 = s.mark3;
+    // n.mark2 = s.mark2;
+    // n.mark1 = s.mark1;
+    sortedList = s.p > n.p || s.mb > 0 ? s.list : n.list;
+  }
+
+  result = sortedList.map((item) => item.serverCode);
+
+  var orderedResult = result.map((code) =>
+    result.find((item) => item === code)
+  );
+
+  return {
+    cards: orderedResult.reverse(),
+    chi1: getTextOfListCard(n.mark3),
+    chi2: getTextOfListCard(n.mark2),
+    chi3: getTextOfListCard(n.mark1),
+    instant: getTextofMauBinh(n.mb),
+  };
 }
 
 export const setupArrangeCardHandlers = () => {
   ipcMain.on('arrange-card', (event, input, position) => {
-    console.log('input Card', input);
-    let cards = findCard(input).sort((a, b) => {
-      return CARDS.indexOf(a) - CARDS.indexOf(b);
-    });
-    let result = checkInstantWin(cards);
-    let returnCards = sortCardsForChinesePoker(cards);
-    console.log('returnCards', returnCards);
-    if (cards.length !== 13) {
-      event.reply('arrange-card', {
-        error: 'Bạn cần nhập đúng 13 số, mỗi số từ 1 đến 52.',
-      });
-    }
-    returnCards.isInstantWin = result;
-
-    // const result = displaySortedHands(cards);
-    event.reply('arrange-card', returnCards, position);
+    const result = mBaiSapXep(input);
+    event.reply('arrange-card', result, position);
   });
 };

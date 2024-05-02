@@ -1,8 +1,8 @@
 const { ipcMain } = require('electron');
 const os = require('os');
-const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-puppeteer.use(StealthPlugin());
+const puppeteer = require('puppeteer');
+// const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+// puppeteer.use(StealthPlugin());
 import path from 'path';
 
 interface WebSocketCreatedData {
@@ -16,7 +16,6 @@ interface WebSocketFrameReceivedData {
     payloadData: string;
   };
 }
-
 export const setupAccountHandlers = (
   mainWindow: Electron.CrossProcessExports.BrowserWindow
 ) => {
@@ -25,6 +24,8 @@ export const setupAccountHandlers = (
   async function startPuppeteerForAccount(account: {
     username: string;
     password: string;
+    proxy: string;
+    port: string;
   }) {
     try {
       let userProfilePath;
@@ -54,12 +55,33 @@ export const setupAccountHandlers = (
       const browser = await puppeteer.launch({
         headless: false,
         defaultViewport: null,
-        args: ['about:blank'],
         userDataDir: userProfilePath,
+        ignoreHTTPSErrors: true,
+        acceptInsecureCerts: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-infobars',
+          '--window-position=0,0',
+          '--ignore-certifcate-errors',
+          '--ignore-certifcate-errors-spki-list',
+          '--remote-debugging-port=42796',
+          // '--proxy-server=socks5://hndc35.proxyno1.com:42796',
+          `${
+            account.proxy &&
+            account.proxy != 'undefined' &&
+            `--proxy-server=${account.proxy}:${account.port}`
+          }`,
+          // `--host-resolver-rules=${hostResolverRules}`,
+        ],
       });
       const pages = await browser.pages();
 
       const page = pages[0];
+      // await page.authenticate({
+      //   username: PROXY_USERNAME,
+      //   password: PROXY_PASSWORD,
+      // });
       await page.evaluateOnNewDocument(() => {
         const coresOptions = [1, 2, 4, 8, 16, 32];
         const randomIndex = Math.floor(Math.random() * coresOptions.length);
@@ -173,19 +195,27 @@ export const setupAccountHandlers = (
       }, 500);
       setTimeout(() => {
         __require('LobbyViewController').default.Instance.onClickIConGame(null,"vgcg_4");
-      }, 2500);
+      }, 3500);
       `);
 
       return { browser, page };
-    } catch (error) {}
+    } catch (error) {
+    } finally {
+      return true;
+    }
   }
+  // const accountArrange = {
+  //   username: 'giuchansapbai',
+  //   password: 'zxcv123123',
+  //   proxy: '',
+  //   port: '',
+  // };
+  // startPuppeteerForAccount(accountArrange);
 
   ipcMain.on('open-accounts', async (event, account) => {
     await startPuppeteerForAccount(account);
-
     event.reply('open-accounts-reply', 'All accounts have been opened.');
   });
-
   ipcMain.on('close-account', async (event, username) => {
     const index = puppeteerInstances.findIndex(
       (instance) => instance.username === username
@@ -202,7 +232,6 @@ export const setupAccountHandlers = (
       event.reply('close-account-reply', `Account ${username} not found.`);
     }
   });
-
   ipcMain.on('execute-script', async (event, { username }, script) => {
     const instance = puppeteerInstances.find(
       (instance) => instance.username === username
