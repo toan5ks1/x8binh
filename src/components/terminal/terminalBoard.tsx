@@ -35,7 +35,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   const [currentRoom, setCurrentRoom] = useState('');
   const [currentSit, setCurrentSit] = useState('');
   const [currentCards, setCurrentCards] = useState<any>([
-    16, 21, 24, 29, 34, 8, 5, 4, 47, 45, 41, 31, 15,
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
   ]);
   const [autoInvite, setAutoInvite] = useState(false);
 

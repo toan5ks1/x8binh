@@ -35,8 +35,8 @@ const readFile = (accountType: string) => {
   window.backend.sendMessage(
     'read-file',
     [
-      `C:/Users/PC/AppData/Local/Programs/electron-react-boilerplate/resources/account/${accountType.toLowerCase()}Account.txt`,
-      // `account/${accountType.toLowerCase()}Account.txt`,
+      // `C:/Users/PC/AppData/Local/Programs/electron-react-boilerplate/resources/account/${accountType.toLowerCase()}Account.txt`,
+      `account/${accountType.toLowerCase()}Account.txt`,
     ],
     accountType
   );
