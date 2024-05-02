@@ -86,6 +86,7 @@ export function handleMessage({
         returnMsg = 'Game finished!';
       } else if (
         message[1].hsl === false &&
+        message[1].hsl === true &&
         message[1].ps?.length >= 2 &&
         message[1].cmd === 602
       ) {

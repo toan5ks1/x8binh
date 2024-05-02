@@ -37,7 +37,7 @@ export function App() {
   // const [tab, setActiveTab] = useState('all');
   const { state, setState } = useContext(AppContext);
   const { accounts } = useAccountStore();
-  const bots = accounts['SUB'];
+  const bots = accounts['SUB'].filter((item: any) => item.isSelected === true);
   const craws = accounts['BOT'].filter((item: any) => item.isSelected === true);
   const [cardDeck, setCardDeck] = useState('4');
   const [loading, setLoading] = useState(false);
