@@ -1,6 +1,6 @@
 import { Loader } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import backgound from '../../assets/bg/bg-hepler.png';
 import { useToast } from '../components/toast/use-toast';
 import { Button } from '../components/ui/button';
@@ -47,9 +47,9 @@ export const Active = () => {
               />
             </div>
             <div className="flex items-center">
-              <a href="/" className="ml-auto inline-block text-sm underline">
+              <Link to="/" className="ml-auto inline-block text-sm underline">
                 Back to Onboard page
-              </a>
+              </Link>
             </div>
 
             <Button
