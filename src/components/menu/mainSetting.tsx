@@ -14,7 +14,7 @@ const MainSetting: React.FC<any> = ({ children, setIsOpen, isOpen }) => {
         className="flex flex-grow cursor-pointer"
         onClick={() => setIsOpen(false)}
       ></div>
-      <div className="h-full bg-background p-4 w-1/3">
+      <div className="h-full bg-background p-4 w-full max-w-[800px]">
         <div className="flex justify-between items-center top-4 w-full">
           <h1 className="text-xl font-semibold">Settings</h1>
           <Button
