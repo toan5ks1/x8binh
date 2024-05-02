@@ -59,7 +59,6 @@ export const setupAccountHandlers = (
         ignoreHTTPSErrors: true,
         acceptInsecureCerts: true,
         args: [
-          'about:blank',
           '--no-sandbox',
           '--disable-setuid-sandbox',
           '--disable-infobars',
@@ -69,7 +68,9 @@ export const setupAccountHandlers = (
           '--remote-debugging-port=42796',
           // '--proxy-server=socks5://hndc35.proxyno1.com:42796',
           `${
-            account.proxy && `--proxy-server=${account.proxy}:${account.port}`
+            account.proxy &&
+            account.proxy != 'undefined' &&
+            `--proxy-server=${account.proxy}:${account.port}`
           }`,
           // `--host-resolver-rules=${hostResolverRules}`,
         ],
@@ -194,7 +195,7 @@ export const setupAccountHandlers = (
       }, 500);
       setTimeout(() => {
         __require('LobbyViewController').default.Instance.onClickIConGame(null,"vgcg_4");
-      }, 2500);
+      }, 3500);
       `);
 
       return { browser, page };
@@ -203,13 +204,18 @@ export const setupAccountHandlers = (
       return true;
     }
   }
+  // const accountArrange = {
+  //   username: 'giuchansapbai',
+  //   password: 'zxcv123123',
+  //   proxy: '',
+  //   port: '',
+  // };
+  // startPuppeteerForAccount(accountArrange);
 
   ipcMain.on('open-accounts', async (event, account) => {
     await startPuppeteerForAccount(account);
-
     event.reply('open-accounts-reply', 'All accounts have been opened.');
   });
-
   ipcMain.on('close-account', async (event, username) => {
     const index = puppeteerInstances.findIndex(
       (instance) => instance.username === username
@@ -226,7 +232,6 @@ export const setupAccountHandlers = (
       event.reply('close-account-reply', `Account ${username} not found.`);
     }
   });
-
   ipcMain.on('execute-script', async (event, { username }, script) => {
     const instance = puppeteerInstances.find(
       (instance) => instance.username === username

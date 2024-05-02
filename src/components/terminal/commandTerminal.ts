@@ -126,10 +126,15 @@ export const arrangeCardCommand = `
       window.sapBaiMinh()`;
 
 export const checkPositionCommand = `
-var uuid = __require('GamePlayManager').default.Instance.loginDict.uid;
-var players = cc.find("Canvas/MainUI/MauBinhController")._components[0].cardGameTableController.gameController.AllPlayers;
-var uids = Object.keys(players);
-uids.indexOf(uuid.toString());
+try{
+  var uuid = __require('GamePlayManager').default.Instance.loginDict.uid;
+  var players = cc.find("Canvas/MainUI/MauBinhController")._components[0].cardGameTableController.gameController.AllPlayers;
+  var uids = Object.keys(players);
+  uids.indexOf(uuid.toString());
+}catch{
+
+}
+
 `;
 
 export const getAddNameTagCommand = (main: any) => {
