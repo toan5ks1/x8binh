@@ -14,6 +14,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Button } from '../../components/ui/button';
 import { Label } from '../../components/ui/label';
 import { ScrollArea } from '../../components/ui/scroll-area';
+import { areArraysEqual } from '../../lib/utils';
 import { AppContext } from '../../renderer/providers/app';
 import { HandCard } from '../card/handcard';
 import { useToast } from '../toast/use-toast';
@@ -26,7 +27,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   const [isInLobby, setIsInLobby] = useState(false);
   const [currentRoom, setCurrentRoom] = useState('');
   const [currentSit, setCurrentSit] = useState('');
-  const [roomToJoin, setRoomToJoin] = useState('');
   const [currentCards, setCurrentCards] = useState<any>();
 
   const findCurrent = useCallback((crCard: number[]) => {
@@ -34,8 +34,8 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
     const crawledCards = state.crawingRoom[state.foundBy ?? '']?.cardGame ?? [];
     if (crawledCards.length) {
       crawledCards.forEach((game) => {
-        target = Object.values(game).find(
-          (card) => JSON.stringify(card.cs) === JSON.stringify(crCard)
+        target = Object.values(game).find((card) =>
+          areArraysEqual(card.cs, crCard)
         );
       });
     }
@@ -470,19 +470,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
               <SortAsc className="h-3.5 w-3.5" />
               {/* <span>Arrange</span> */}
             </Button>
-            {/* <Button
-            onClick={() => checkPosition(main)}
-            style={{ fontFamily: 'monospace' }}
-            className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-          >
-            <Check className="h-3.5 w-3.5" />
-            <span>Check Pos</span>
-          </Button> */}
-            {/* <input
-              className="w-100"
-              value={roomToJoin}
-              onChange={(e) => setRoomToJoin(e.target.value)}
-            /> */}
             <Button
               // onClick={() => joinRoom(main)}
               onClick={() => joinRoom(main)}

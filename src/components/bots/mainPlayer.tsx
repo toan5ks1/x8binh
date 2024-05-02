@@ -8,7 +8,6 @@ export const MainPlayerStatus = ({
   craw2,
   index,
   shouldLogin,
-  shouldJoinMB,
   shouldCreatRoom,
   shouldLeave,
   shouldDisconnect,
@@ -21,7 +20,6 @@ export const MainPlayerStatus = ({
     connectionStatus: connectionStatusBot1,
     handleLoginClick: loginBot1,
     handleCreateRoom: handleCreateRoomBot1,
-    handleConnectMauBinh: connectMbBot1,
     disconnectGame: disconnectBot1,
   } = useSetupBot(craw1, true);
 
@@ -32,7 +30,6 @@ export const MainPlayerStatus = ({
     handleLeaveRoom: handleLeaveRoomBot2,
     connectionStatus: connectionStatusBot2,
     handleLoginClick: loginBot2,
-    handleConnectMauBinh: connectMbBot2,
     disconnectGame: disconnectBot2,
   } = useSetupBot(craw2, false);
 
@@ -42,13 +39,6 @@ export const MainPlayerStatus = ({
       loginBot2();
     }
   }, [shouldLogin]);
-
-  useEffect(() => {
-    if (shouldJoinMB) {
-      connectMbBot1();
-      connectMbBot2();
-    }
-  }, [shouldJoinMB]);
 
   useEffect(() => {
     if (shouldCreatRoom) {
@@ -71,7 +61,7 @@ export const MainPlayerStatus = ({
   }, [shouldDisconnect]);
 
   return (
-    <div className="flex space-x-4 w-full">
+    <div className="space-y-4 w-full">
       <BotCmp
         name={`Sub ${index + 1}`}
         userId={user1?.username}

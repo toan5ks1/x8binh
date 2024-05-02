@@ -94,7 +94,6 @@ export function handleMessageWaiter({
       // Left room response
       if (message[1] === true) {
         setUser((pre) => ({ ...pre, status: BotStatus.Left }));
-        setState((pre) => ({ ...pre, isQuited: true }));
         returnMsg = 'Left room successfully!';
       } else {
         returnMsg = message[5] || 'Left room failed!';

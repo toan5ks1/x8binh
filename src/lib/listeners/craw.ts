@@ -163,6 +163,7 @@ export function handleMessageCrawing({
                 players: [...room.players].slice(0, -1),
               },
             },
+            isQuited: true,
           };
         });
         setUser((pre) => ({ ...pre, status: BotStatus.Left }));
