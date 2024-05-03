@@ -2,7 +2,6 @@ import { now } from 'lodash';
 import { toast } from '../components/toast/use-toast';
 
 const readValidAccount = (input: string): any => {
-  // console.log('input', input);
   return input
     .trim()
     .split('\n')
@@ -37,7 +36,6 @@ const readValidAccount = (input: string): any => {
         return;
       }
     });
-  // .filter((account) => account.username);
 };
 
 const accountExists = (

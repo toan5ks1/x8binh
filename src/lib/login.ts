@@ -63,7 +63,6 @@ const getConnectToken = async (
   try {
     const url = `https://maubinh.twith.club/signalr/negotiate?access_token=${token}`;
     const response = await axios.get<ConnectTokenResponse>(url);
-    console.log('Data:', response.data);
     return response.data;
   } catch (error) {
     console.error(
@@ -112,7 +111,6 @@ export async function openAccounts(account: any) {
 
 export function joinRoom(account: any, room?: number): void {
   if (room) {
-    console.log('room call', account, room);
     window.backend.sendMessage(
       'execute-script',
       account,

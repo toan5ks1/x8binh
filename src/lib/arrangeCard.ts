@@ -1,5 +1,3 @@
-import { ipcMain } from 'electron';
-
 function listSodu(t: any) {
   for (var e = [], i = 0; i < t.length; i++) {
     var n = Math.floor(t[i] / 4) + 1;
@@ -193,31 +191,22 @@ function indexA(t: any) {
 function getMark(t: any) {
   var e = 0;
   if ((e = checkTPS(t)) > 0) {
-    console.log('TPS:', e);
     return e;
   } else if ((e = checkTuQuy(t)) > 0) {
-    console.log('Tứ quý:', e);
     return e;
   } else if ((e = checkCuLu(t)) > 0) {
-    console.log('Cửu lũ:', e);
     return e;
   } else if ((e = checkThung(t)) > 0) {
-    console.log('Thùng:', e);
     return e;
   } else if ((e = checkSanh(t)) > 0) {
-    console.log('Sảnh:', e);
     return e;
   } else if ((e = checkSam(t)) > 0) {
-    console.log('Sám cô:', e);
     return e;
   } else if ((e = checkThu(t)) > 0) {
-    console.log('Thú:', e);
     return e;
   } else if ((e = checkDoi(t)) > 0) {
-    console.log('Thú:', e);
     return e;
   } else {
-    console.log('Đôi:', e);
     return e;
   }
 }
@@ -570,9 +559,6 @@ function mBaiSapXep(t: any) {
   };
 }
 
-export const setupArrangeCardHandlers = () => {
-  ipcMain.on('arrange-card', (event, input, position) => {
-    const result = mBaiSapXep(input);
-    event.reply('arrange-card', result, position);
-  });
+export const arrangCard = (cards: any) => {
+  return mBaiSapXep(cards);
 };
