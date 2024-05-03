@@ -10,11 +10,12 @@ import {
   TrashIcon,
   UserPlus,
 } from 'lucide-react';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Button } from '../../components/ui/button';
 import { Label } from '../../components/ui/label';
 import { ScrollArea } from '../../components/ui/scroll-area';
 import { highlightSyntax } from '../../lib/terminal';
+import { areArraysEqual } from '../../lib/utils';
 import { AppContext } from '../../renderer/providers/app';
 import { HandCard } from '../card/handcard';
 import { useToast } from '../toast/use-toast';
@@ -37,25 +38,31 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
   const [currentCards, setCurrentCards] = useState<any>();
   const [autoInvite, setAutoInvite] = useState(false);
 
-  // const findCurrent = useCallback((crCard: number[]) => {
-  //   let target;
-  //   const crawledCards = state.crawingRoom[state.foundBy ?? '']?.cardGame ?? [];
-  //   if (crawledCards.length) {
-  //     crawledCards.forEach((game) => {
-  //       target = Object.values(game).find((card) =>
-  //         areArraysEqual(card.cs, crCard)
-  //       );
-  //     });
-  //   }
-  //   return target ?? 0;
-  // }, []);
+  const findCurrent = useCallback((crCard: number[]) => {
+    let target = 1;
+    const crawledCards = state.crawingRoom[state.foundBy ?? '']?.cardGame ?? [];
+    if (crawledCards.length) {
+      for (let i = state.currentGame.number; i < crawledCards.length; i++) {
+        for (const card of crawledCards[i]) {
+          if (areArraysEqual(card.cs, crCard)) {
+            target = i;
+            break;
+          }
+        }
+      }
+    }
+    return target;
+  }, []);
 
   useEffect(() => {
     setState((pre) => ({
       ...pre,
       currentGame: {
         ...pre.currentGame,
-        sheet: { [currentSit]: main.username },
+        sheet: {
+          ...pre.currentGame.sheet,
+          [currentSit]: main.username,
+        },
       },
     }));
   }, [currentSit]);
@@ -89,7 +96,6 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
       account,
       `__require('GamePlayManager').default.getInstance().joinRoom(${state.initialRoom.id},0,'',true);`
     );
-    // }
   }
 
   function checkPosition(account: any): void {
@@ -187,14 +193,6 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
               title: 'Thông báo',
               description: 'Đã kết thúc ván bài.',
             });
-            index === 0 &&
-              setState((pre) => ({
-                ...pre,
-                currentGame: {
-                  ...pre.currentGame,
-                  number: pre.currentGame.number + 1,
-                },
-              }));
           }
           if (parsedData[1].cs && parsedData[1].cmd === 600) {
             const currentCards = parsedData[1].cs
@@ -214,7 +212,7 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
               ...pre,
               currentGame: {
                 ...pre.currentGame,
-                number: !pre.currentGame.number ? 1 : pre.currentGame.number,
+                number: findCurrent(parsedData[1].cs),
               },
             }));
             setCurrentCards(currentCards);
