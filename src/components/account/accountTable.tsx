@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
+import { Label } from '@radix-ui/react-label';
 import { useEffect, useRef, useState } from 'react';
 import {
   addUniqueAccounts,
@@ -71,6 +72,8 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
   const [isDialogProxyOpen, setDialogProxyOpen] = useState(false);
   const [rowSelected, setRowSelected] = useState<any>();
   const [errorAddProxy, setErrorAddProxy] = useState<any>();
+  const [useAuthForProxy, setUseAuthForProxy] = useState(false);
+
   const { accounts, updateAccount, addAccount, removeAccount } =
     useAccountStore();
   const { toast } = useToast();
@@ -79,6 +82,8 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
   const passwordRef = useRef<HTMLInputElement>(null);
   const proxyRef = useRef<HTMLInputElement>(null);
   const portRef = useRef<HTMLInputElement>(null);
+  const authUsernameRef = useRef<HTMLInputElement>(null);
+  const authPasswordRef = useRef<HTMLInputElement>(null);
 
   const handleAddAccount = () => {
     if (usernameRef.current && passwordRef.current) {
@@ -104,6 +109,8 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
       const newProxy = {
         proxy: proxyRef.current.value,
         port: portRef.current.value,
+        userProxy: useAuthForProxy ? authUsernameRef.current?.value : '',
+        passProxy: useAuthForProxy ? authPasswordRef.current?.value : '',
       };
       updateAccount(accountType, row.username, newProxy);
       setDialogProxyOpen(false);
@@ -168,7 +175,8 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
   };
 
   const checkBalance = async (rowData: any) => {
-    var mainBalance = rowData.main_balance ? rowData.main_balance : 0;
+    var mainBalance = rowData.main_balance;
+
     const data = (await accountLogin(rowData)) as any;
     const cash = Array.isArray(data?.data) ? data?.data[0].main_balance : 0;
     mainBalance = cash;
@@ -257,10 +265,22 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
       ),
     },
     {
+      accessorKey: 'password',
+      header: () => <div className="text-center">Password</div>,
+      cell: ({ row }) => {
+        return (
+          <div className="text-center font-medium px-0">
+            {row.getValue('password')}
+          </div>
+        );
+      },
+    },
+    {
       accessorKey: 'main_balance',
       header: ({ column }) => {
         return (
           <Button
+            type="button"
             variant="ghost"
             className="px-0"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
@@ -279,6 +299,7 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
             {row.getValue('main_balance')}
 
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               onClick={() => checkBalance(rowData)}
@@ -289,17 +310,7 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
         );
       },
     },
-    {
-      accessorKey: 'password',
-      header: () => <div className="text-center">Password</div>,
-      cell: ({ row }) => {
-        return (
-          <div className="text-center font-medium px-0">
-            {row.getValue('password')}
-          </div>
-        );
-      },
-    },
+
     {
       id: 'actions',
       enableHiding: false,
@@ -345,42 +356,22 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
   );
 
   if (accountType === 'MAIN') {
-    columns.splice(
-      cashIndex + 1,
-      0,
-      {
-        accessorKey: 'proxy',
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            className="px-0"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Proxy
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        ),
-        cell: ({ row }) => (
-          <div className="text-center">{row.getValue('proxy')}</div>
-        ),
+    columns.splice(cashIndex + 1, 0, {
+      accessorKey: 'proxy',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          className="px-0 truncate"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Proxy
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        return <div className="text-center">{row.getValue('proxy')}</div>;
       },
-      {
-        accessorKey: 'port',
-        header: ({ column }) => (
-          <Button
-            variant="ghost"
-            className="px-0"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Port
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        ),
-        cell: ({ row }) => (
-          <div className="text-center">{row.getValue('port')}</div>
-        ),
-      }
-    );
+    });
   }
 
   const table = useReactTable({
@@ -568,6 +559,30 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
             placeholder="Port"
             className="mb-4"
           />
+          <div className="flex flex-row items-center justify-start gap-2">
+            <Checkbox
+              className="bg-white"
+              checked={useAuthForProxy}
+              onCheckedChange={() => setUseAuthForProxy(!useAuthForProxy)}
+            />
+            <Label>Is use authentication ?</Label>
+          </div>
+
+          {useAuthForProxy && (
+            <>
+              <Input
+                ref={authUsernameRef}
+                placeholder="Username for Proxy"
+                className="mb-4"
+              />
+              <Input
+                ref={authPasswordRef}
+                type="password"
+                placeholder="Password for Proxy"
+                className="mb-4"
+              />
+            </>
+          )}
           <div className="flex justify-end space-x-2">
             <Button
               variant="secondary"
