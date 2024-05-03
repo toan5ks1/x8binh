@@ -26,6 +26,8 @@ export const setupAccountHandlers = (
     password: string;
     proxy: string;
     port: string;
+    userProxy: string;
+    passProxy: string;
   }) {
     try {
       let userProfilePath;
@@ -70,7 +72,7 @@ export const setupAccountHandlers = (
           `${
             account.proxy &&
             account.proxy != 'undefined' &&
-            `--proxy-server=${account.proxy}:${account.port}`
+            `--proxy-server=${account.proxy.trim()}:${account.port.trim()}`
           }`,
           // `--host-resolver-rules=${hostResolverRules}`,
         ],
@@ -78,10 +80,14 @@ export const setupAccountHandlers = (
       const pages = await browser.pages();
 
       const page = pages[0];
-      // await page.authenticate({
-      //   username: PROXY_USERNAME,
-      //   password: PROXY_PASSWORD,
-      // });
+      if (account.userProxy) {
+        console.log('userProxy', account.userProxy.trim());
+        console.log('passProxy', account.passProxy.trim());
+        await page.authenticate({
+          username: account.userProxy.trim(),
+          password: account.passProxy.trim(),
+        });
+      }
       await page.evaluateOnNewDocument(() => {
         const coresOptions = [1, 2, 4, 8, 16, 32];
         const randomIndex = Math.floor(Math.random() * coresOptions.length);
