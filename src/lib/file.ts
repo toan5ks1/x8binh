@@ -12,8 +12,10 @@ const updateFile = async (accountsUpdate: any, accountType: string) => {
         isSelected: any;
         username: any;
         password: any;
+        passProxy: any;
+        userProxy: any;
       }) =>
-        `${account.username}|${account.password}|${account.isSelected}|${account.proxy}|${account.port}`
+        `${account.username}|${account.password}|${account.isSelected}|${account.proxy}|${account.port}|${account.userProxy}|${account.passProxy}|`
     )
     .join('\n');
   if (accountsText) {

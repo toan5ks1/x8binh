@@ -12,27 +12,28 @@ export const setupFileHandlers = () => {
         userProfilePath = path.join(
           'C:/Users',
           usernamePc,
-          'Programs/electron-react-boilerplate/resources',
+          'AppData/Local/Programs/electron-react-boilerplate/resources',
           filePath[0]
         );
       } else if (os.platform() === 'darwin') {
         userProfilePath = path.join(
           '/Users',
           usernamePc,
-          'Programs/electron-react-boilerplate/resources',
+          'AppData/Local/Programs/electron-react-boilerplate/resources',
           filePath[0]
         );
       } else {
         userProfilePath = path.join(
           '/home',
           usernamePc,
-          'Programs/electron-react-boilerplate/resources',
+          'AppData/Local/Programs/electron-react-boilerplate/resources',
           filePath[0]
         );
       }
     } else {
       userProfilePath = filePath[0];
     }
+    console.log('userProfilePath', userProfilePath);
     fs.readFile(userProfilePath, { encoding: 'utf-8' }, (err, data) => {
       if (err) {
         console.log('Error reading file:', err);
