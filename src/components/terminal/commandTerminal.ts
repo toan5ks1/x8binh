@@ -14,17 +14,17 @@ try{
   }
   if (btnInvite1) {
       btnInvite1.on('touchstart', function() {
-          console.log('Đã mời người khác vào 1.');
+
       });
   }
   if (btnInvite2) {
       btnInvite2.on('touchstart', function() {
-          console.log('Đã mời người khác vào 2.');
+
       });
   }
 if (btnInvite3) {
       btnInvite3.on('touchstart', function() {
-          console.log('Đã mời người khác vào 3.');
+
       });
   }
   if (btnInvite1) {
@@ -65,17 +65,17 @@ if (btnInvite3) {
   }
   if (btnInvite1) {
       btnInvite1.on('touchstart', function() {
-          console.log('Đã mời người khác vào 1.');
+
       });
   }
   if (btnInvite2) {
       btnInvite2.on('touchstart', function() {
-          console.log('Đã mời người khác vào 2.');
+
       });
   }
   if (btnInvite3) {
       btnInvite3.on('touchstart', function() {
-          console.log('Đã mời người khác vào 3.');
+
       });
   }
   if (btnInvite1) {

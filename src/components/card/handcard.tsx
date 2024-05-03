@@ -3,6 +3,7 @@ import { Loader, RotateCw, Star } from 'lucide-react';
 import { useCallback, useEffect, useId, useState } from 'react';
 import { DndProvider, DragSourceMonitor, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { arrangCard } from '../../lib/arrangeCard';
 import { getCardImageUrl } from '../../lib/card';
 import CardGame from '../card/card';
 import { Button } from '../ui/button';
@@ -97,7 +98,6 @@ export const HandCard: React.FC<HandCardProps> = ({
   );
 
   function renderBackgroundColor(chi: string) {
-    console.log('chi chi', chi);
     switch (chi) {
       case 'Thùng Phá Sảnh':
         return 'shadow-[0_0px_10px_rgba(255,_31,_31,_0.8)]';
@@ -114,7 +114,14 @@ export const HandCard: React.FC<HandCardProps> = ({
 
   const handleArrange = (): void => {
     setLoading(true);
-    window.backend.sendMessage('arrange-card', cardProp, idHand);
+    const newCard = arrangCard(cardProp) as any;
+    setCards(newCard.cards);
+    setEvaluation1(newCard.chi1);
+    setEvaluation2(newCard.chi2);
+    setEvaluation3(newCard.chi3);
+    setIsInstant(newCard.instant ? true : false);
+    setTitleInstant(newCard.instant);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -128,25 +135,25 @@ export const HandCard: React.FC<HandCardProps> = ({
     handleArrange();
   }, [cardProp]);
 
-  useEffect(() => {
-    const handleData = (newData: any, position: any) => {
-      if (position === idHand) {
-        setCards(newData.cards);
-        setEvaluation1(newData.chi1);
-        setEvaluation2(newData.chi2);
-        setEvaluation3(newData.chi3);
-        setIsInstant(newData.instant ? true : false);
-        setTitleInstant(newData.instant);
-        setLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const handleData = (newData: any, position: any) => {
+  //     if (position === idHand) {
+  //       setCards(newData.cards);
+  //       setEvaluation1(newData.chi1);
+  //       setEvaluation2(newData.chi2);
+  //       setEvaluation3(newData.chi3);
+  //       setIsInstant(newData.instant ? true : false);
+  //       setTitleInstant(newData.instant);
+  //       setLoading(false);
+  //     }
+  //   };
 
-    window.backend.on('arrange-card', handleData);
+  //   window.backend.on('arrange-card', handleData);
 
-    return () => {
-      window.backend.removeListener('arrange-card', handleData);
-    };
-  }, []);
+  //   return () => {
+  //     window.backend.removeListener('arrange-card', handleData);
+  //   };
+  // }, []);
 
   return (
     <DndProvider backend={HTML5Backend}>

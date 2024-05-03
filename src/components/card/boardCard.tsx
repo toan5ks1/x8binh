@@ -16,8 +16,6 @@ const BoardCard: React.FC<any> = ({
     );
     cards.forEach((card: number, index: number) => {
       const playerIndex = index % numPlayers;
-
-      // Chỉ thêm bài vào tay người chơi nếu họ chưa có đủ 13 lá
       if (playerHands[playerIndex].length < 13) {
         playerHands[playerIndex].push(card);
       }

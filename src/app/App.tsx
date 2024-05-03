@@ -1,5 +1,6 @@
 import {
   Bot,
+  ChevronDown,
   DollarSign,
   Hand,
   Loader,
@@ -132,8 +133,8 @@ export function App() {
           </div>
         ) : (
           <div className="flex flex-col sm:gap-4">
-            <main className="grid flex-1 items-start gap-4 bg-background sm:px-6 sm:py-0 md:gap-8">
-              <div className="flex items-center sticky top-0 py-[15px] bg-background border-b z-[9] px-[10px]">
+            <main className="grid flex-1 items-start gap-4 bg-background sm:px-6 sm:py-0 md:gap-8 ">
+              <div className="flex items-center fixed top-0 left-0 right-0  py-[15px] bg-background border-b z-[21] px-[10px]">
                 <div className="ml-auto w-full flex items-center gap-2 justify-between">
                   {/* <Sheet>
                     <SheetTrigger asChild>
@@ -201,12 +202,13 @@ export function App() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-8 gap-1"
+                          className="h-8 gap-1 !border-[#fff]"
                         >
                           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                             {formatCurrency(state.initialRoom.roomType)}
                           </span>
                           <DollarSign className="h-3.5 w-3.5" />
+                          <ChevronDown />
                         </Button>
                       </DropdownMenuTrigger>
 
