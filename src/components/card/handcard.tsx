@@ -247,7 +247,9 @@ export const HandCard: React.FC<HandCardProps> = ({
                 {evaluation1}
               </Label>
             </div>
-            {isShowPlayer && <p>{player}</p>}
+            <div className="flex justify-center w-full items-center">
+              {isShowPlayer && <p>{player}</p>}
+            </div>
             <div className="absolute top-0 right-0">
               <Button className="p-0 px-[5px]" onClick={() => handleArrange()}>
                 <RotateCw />
