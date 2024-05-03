@@ -24,6 +24,13 @@ export enum BotStatus {
   Left = 'LEFT',
 }
 
+export interface GameState {
+  number: number;
+  sheet: {
+    [key: string]: string;
+  };
+}
+
 export interface GameCard {
   cs: number[];
   dn: string;
@@ -65,7 +72,7 @@ export interface StateProps {
   targetAt?: number;
   foundBy?: string;
   shouldRecreateRoom: boolean;
-  currentGame?: number;
+  currentGame: GameState;
   isLoggedIn?: boolean;
   isQuited?: boolean;
 }
@@ -83,6 +90,7 @@ export const defaultState = {
   crawingRoom: {},
   crawingBots: {},
   waiterBots: {},
+  currentGame: { number: 0, sheet: {} },
   shouldRecreateRoom: false,
 };
 
@@ -110,6 +118,7 @@ const AppProvider = ({ children }: AppProviderProps) => {
     crawingRoom: {},
     crawingBots: {},
     waiterBots: {},
+    currentGame: { number: 0, sheet: {} },
     shouldRecreateRoom: false,
   });
 

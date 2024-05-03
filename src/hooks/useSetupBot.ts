@@ -243,13 +243,13 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
   // sub leave
   useEffect(() => {
     if (
-      state.targetAt &&
-      user?.status === BotStatus.Finished &&
+      // state.targetAt &&
+      // user?.status === BotStatus.Finished &&
       room.isSubJoin
     ) {
       sendMessage(`[4,"Simms",${room.id}]`);
     }
-  }, [user, state.targetAt, room.isSubJoin]);
+  }, [room.isSubJoin]);
 
   return {
     user,

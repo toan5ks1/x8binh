@@ -66,7 +66,7 @@ export const HomePage: React.FC<any> = (cardDeck) => {
                   <TableRow
                     key={index}
                     className={`relative !rounded-[20px] ${
-                      index + 1 == state.currentGame &&
+                      index + 1 == state.currentGame.number &&
                       'bg-[#9c9c9c] bg-opacity-60 hover:bg-[#9c9c9c]'
                     }`}
                   >
@@ -74,6 +74,7 @@ export const HomePage: React.FC<any> = (cardDeck) => {
                       cards={card}
                       indexProps={index}
                       numPlayers={cardDeck.cardDeck}
+                      currentGame={state.currentGame}
                     />
                   </TableRow>
                 ))}
@@ -101,7 +102,9 @@ export const HomePage: React.FC<any> = (cardDeck) => {
             <Card className="w-full flex flex-col gap-4 border-0 ">
               {accounts['MAIN'].map(
                 (main: any, index: any) =>
-                  main.isSelected && <TerminalBoard key={index} main={main} />
+                  main.isSelected && (
+                    <TerminalBoard index={index} key={index} main={main} />
+                  )
               )}
             </Card>
           </div>

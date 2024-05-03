@@ -27,7 +27,7 @@ import {
   inviteCommand,
 } from './commandTerminal';
 
-export const TerminalBoard: React.FC<any> = ({ main }) => {
+export const TerminalBoard: React.FC<any> = ({ main, index }) => {
   const { toast } = useToast();
   const [data, setData] = useState<unknown[]>([]);
   const { state, setState } = useContext(AppContext);
@@ -38,22 +38,34 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   const [currentCards, setCurrentCards] = useState<any>();
   const [autoInvite, setAutoInvite] = useState(false);
 
-  const toggleAutoInvite = () => {
-    setAutoInvite(!autoInvite);
-  };
-
   const findCurrent = useCallback((crCard: number[]) => {
-    let target;
+    let target = 1;
     const crawledCards = state.crawingRoom[state.foundBy ?? '']?.cardGame ?? [];
     if (crawledCards.length) {
-      crawledCards.forEach((game) => {
-        target = Object.values(game).find((card) =>
-          areArraysEqual(card.cs, crCard)
-        );
-      });
+      for (let i = state.currentGame.number; i < crawledCards.length; i++) {
+        for (const card of crawledCards[i]) {
+          if (areArraysEqual(card.cs, crCard)) {
+            target = i;
+            break;
+          }
+        }
+      }
     }
-    return target ?? 0;
+    return target;
   }, []);
+
+  useEffect(() => {
+    setState((pre) => ({
+      ...pre,
+      currentGame: {
+        ...pre.currentGame,
+        sheet: {
+          ...pre.currentGame.sheet,
+          [currentSit]: main.username,
+        },
+      },
+    }));
+  }, [currentSit]);
 
   const parseData = (dataString: string) => {
     try {
@@ -84,7 +96,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
       account,
       `__require('GamePlayManager').default.getInstance().joinRoom(${state.initialRoom.id},0,'',true);`
     );
-    // }
   }
 
   function checkPosition(account: any): void {
@@ -174,7 +185,10 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
               }));
             }
           }
-          if (parsedData[1].cmd === 602 && parsedData[1].hsl == false) {
+          if (
+            parsedData[1].cmd === 602 &&
+            (parsedData[1].hsl == false || parsedData[1].hsl == true)
+          ) {
             toast({
               title: 'Thông báo',
               description: 'Đã kết thúc ván bài.',
@@ -196,7 +210,10 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
             ]);
             setState((pre) => ({
               ...pre,
-              currentGame: (pre.currentGame ?? findCurrent(currentCards)) + 1,
+              currentGame: {
+                ...pre.currentGame,
+                number: findCurrent(parsedData[1].cs),
+              },
             }));
             setCurrentCards(currentCards);
             arrangeCards(main);
@@ -406,7 +423,14 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
       </div>
       <div className="flex justify-center mt-4">
         <div className="w-[50%]">
-          {currentCards && <HandCard cardProp={currentCards} key={0} />}
+          {currentCards && (
+            <HandCard
+              cardProp={currentCards}
+              key={0}
+              isShowPlayer={false}
+              player={main.username}
+            />
+          )}
         </div>
       </div>
     </fieldset>
