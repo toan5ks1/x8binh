@@ -7,9 +7,10 @@ import {
   Loader2,
   LogIn,
   LogOut,
-  ScreenShareOff,
+  RefreshCcw,
   SearchCheck,
   Settings,
+  SquareMousePointer,
 } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -28,6 +29,11 @@ import {
 } from '../components/ui/dropdown-menu';
 import { Label } from '../components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '../components/ui/tooltip';
 import { roomTypes } from '../lib/config';
 import { validateLicense } from '../lib/supabase';
 import { AppContext } from '../renderer/providers/app';
@@ -59,6 +65,20 @@ export function App() {
   const onLogin = () => {
     setShouldLogin(true);
     setIsLoging(true);
+  };
+
+  const onScrollToBoardCard = (index: number) => {
+    const boardCardId = `boardCard-${index}`;
+    const boardCardElement = document.getElementById(boardCardId);
+
+    if (boardCardElement) {
+      const yOffset = -190; // Số lượng pixel bạn muốn cuộn lên trên
+      const y =
+        boardCardElement.getBoundingClientRect().top +
+        window.pageYOffset +
+        yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
   };
 
   const onCreatRoom = () => {
@@ -238,7 +258,7 @@ export function App() {
                           disabled={isFinding}
                         >
                           {isFinding ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            <Loader2 className="h-3.5 w-3.5 animate-spin cursor-pointer hover:opacity-70" />
                           ) : (
                             <SearchCheck className="h-3.5 w-3.5" />
                           )}
@@ -248,7 +268,7 @@ export function App() {
                         <Button
                           onClick={onLeaveRoom}
                           size="sm"
-                          className="h-8 gap-1 bg-yellow-500"
+                          className="h-8 gap-1 bg-yellow-500 cursor-pointer hover:opacity-70"
                           disabled={isQuiting}
                         >
                           {isQuiting ? (
@@ -263,7 +283,7 @@ export function App() {
                       <Button
                         onClick={onLogin}
                         size="sm"
-                        className="h-8 gap-1"
+                        className="h-8 gap-1 cursor-pointer hover:opacity-70"
                         disabled={isLoging}
                       >
                         {isLoging ? (
@@ -277,21 +297,41 @@ export function App() {
                     <Button
                       onClick={onDisconnect}
                       size="sm"
-                      className="h-8 gap-1 "
+                      className="h-8 gap-1 cursor-pointer hover:opacity-70"
                       variant="destructive"
                     >
-                      <ScreenShareOff className="h-3.5 w-3.5" />
+                      <RefreshCcw className="h-3.5 w-3.5" />
                       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        Disconnect
+                        Refresh
                       </span>
                     </Button>
-                    <Button
-                      onClick={() => setIsOpenSheet(true)}
-                      size="sm"
-                      className="h-8 gap-1"
-                    >
-                      <Settings />
-                    </Button>
+
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <div
+                          onClick={() => onScrollToBoardCard(3)}
+                          className="h-8 gap-1 bg-white flex justify-center items-center px-[10px] rounded-sm cursor-pointer hover:opacity-70"
+                        >
+                          <SquareMousePointer className="text-black" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Scroll to current game</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <div
+                          onClick={() => setIsOpenSheet(true)}
+                          className="h-8 gap-1 bg-white flex justify-center items-center px-[10px] rounded-sm cursor-pointer hover:opacity-70"
+                        >
+                          <Settings className="text-black" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Setting</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               </div>

@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import BoardCard from '../../components/card/boardCard';
 import { TerminalBoard } from '../../components/terminal/terminalBoard';
 import { Button } from '../../components/ui/button';
@@ -18,7 +18,7 @@ import useAccountStore from '../../store/accountStore';
 
 export const HomePage: React.FC<any> = (cardDeck) => {
   const [cards, setCards] = useState<number[][]>([]);
-
+  const scrollRef = useRef<HTMLDivElement>(null);
   const { state } = useContext(AppContext);
 
   useEffect(() => {
