@@ -81,7 +81,6 @@ const createWindow = async () => {
   });
   setupReadHardwareHandlers();
   setupFileHandlers();
-  // setupPuppeteerHandlers(mainWindow);
   setupAccountHandlers(mainWindow);
   setupArrangeCardHandlers();
 
