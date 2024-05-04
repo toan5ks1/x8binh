@@ -67,12 +67,12 @@ export function App() {
     setIsLoging(true);
   };
 
-  const onScrollToBoardCard = (index: number) => {
-    const boardCardId = `boardCard-${index}`;
+  const onScrollToBoardCard = () => {
+    const boardCardId = `boardCard-${state.currentGame.number}`;
     const boardCardElement = document.getElementById(boardCardId);
 
     if (boardCardElement) {
-      const yOffset = -190; // Số lượng pixel bạn muốn cuộn lên trên
+      const yOffset = -190;
       const y =
         boardCardElement.getBoundingClientRect().top +
         window.pageYOffset +
@@ -310,7 +310,7 @@ export function App() {
                     <Tooltip>
                       <TooltipTrigger>
                         <div
-                          onClick={() => onScrollToBoardCard(3)}
+                          onClick={() => onScrollToBoardCard()}
                           className="h-8 gap-1 bg-white flex justify-center items-center px-[10px] rounded-sm cursor-pointer hover:opacity-70"
                         >
                           <SquareMousePointer className="text-black" />
