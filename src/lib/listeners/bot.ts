@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from 'react';
 import { BotStatus, StateProps } from '../../renderer/providers/app';
 import { LoginResponseDto } from '../login';
-import { defaultRoom, getCardsArray } from '../utils';
+import { defaultRoom, getCardsArray, isAllCrawLeft } from '../utils';
 
 interface HandleCRMessageProps {
   message: any;
@@ -42,7 +42,6 @@ export function handleMessage({
             id: roomId as number,
             owner: caller,
           },
-          shouldRecreateRoom: false,
         }));
         returnMsg = `Created room ${roomId}`;
       } else if (
@@ -69,7 +68,6 @@ export function handleMessage({
         returnMsg = `Card received: ${message[1].cs}`;
       } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
         setUser((pre) => ({ ...pre, status: BotStatus.PreFinished }));
-        // returnMsg = 'Game pre finished!';
       } else if (
         message[1]?.cmd === 204 &&
         user?.status === BotStatus.PreFinished
@@ -131,8 +129,17 @@ export function handleMessage({
         setUser((pre) => ({ ...pre, status: BotStatus.Left }));
         setState((pre) => ({
           ...pre,
-          initialRoom: { ...pre.initialRoom, players: [] },
-          shouldRecreateRoom: !state.foundAt ? true : false,
+          initialRoom: {
+            ...pre.initialRoom,
+            id: undefined,
+            players: [...pre.initialRoom.players].slice(0, -1),
+          },
+          shouldRecreateRoom:
+            !state.foundAt &&
+            caller === pre.initialRoom.owner &&
+            isAllCrawLeft(state.crawingRoom)
+              ? true
+              : false,
         }));
         returnMsg = 'Left room successfully!';
       } else {

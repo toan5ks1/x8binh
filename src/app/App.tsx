@@ -68,6 +68,7 @@ export function App() {
 
   const onLeaveRoom = () => {
     setShouldLeave(true);
+    setShouldCreateRoom(false);
     state.isQuited === false && setIsQuiting(true);
     setIsFinding(false);
   };

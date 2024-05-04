@@ -212,14 +212,26 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
   useEffect(() => {
     // Leave room
     if (
-      room?.isFinish &&
+      room.id &&
       !state.foundBy &&
       user?.status === BotStatus.Finished &&
       isAllCrawLeft(state.crawingRoom)
     ) {
       sendMessage(`[4,"Simms",${room.id}]`);
     }
-  }, [room, user, state.crawingRoom]);
+  }, [user, state.crawingRoom]);
+
+  // fix lung sub out truoc
+  useEffect(() => {
+    if (
+      user?.status === BotStatus.Left &&
+      isHost &&
+      state.shouldRecreateRoom === false &&
+      isAllCrawLeft(state.crawingRoom)
+    ) {
+      setState((pre) => ({ ...pre, shouldRecreateRoom: true }));
+    }
+  }, [state.crawingRoom]);
 
   const handleLeaveRoom = () => {
     if (room?.id) {
@@ -239,7 +251,7 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       handleCreateRoom();
       setUser({ ...user, status: BotStatus.Finding });
     }
-  }, [state.shouldRecreateRoom, user]);
+  }, [state.shouldRecreateRoom]);
 
   // Call sub join
   useEffect(() => {
