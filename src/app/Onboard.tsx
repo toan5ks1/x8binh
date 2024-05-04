@@ -26,7 +26,7 @@ export const Onboard = () => {
 
   if (loading) {
     return (
-      <div className="h-screen w-screen flex justify-center items-center">
+      <div className="h-screen w-screen flex justify-center items-center gap-4">
         <Loader className="w-6.5 h-6.5 animate-spin"></Loader>
         <Label>Loading your license</Label>
       </div>
