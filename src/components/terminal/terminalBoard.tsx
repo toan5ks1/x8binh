@@ -19,6 +19,7 @@ import { AppContext } from '../../renderer/providers/app';
 import { HandCard } from '../card/handcard';
 import { useToast } from '../toast/use-toast';
 import { Toggle } from '../ui/toggle';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import {
   arrangeCardCommand,
   checkPositionCommand,
@@ -371,56 +372,104 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
             </div>
           </div>
           <div className="grid grid-cols-8 gap-2">
-            <Button
-              onClick={() => openAccounts(main)}
-              style={{ fontFamily: 'monospace' }}
-              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 cursor-pointer h-[30px]"
-            >
-              <Chrome className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              onClick={() => joinLobby(main)}
-              style={{ fontFamily: 'monospace' }}
-              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-            >
-              <Home className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              onClick={() => createRoom(main)}
-              style={{ fontFamily: 'monospace' }}
-              className="rounded-[5px] py-[0px] flex items-center hover:bg-slate-400 cursor-pointer gap-[2px] px-[5px] h-[30px]"
-            >
-              <PlusCircle className="h-3.5 w-3.5" />
-            </Button>
-
-            <Button
-              onClick={() => arrangeCards(main)}
-              style={{ fontFamily: 'monospace' }}
-              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-            >
-              <SortAsc className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              onClick={() => joinRoom(main)}
-              style={{ fontFamily: 'monospace' }}
-              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-            >
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              onClick={() => outRoom(main)}
-              style={{ fontFamily: 'monospace' }}
-              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              onClick={() => outInRoom(main)}
-              style={{ fontFamily: 'monospace' }}
-              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-            >
-              <RefreshCcw className="h-3.5 w-3.5" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  onClick={() => openAccounts(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
+                >
+                  <Chrome className="h-3.5 w-3.5 text-black" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Open Profile</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  onClick={() => joinLobby(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
+                >
+                  <Home className="h-3.5 w-3.5 text-black" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Join Lobby</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  onClick={() => createRoom(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
+                >
+                  <PlusCircle className="h-3.5 w-3.5 text-black" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Create Room</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  onClick={() => arrangeCards(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
+                >
+                  <SortAsc className="h-3.5 w-3.5 text-black" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Arrange Card</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  onClick={() => joinRoom(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
+                >
+                  <ArrowRight className="h-3.5 w-3.5 text-black" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Join Room</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  onClick={() => outRoom(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5 text-black" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Out Room</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  onClick={() => outInRoom(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px] h-[30px] bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
+                >
+                  <RefreshCcw className="h-3.5 w-3.5 text-black" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Out-In Room</p>
+              </TooltipContent>
+            </Tooltip>
             <div className="h-full w-full rounded-[5px] flex justify-center items-center border">
               <Toggle pressed={autoInvite} onPressedChange={setAutoInvite}>
                 <UserPlus className="h-3.5 w-3.5" />
