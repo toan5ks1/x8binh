@@ -75,6 +75,7 @@ export interface StateProps {
   currentGame: GameState;
   isLoggedIn?: boolean;
   isQuited?: boolean;
+  activeMain?: string;
 }
 
 export const defaultState = {

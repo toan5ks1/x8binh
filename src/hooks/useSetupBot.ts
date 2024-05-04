@@ -159,10 +159,18 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
     ) {
       // Host and guess join after created room
 
-      if (bot.username === room.owner && room.players.length === 0) {
+      if (
+        bot.username === room.owner &&
+        room.players.length === 0 &&
+        user?.status !== BotStatus.Joined
+      ) {
         // Host
         sendMessage(`[3,"Simms",${room.id},""]`);
-      } else if (bot.username !== room.owner && room.players.length === 1) {
+      } else if (
+        bot.username !== room.owner &&
+        room.players.length === 1 &&
+        user?.status !== BotStatus.Joined
+      ) {
         // Guess
         sendMessage(`[3,"Simms",${room.id},"",true]`);
       }
@@ -211,7 +219,7 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
     ) {
       sendMessage(`[4,"Simms",${room.id}]`);
     }
-  }, [room, user]);
+  }, [room, user, state.crawingRoom]);
 
   const handleLeaveRoom = () => {
     if (room?.id) {
@@ -242,14 +250,10 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
 
   // sub leave
   useEffect(() => {
-    if (
-      // state.targetAt &&
-      // user?.status === BotStatus.Finished &&
-      room.isSubJoin
-    ) {
+    if (user?.status === BotStatus.Finished && room.isSubJoin) {
       sendMessage(`[4,"Simms",${room.id}]`);
     }
-  }, [room.isSubJoin]);
+  }, [room]);
 
   return {
     user,

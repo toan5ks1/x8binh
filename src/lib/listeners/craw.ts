@@ -116,7 +116,6 @@ export function handleMessageCrawing({
                   cardGame: [...room.cardGame, getCardsArray(message[1].ps)],
                 },
               },
-              shouldRecreateRoom: false,
             };
           });
         setUser((pre) => ({ ...pre, status: BotStatus.Submitted }));
