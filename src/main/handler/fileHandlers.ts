@@ -46,8 +46,36 @@ export const setupFileHandlers = () => {
   });
 
   ipcMain.on('update-file', (event, data, filePath, accountType) => {
-    if (filePath && typeof filePath[0] === 'string') {
-      fs.writeFile(filePath[0], data, (err) => {
+    const usernamePc = os.userInfo().username;
+    let userProfilePath;
+    if (process.env.NODE_ENV != 'development') {
+      if (os.platform() === 'win32') {
+        userProfilePath = path.join(
+          'C:/Users',
+          usernamePc,
+          'AppData/Local/Programs/electron-react-boilerplate/resources',
+          filePath[0]
+        );
+      } else if (os.platform() === 'darwin') {
+        userProfilePath = path.join(
+          '/Users',
+          usernamePc,
+          'AppData/Local/Programs/electron-react-boilerplate/resources',
+          filePath[0]
+        );
+      } else {
+        userProfilePath = path.join(
+          '/home',
+          usernamePc,
+          'AppData/Local/Programs/electron-react-boilerplate/resources',
+          filePath[0]
+        );
+      }
+    } else {
+      userProfilePath = filePath[0];
+    }
+    if (filePath && userProfilePath) {
+      fs.writeFile(userProfilePath, data, (err) => {
         if (err) {
           console.log('Error writing file:', err);
           event.reply('file-write-error', err.message);
