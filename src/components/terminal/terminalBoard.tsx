@@ -10,12 +10,11 @@ import {
   TrashIcon,
   UserPlus,
 } from 'lucide-react';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Button } from '../../components/ui/button';
 import { Label } from '../../components/ui/label';
 import { ScrollArea } from '../../components/ui/scroll-area';
 import { highlightSyntax } from '../../lib/terminal';
-import { areArraysEqual } from '../../lib/utils';
 import { AppContext } from '../../renderer/providers/app';
 import { HandCard } from '../card/handcard';
 import { useToast } from '../toast/use-toast';
@@ -37,22 +36,23 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
   const [currentSit, setCurrentSit] = useState('');
   const [currentCards, setCurrentCards] = useState<any>();
   const [autoInvite, setAutoInvite] = useState(false);
+  const [currentMessage, setCurrentMessage] = useState('');
 
-  const findCurrent = useCallback((crCard: number[]) => {
-    let target = 1;
-    const crawledCards = state.crawingRoom[state.foundBy ?? '']?.cardGame ?? [];
-    if (crawledCards.length) {
-      for (let i = state.currentGame.number; i < crawledCards.length; i++) {
-        for (const card of crawledCards[i]) {
-          if (areArraysEqual(card.cs, crCard)) {
-            target = i;
-            break;
-          }
-        }
-      }
-    }
-    return target;
-  }, []);
+  // const findCurrent = useCallback((crCard: number[]) => {
+  //   let target = 1;
+  //   const crawledCards = state.crawingRoom[state.foundBy ?? '']?.cardGame ?? [];
+  //   if (crawledCards.length) {
+  //     for (let i = state.currentGame.number; i < crawledCards.length; i++) {
+  //       for (const card of crawledCards[i]) {
+  //         if (areArraysEqual(card.cs, crCard)) {
+  //           target = i;
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return target;
+  // }, []);
 
   useEffect(() => {
     setState((pre) => ({
@@ -133,6 +133,9 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
       arrangeCardCommand
     );
   }
+  useEffect(() => {
+    console.log('state.username', state.activeMain);
+  }, [state]);
 
   const handleData = ({ data, username }: any) => {
     if (username === main.username) {
@@ -160,6 +163,15 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
           setCurrentRoom('');
           setCurrentSit('');
         }
+        if (parsedData[0] == 3 && parsedData[1] === true) {
+          setState((pre) => ({
+            ...pre,
+            initialRoom: {
+              ...pre.initialRoom,
+              isSubJoin: true,
+            },
+          }));
+        }
         if (parsedData[0] == 5) {
           checkPosition(main);
           if (parsedData[2] === currentRoom) {
@@ -176,13 +188,6 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
                 title: parsedData[1].p.dn,
                 description: 'Đã vào phòng.',
               });
-              setState((pre) => ({
-                ...pre,
-                initialRoom: {
-                  ...pre.initialRoom,
-                  isSubJoin: true,
-                },
-              }));
             }
           }
           if (
@@ -193,6 +198,16 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
               title: 'Thông báo',
               description: 'Đã kết thúc ván bài.',
             });
+
+            console.log(state.activeMain, main.username);
+            state.activeMain === main.username &&
+              setState((pre) => ({
+                ...pre,
+                currentGame: {
+                  ...pre.currentGame,
+                  number: pre.currentGame.number + 1,
+                },
+              }));
           }
           if (parsedData[1].cs && parsedData[1].cmd === 600) {
             const currentCards = parsedData[1].cs
@@ -208,13 +223,19 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
               ...currentData,
               parsedData[1].cs.toString().split(',').map(Number),
             ]);
-            setState((pre) => ({
-              ...pre,
-              currentGame: {
-                ...pre.currentGame,
-                number: findCurrent(parsedData[1].cs),
-              },
-            }));
+
+            // console.log('username', main.username);
+            // First game
+            main.username &&
+              setState((pre) => ({
+                ...pre,
+                currentGame: {
+                  ...pre.currentGame,
+                  number: 1,
+                },
+                activeMain: main.username,
+              }));
+
             setCurrentCards(currentCards);
             arrangeCards(main);
           }

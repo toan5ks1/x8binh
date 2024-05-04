@@ -42,6 +42,7 @@ export function handleMessage({
             id: roomId as number,
             owner: caller,
           },
+          shouldRecreateRoom: false,
         }));
         returnMsg = `Created room ${roomId}`;
       } else if (
