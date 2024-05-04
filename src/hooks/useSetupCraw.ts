@@ -152,10 +152,18 @@ export function useSetupCraw(
       Object.keys(room.cardGame).length === 0 // Make sure cards isn't received
     ) {
       // Host and guess join after created room
-      if (bot.username === room.owner && room.players.length === 0) {
+      if (
+        bot.username === room.owner &&
+        room.players.length === 0 &&
+        user?.status !== BotStatus.Joined
+      ) {
         // Host
         sendMessage(`[3,"Simms",${room.id},""]`);
-      } else if (bot.username !== room.owner && room.players.length === 1) {
+      } else if (
+        bot.username !== room.owner &&
+        room.players.length === 1 &&
+        user?.status !== BotStatus.Joined
+      ) {
         // Guess
         sendMessage(`[3,"Simms",${room.id},"",true]`);
       }
