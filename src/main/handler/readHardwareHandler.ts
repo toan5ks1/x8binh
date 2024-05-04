@@ -5,10 +5,12 @@ export const setupReadHardwareHandlers = () => {
   ipcMain.handle('get-hardware-info', async (event) => {
     try {
       try {
-        const cpuInfo = await si.cpu();
-        const diskInfo = await si.diskLayout();
-        const systemInfo = await si.system();
-        const osInfo = await si.osInfo();
+        const [cpuInfo, diskInfo, systemInfo, osInfo] = await Promise.all([
+          si.cpu(),
+          si.diskLayout(),
+          si.system(),
+          si.osInfo(),
+        ]);
 
         return {
           cpu: cpuInfo,

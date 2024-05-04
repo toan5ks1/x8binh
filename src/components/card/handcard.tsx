@@ -1,6 +1,6 @@
 import { Label } from '@radix-ui/react-label';
 import { Loader, RotateCw, Star } from 'lucide-react';
-import { useCallback, useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { DndProvider, DragSourceMonitor, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { arrangCard } from '../../lib/arrangeCard';
@@ -64,7 +64,6 @@ export const HandCard: React.FC<HandCardProps> = ({
   isShowPlayer,
   player,
 }) => {
-  const idHand = useId();
   const [cards, setCards] = useState<number[]>(cardProp);
   const [part1, setPart1] = useState<number[]>(cards.slice(0, 5));
   const [part2, setPart2] = useState<number[]>(cards.slice(5, 10));
@@ -125,9 +124,11 @@ export const HandCard: React.FC<HandCardProps> = ({
   };
 
   useEffect(() => {
-    setPart1(cards.slice(0, 5));
-    setPart2(cards.slice(5, 10));
-    setPart3([...cards.slice(10, 13)]);
+    if (cards) {
+      setPart1(cards.slice(0, 5));
+      setPart2(cards.slice(5, 10));
+      setPart3([...cards.slice(10, 13)]);
+    }
   }, [cards]);
 
   useEffect(() => {
