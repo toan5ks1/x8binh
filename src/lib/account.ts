@@ -2,15 +2,20 @@ import { now } from 'lodash';
 import { toast } from '../components/toast/use-toast';
 
 const readValidAccount = (input: string): any => {
-  // console.log('input', input);
   return input
     .trim()
     .split('\n')
     .map((line) => {
       if (line != '') {
-        const [username, password, IsSelected, proxy, port] = line
-          .trim()
-          .split('|');
+        const [
+          username,
+          password,
+          IsSelected,
+          proxy,
+          port,
+          userProxy,
+          passProxy,
+        ] = line.trim().split('|');
         return {
           username,
           password: password || '',
@@ -20,6 +25,8 @@ const readValidAccount = (input: string): any => {
           browser: 'chrome',
           proxy: proxy,
           port: port,
+          passProxy: passProxy,
+          userProxy: userProxy,
           fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
           time: now(),
           aff_id: 'hit',
@@ -29,7 +36,6 @@ const readValidAccount = (input: string): any => {
         return;
       }
     });
-  // .filter((account) => account.username);
 };
 
 const accountExists = (
@@ -91,6 +97,8 @@ const generateAccount = (account: any) => {
     fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
     proxy: account.proxy,
     port: account.port,
+    userProxy: account.userProxy,
+    passProxy: account.userProxy,
     time: now(),
     aff_id: 'hit',
     main_balance: 0,

@@ -1,8 +1,9 @@
 import { Label } from '@radix-ui/react-label';
 import { Loader, RotateCw, Star } from 'lucide-react';
-import { useCallback, useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { DndProvider, DragSourceMonitor, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { arrangCard } from '../../lib/arrangeCard';
 import { getCardImageUrl } from '../../lib/card';
 import CardGame from '../card/card';
 import { Button } from '../ui/button';
@@ -16,6 +17,8 @@ interface DraggableCardProps {
 interface HandCardProps {
   cardProp: number[];
   key: number;
+  isShowPlayer: boolean;
+  player: string;
 }
 
 const DraggableCard: React.FC<DraggableCardProps> = ({
@@ -56,9 +59,12 @@ const DropCard: React.FC<DropCardProps> = ({ id, children, moveCard }) => {
   return <div ref={drop}>{children}</div>;
 };
 
-export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
-  const idHand = useId();
-  const [cards, setCards] = useState<number[]>(cardProp);
+export const HandCard: React.FC<HandCardProps> = ({
+  cardProp,
+  isShowPlayer,
+  player,
+}) => {
+  const [cards, setCards] = useState<number[]>(cardProp ?? []);
   const [part1, setPart1] = useState<number[]>(cards.slice(0, 5));
   const [part2, setPart2] = useState<number[]>(cards.slice(5, 10));
   const [part3, setPart3] = useState<number[]>([...cards.slice(10, 13)]);
@@ -90,41 +96,65 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
     [cards]
   );
 
+  function renderBackgroundColor(chi: string) {
+    switch (chi) {
+      case 'Thùng Phá Sảnh':
+        return 'shadow-[0_0px_10px_rgba(255,_31,_31,_0.8)]';
+      case 'Tứ Quý':
+        return 'shadow-[0_0px_10px_rgba(255,_136,_31,_0.8)]';
+      case 'Cù lũ':
+        return 'shadow-[0_0px_10px_rgba(255,_227,_7,_0.8)]';
+      case 'Thùng':
+        return 'shadow-[0_0px_10px_rgba(240,_46,_170,_1)]';
+      default:
+        return 'bg-background';
+    }
+  }
+
   const handleArrange = (): void => {
     setLoading(true);
-    window.backend.sendMessage('arrange-card', cardProp, idHand);
+    const newCard = arrangCard(cardProp) as any;
+    setCards(newCard.cards);
+    setEvaluation1(newCard.chi1);
+    setEvaluation2(newCard.chi2);
+    setEvaluation3(newCard.chi3);
+    setIsInstant(newCard.instant ? true : false);
+    setTitleInstant(newCard.instant);
+    setLoading(false);
   };
 
   useEffect(() => {
-    setPart1(cards.slice(0, 5));
-    setPart2(cards.slice(5, 10));
-    setPart3([...cards.slice(10, 13)]);
+    if (cards) {
+      setPart1(cards.slice(0, 5));
+      setPart2(cards.slice(5, 10));
+      setPart3([...cards.slice(10, 13)]);
+    }
   }, [cards]);
 
   useEffect(() => {
-    setCards(cardProp);
+    setCards(cardProp ?? []);
     handleArrange();
   }, [cardProp]);
 
-  useEffect(() => {
-    const handleData = (newData: any, position: any) => {
-      if (position === idHand) {
-        setCards(newData.cards);
-        setEvaluation1(newData.chi1.type);
-        setEvaluation2(newData.chi2.type);
-        setEvaluation3(newData.chi3.type);
-        setIsInstant(newData.isInstantWin.win);
-        setTitleInstant(newData.isInstantWin.type);
-        setLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const handleData = (newData: any, position: any) => {
+  //     if (position === idHand) {
+  //       setCards(newData.cards);
+  //       setEvaluation1(newData.chi1);
+  //       setEvaluation2(newData.chi2);
+  //       setEvaluation3(newData.chi3);
+  //       setIsInstant(newData.instant ? true : false);
+  //       setTitleInstant(newData.instant);
+  //       setLoading(false);
+  //     }
+  //   };
 
-    window.backend.on('arrange-card', handleData);
+  //   window.backend.on('arrange-card', handleData);
 
-    return () => {
-      window.backend.removeListener('arrange-card', handleData);
-    };
-  }, []);
+  //   return () => {
+  //     window.backend.removeListener('arrange-card', handleData);
+  //   };
+  // }, []);
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -144,8 +174,8 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
           </div>
         )}
         {!loading ? (
-          <div className="grid grid-rows-3 gap-[5px] relative">
-            <div className="flex flex-col gap-1">
+          <div className="grid grid-rows-3 gap-[5px] relative text-left">
+            <div className="flex flex-col gap-1.5">
               <div className="grid grid-cols-5 gap-[5px]">
                 {/* {part3.map((cardNumber, index) => renderCard(cardNumber, index))} */}
                 {part3.map((cardNumber) => (
@@ -165,12 +195,14 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
 
               <Label
                 style={{ fontFamily: 'monospace' }}
-                className=" bg-background p-[5px] rounded-[5px] font-semibold"
+                className={`py-[1px] px-[7px] rounded-[5px] font-semibold ${renderBackgroundColor(
+                  evaluation3
+                )}`}
               >
                 {evaluation3}
               </Label>
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1.5">
               <div className="grid grid-cols-5 gap-[5px] relative">
                 {part2.map((cardNumber) => (
                   <DropCard
@@ -188,12 +220,14 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
               </div>
               <Label
                 style={{ fontFamily: 'monospace' }}
-                className=" bg-background p-[5px] rounded-[5px] font-semibold"
+                className={`py-[1px] px-[7px] rounded-[5px] font-semibold ${renderBackgroundColor(
+                  evaluation2
+                )}`}
               >
                 {evaluation2}
               </Label>
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1.5">
               <div className="grid grid-cols-5 gap-[5px]">
                 {part1.map((cardNumber, index) => (
                   <DropCard key={index} id={cardNumber} moveCard={moveCard}>
@@ -207,10 +241,15 @@ export const HandCard: React.FC<HandCardProps> = ({ cardProp }) => {
               </div>
               <Label
                 style={{ fontFamily: 'monospace' }}
-                className=" bg-background p-[5px] rounded-[5px] font-semibold"
+                className={`py-[1px] px-[7px] rounded-[5px] font-semibold ${renderBackgroundColor(
+                  evaluation1
+                )}`}
               >
                 {evaluation1}
               </Label>
+            </div>
+            <div className="flex justify-center w-full items-center">
+              {isShowPlayer && <p>{player}</p>}
             </div>
             <div className="absolute top-0 right-0">
               <Button className="p-0 px-[5px]" onClick={() => handleArrange()}>

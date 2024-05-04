@@ -8,7 +8,7 @@ export interface BotStatusProps {
   craw2: LoginParams;
   index: number;
   shouldLogin: boolean;
-  shouldJoinMB: boolean;
+  // shouldJoinMB: boolean;
   shouldCreatRoom: boolean;
   shouldLeave: boolean;
   shouldDisconnect: boolean;
@@ -19,7 +19,7 @@ export const CoupleCrawStatus = ({
   craw2,
   index,
   shouldLogin,
-  shouldJoinMB,
+  // shouldJoinMB,
   shouldCreatRoom,
   shouldLeave,
   shouldDisconnect,
@@ -27,8 +27,8 @@ export const CoupleCrawStatus = ({
   const {
     host,
     guess,
-    connectMbHost,
-    connectMbGuess,
+    // connectMbHost,
+    // connectMbGuess,
     loginHost,
     loginGuess,
     msgHost,
@@ -51,12 +51,12 @@ export const CoupleCrawStatus = ({
     }
   }, [shouldLogin]);
 
-  useEffect(() => {
-    if (shouldJoinMB) {
-      connectMbHost();
-      connectMbGuess();
-    }
-  }, [shouldJoinMB]);
+  // useEffect(() => {
+  //   if (shouldJoinMB) {
+  //     connectMbHost();
+  //     connectMbGuess();
+  //   }
+  // }, [shouldJoinMB]);
 
   useEffect(() => {
     if (shouldCreatRoom) {
@@ -79,7 +79,7 @@ export const CoupleCrawStatus = ({
   }, [shouldDisconnect]);
 
   return (
-    <div className="flex space-x-4 w-full">
+    <div className="space-y-4 w-full">
       <BotCmp
         name={`Craw ${index + 1}`}
         userId={host?.username}

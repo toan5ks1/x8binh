@@ -223,13 +223,13 @@ export function useSetupCraw(
   useEffect(() => {
     // Leave room
     if (
-      room?.isFinish &&
+      // room?.isFinish &&
       coupleId !== state.foundBy &&
       user?.status === BotStatus.Finished
     ) {
       sendMessage(`[4,"Simms",${room.id}]`);
     }
-  }, [room, user]);
+  }, [user]);
 
   const handleLeaveRoom = () => {
     if (room?.id) {

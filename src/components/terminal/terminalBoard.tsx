@@ -10,7 +10,7 @@ import {
   TrashIcon,
   UserPlus,
 } from 'lucide-react';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Button } from '../../components/ui/button';
 import { Label } from '../../components/ui/label';
 import { ScrollArea } from '../../components/ui/scroll-area';
@@ -19,6 +19,7 @@ import { AppContext } from '../../renderer/providers/app';
 import { HandCard } from '../card/handcard';
 import { useToast } from '../toast/use-toast';
 import { Toggle } from '../ui/toggle';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import {
   arrangeCardCommand,
   checkPositionCommand,
@@ -32,23 +33,39 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   const { state, setState } = useContext(AppContext);
   const [isLogin, setIsLogin] = useState(false);
   const [isInLobby, setIsInLobby] = useState(false);
-  const [currentRoom, setCurrentRoom] = useState('');
+  // const [currentRoom, setCurrentRoom] = useState('');
   const [currentSit, setCurrentSit] = useState('');
   const [currentCards, setCurrentCards] = useState<any>();
   const [autoInvite, setAutoInvite] = useState(false);
 
-  const findCurrent = useCallback((crCard: number[]) => {
-    let target;
-    const crawledCards = state.crawingRoom[state.foundBy ?? '']?.cardGame ?? [];
-    if (crawledCards.length) {
-      crawledCards.forEach((game) => {
-        target = Object.values(game).find(
-          (card) => JSON.stringify(card.cs) === JSON.stringify(crCard)
-        );
-      });
-    }
-    return target ?? 0;
-  }, []);
+  // const findCurrent = useCallback((crCard: number[]) => {
+  //   let target = 1;
+  //   const crawledCards = state.crawingRoom[state.foundBy ?? '']?.cardGame ?? [];
+  //   if (crawledCards.length) {
+  //     for (let i = state.currentGame.number; i < crawledCards.length; i++) {
+  //       for (const card of crawledCards[i]) {
+  //         if (areArraysEqual(card.cs, crCard)) {
+  //           target = i;
+  //           break;
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return target;
+  // }, []);
+
+  useEffect(() => {
+    setState((pre) => ({
+      ...pre,
+      currentGame: {
+        ...pre.currentGame,
+        sheet: {
+          ...pre.currentGame.sheet,
+          [currentSit]: main.username,
+        },
+      },
+    }));
+  }, [currentSit]);
 
   const parseData = (dataString: string) => {
     try {
@@ -77,22 +94,21 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
     window.backend.sendMessage(
       'execute-script',
       account,
-      `__require('GamePlayManager').default.getInstance().joinRoom(${state.initialRoom.id},0,'',true);`
+      `__require('GamePlayManager').default.getInstance().joinRoom(${state.targetAt},0,'',true);`
     );
-    // }
   }
 
   function checkPosition(account: any): void {
     window.backend.sendMessage('check-position', account, checkPositionCommand);
   }
   async function outInRoom(account: any): Promise<void> {
-    if (currentRoom) {
+    if (state.targetAt) {
       await outRoom(account);
       await new Promise((resolve) => setTimeout(resolve, 500));
       window.backend.sendMessage(
         'execute-script',
         account,
-        `__require('GamePlayManager').default.getInstance().joinRoom(${currentRoom},0,'',true);`
+        `__require('GamePlayManager').default.getInstance().joinRoom(${state.targetAt},0,'',true);`
       );
     }
   }
@@ -123,15 +139,15 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
       setIsLogin(true);
       if (!data.includes('[6,1') && !data.includes('["7","Simms",')) {
         const parsedData = parseData(data);
-        if (parsedData[1]?.ri?.rid) {
-          setCurrentRoom(parsedData[1].ri.rid.toString());
-        }
-        if (parsedData[0] == 3) {
-          setCurrentRoom(parsedData[3].toString());
-        }
+        // if (parsedData[1]?.ri?.rid) {
+        //   setCurrentRoom(parsedData[1].ri.rid.toString());
+        // }
+        // if (parsedData[0] == 3) {
+        //   setCurrentRoom(parsedData[3].toString());
+        // }
         if (parsedData[0] == 4 && parsedData[1] == true) {
-          setCurrentRoom('');
-          setCurrentSit('');
+          // setCurrentRoom('');
+          // setCurrentSit('');
         }
         if (parsedData[0] == 5 && parsedData[1].cmd === 317) {
           window.backend.sendMessage(
@@ -141,13 +157,22 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
           );
         }
         if (parsedData[0] == 5 && parsedData[1].cmd === 300) {
-          setCurrentRoom('');
-          setCurrentSit('');
+          // setCurrentRoom('');
+          // setCurrentSit('');
+        }
+        if (parsedData[0] == 3 && parsedData[1] === true) {
+          setState((pre) => ({
+            ...pre,
+            initialRoom: {
+              ...pre.initialRoom,
+              isSubJoin: true,
+            },
+          }));
         }
         if (parsedData[0] == 5) {
           checkPosition(main);
-          if (parsedData[2] === currentRoom) {
-            console.log('Đang trong ván');
+          if (parsedData[2] === state.targetAt) {
+            // console.log('Đang trong ván');
           }
           if (parsedData[1].p) {
             if (parsedData[1].p.uid) {
@@ -160,20 +185,45 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
                 title: parsedData[1].p.dn,
                 description: 'Đã vào phòng.',
               });
-              setState((pre) => ({
-                ...pre,
-                initialRoom: {
-                  ...pre.initialRoom,
-                  isSubJoin: true,
-                },
-              }));
             }
           }
-          if (parsedData[1].cmd === 602 && parsedData[1].hsl == false) {
+          if (
+            parsedData[1].cmd === 602 &&
+            (parsedData[1].hsl == false || parsedData[1].hsl == true)
+          ) {
             toast({
               title: 'Thông báo',
               description: 'Đã kết thúc ván bài.',
             });
+
+            setState((pre) => {
+              console.log('update count', pre.activeMain, main.username);
+              return {
+                ...pre,
+                currentGame: {
+                  ...pre.currentGame,
+                  number:
+                    pre.activeMain === main.username
+                      ? pre.currentGame.number + 1
+                      : pre.currentGame.number,
+                },
+              };
+            });
+            // setIsEnd(true);
+            // console.log(
+            //   'activeMainTerm',
+            //   state.activeMain,
+            //   'usname',
+            //   main.username
+            // );
+            // activeMainTerm === main.username &&
+            //   setState((pre) => ({
+            //     ...pre,
+            //     currentGame: {
+            //       ...pre.currentGame,
+            //       number: pre.currentGame.number + 1,
+            //     },
+            //   }));
           }
           if (parsedData[1].cs && parsedData[1].cmd === 600) {
             const currentCards = parsedData[1].cs
@@ -189,10 +239,16 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
               ...currentData,
               parsedData[1].cs.toString().split(',').map(Number),
             ]);
-            setState((pre) => ({
-              ...pre,
-              currentGame: (pre.currentGame ?? findCurrent(currentCards)) + 1,
-            }));
+
+            // First game
+            main.username &&
+              setState((pre) => {
+                return {
+                  ...pre,
+                  activeMain: main.username,
+                };
+              });
+
             setCurrentCards(currentCards);
             arrangeCards(main);
           }
@@ -232,11 +288,11 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
       }
     }
   };
-  const handleCheckRoom = ({ data, username }: any) => {
-    if (username === main.username) {
-      setCurrentRoom(data);
-    }
-  };
+  // const handleCheckRoom = ({ data, username }: any) => {
+  //   if (username === main.username) {
+  //     setCurrentRoom(data);
+  //   }
+  // };
   const handleCheckPosition = ({ data, username }: any) => {
     if (username === main.username) {
       setCurrentSit(parseInt(data + 1).toString());
@@ -262,13 +318,13 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   useEffect(() => {
     window.backend.on('websocket-data', handleData);
     window.backend.on('websocket-data-sent', handleDataSent);
-    window.backend.on('check-room', handleCheckRoom);
+    // window.backend.on('check-room', handleCheckRoom);
     window.backend.on('check-position', handleCheckPosition);
 
     return () => {
       window.backend.removeListener('websocket-data', handleData);
       window.backend.removeListener('websocket-data-sent', handleDataSent);
-      window.backend.removeListener('check-room', handleCheckRoom);
+      // window.backend.removeListener('check-room', handleCheckRoom);
       window.backend.removeListener('check-position', handleCheckPosition);
     };
   }, []);
@@ -297,12 +353,12 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
               style={{ fontFamily: 'monospace' }}
               className="flex items-center bg-background border p-[5px]  flex-grow justify-start font-bold rounded-sm"
             >
-              Room:
-              {currentRoom == '19'
+              Room: {state.targetAt ?? ''}
+              {/* {currentRoom == '19'
                 ? 'Chống vây'
                 : currentRoom
                 ? currentRoom
-                : 'Undefined'}
+                : 'Undefined'} */}
             </Label>
 
             <div>
@@ -316,56 +372,104 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
             </div>
           </div>
           <div className="grid grid-cols-8 gap-2">
-            <Button
-              onClick={() => openAccounts(main)}
-              style={{ fontFamily: 'monospace' }}
-              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 cursor-pointer h-[30px]"
-            >
-              <Chrome className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              onClick={() => joinLobby(main)}
-              style={{ fontFamily: 'monospace' }}
-              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-            >
-              <Home className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              onClick={() => createRoom(main)}
-              style={{ fontFamily: 'monospace' }}
-              className="rounded-[5px] py-[0px] flex items-center hover:bg-slate-400 cursor-pointer gap-[2px] px-[5px] h-[30px]"
-            >
-              <PlusCircle className="h-3.5 w-3.5" />
-            </Button>
-
-            <Button
-              onClick={() => arrangeCards(main)}
-              style={{ fontFamily: 'monospace' }}
-              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-            >
-              <SortAsc className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              onClick={() => joinRoom(main)}
-              style={{ fontFamily: 'monospace' }}
-              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-            >
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              onClick={() => outRoom(main)}
-              style={{ fontFamily: 'monospace' }}
-              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              onClick={() => outInRoom(main)}
-              style={{ fontFamily: 'monospace' }}
-              className="rounded-[5px] px-[5px] py-[0px]  flex items-center hover:bg-slate-400 gap-[2px] h-[30px]"
-            >
-              <RefreshCcw className="h-3.5 w-3.5" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  onClick={() => openAccounts(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
+                >
+                  <Chrome className="h-3.5 w-3.5 text-black" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Open Profile</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  onClick={() => joinLobby(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
+                >
+                  <Home className="h-3.5 w-3.5 text-black" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Join Lobby</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  onClick={() => createRoom(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
+                >
+                  <PlusCircle className="h-3.5 w-3.5 text-black" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Create Room</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  onClick={() => arrangeCards(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
+                >
+                  <SortAsc className="h-3.5 w-3.5 text-black" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Arrange Card</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  onClick={() => joinRoom(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
+                >
+                  <ArrowRight className="h-3.5 w-3.5 text-black" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Join Room</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  onClick={() => outRoom(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5 text-black" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Out Room</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  onClick={() => outInRoom(main)}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px] h-[30px] bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
+                >
+                  <RefreshCcw className="h-3.5 w-3.5 text-black" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Out-In Room</p>
+              </TooltipContent>
+            </Tooltip>
             <div className="h-full w-full rounded-[5px] flex justify-center items-center border">
               <Toggle pressed={autoInvite} onPressedChange={setAutoInvite}>
                 <UserPlus className="h-3.5 w-3.5" />
@@ -401,7 +505,14 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
       </div>
       <div className="flex justify-center mt-4">
         <div className="w-[50%]">
-          {currentCards && <HandCard cardProp={currentCards} key={0} />}
+          {currentCards && (
+            <HandCard
+              cardProp={currentCards}
+              key={0}
+              isShowPlayer={false}
+              player={main.username}
+            />
+          )}
         </div>
       </div>
     </fieldset>

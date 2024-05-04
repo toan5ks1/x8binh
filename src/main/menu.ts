@@ -57,14 +57,14 @@ export default class MenuBuilder {
       label: 'Electron',
       submenu: [
         {
-          label: 'About Mau Binh Helper',
+          label: 'About Matisse Helper',
           selector: 'orderFrontStandardAboutPanel:',
         },
         { type: 'separator' },
         { label: 'Services', submenu: [] },
         { type: 'separator' },
         {
-          label: 'Hide Mau Binh Helper',
+          label: 'Hide Matisse Helper',
           accelerator: 'Command+H',
           selector: 'hide:',
         },

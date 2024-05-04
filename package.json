@@ -1,6 +1,6 @@
 {
-  "name": "mau-binh-helper",
-  "description": "Mau Binh helper app",
+  "name": "matisse-helper",
+  "description": "Matisse",
   "keywords": [
     "electron",
     "boilerplate",
@@ -12,25 +12,25 @@
     "hot",
     "reload"
   ],
-  "homepage": "https://github.com/toan5ks1/x8binh#readme",
+  "homepage": "https://github.com/matisse/x8binh#readme",
   "bugs": {
-    "url": "https://github.com/toan5ks1/x8binh/issues"
+    "url": "https://github.com/matisse/x8binh/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/toan5ks1/x8binh.git"
+    "url": "git+https://github.com/matisse/x8binh.git"
   },
   "license": "MIT",
   "author": {
-    "name": "Mau Binh Helper App",
-    "email": "phantridungdz@gmail.com",
-    "url": "https://www.facebook.com/phantridungdz/"
+    "name": "Matisse",
+    "email": "matisse@gmail.com",
+    "url": "https://www.facebook.com/matisse/"
   },
   "contributors": [
     {
-      "name": "Phant Chase and Toan5ks1",
-      "email": "phantridungdz@gmail.com",
-      "url": "https://github.com/phantridungdz"
+      "name": "Matisse",
+      "email": "matisse@gmail.com",
+      "url": "https://github.com/matisse"
     }
   ],
   "main": "./src/main/main.ts",
@@ -226,8 +226,8 @@
     "webpack-merge": "^5.8.0"
   },
   "build": {
-    "productName": "MauBinhHelper",
-    "appId": "org.erb.maubinhhelper",
+    "productName": "Matisse",
+    "appId": "org.erb.matisse",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [

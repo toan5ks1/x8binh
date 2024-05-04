@@ -26,7 +26,7 @@ export const Onboard = () => {
 
   if (loading) {
     return (
-      <div className="h-screen w-screen flex justify-center items-center">
+      <div className="h-screen w-screen flex justify-center items-center gap-4">
         <Loader className="w-6.5 h-6.5 animate-spin"></Loader>
         <Label>Loading your license</Label>
       </div>
@@ -38,7 +38,7 @@ export const Onboard = () => {
       <div className="flex items-center justify-center py-12">
         <div className="mx-auto grid w-[350px] gap-6">
           <div className="grid gap-2 text-center">
-            <h1 className="text-3xl font-bold">Mau Binh Helper</h1>
+            <h1 className="text-3xl font-bold">Matisse</h1>
             <p className="text-balance text-muted-foreground">
               Your application not active, please active to use
             </p>

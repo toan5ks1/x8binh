@@ -100,7 +100,7 @@ export function handleMessageCrawing({
         setUser((pre) => ({ ...pre, status: BotStatus.Finished }));
         returnMsg = 'Game finished!';
       } else if (
-        message[1].hsl === false &&
+        (message[1].hsl === false || message[1].hsl === true) &&
         message[1].ps?.length >= 2 &&
         message[1].cmd === 602
       ) {
@@ -116,7 +116,6 @@ export function handleMessageCrawing({
                   cardGame: [...room.cardGame, getCardsArray(message[1].ps)],
                 },
               },
-              shouldRecreateRoom: false,
             };
           });
         setUser((pre) => ({ ...pre, status: BotStatus.Submitted }));
@@ -160,9 +159,11 @@ export function handleMessageCrawing({
               ...pre.crawingRoom,
               [coupleId]: {
                 ...room,
+                id: undefined,
                 players: [...room.players].slice(0, -1),
               },
             },
+            isQuited: true,
           };
         });
         setUser((pre) => ({ ...pre, status: BotStatus.Left }));

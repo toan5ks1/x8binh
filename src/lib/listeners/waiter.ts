@@ -54,7 +54,7 @@ export function handleMessageWaiter({
         setUser((pre) => ({ ...pre, status: BotStatus.Finished }));
         returnMsg = 'Game finished!';
       } else if (
-        message[1].hsl === false &&
+        (message[1].hsl === false || message[1].hsl === true) &&
         message[1].ps?.length >= 2 &&
         message[1].cmd === 602
       ) {
@@ -94,7 +94,6 @@ export function handleMessageWaiter({
       // Left room response
       if (message[1] === true) {
         setUser((pre) => ({ ...pre, status: BotStatus.Left }));
-        setState((pre) => ({ ...pre, isQuited: true }));
         returnMsg = 'Left room successfully!';
       } else {
         returnMsg = message[5] || 'Left room failed!';

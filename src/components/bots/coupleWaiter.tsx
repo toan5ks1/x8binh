@@ -1,35 +1,23 @@
 import { useEffect } from 'react';
 import { useWaiting } from '../../hooks/useCrawing';
-import { LoginParams } from '../../lib/login';
 import { BotCmp } from './botCmp';
+import { BotStatusProps } from './coupleCraw';
 // import { BotCmp } from './botCmp';
-
-export interface BotStatusProps {
-  craw1: LoginParams;
-  craw2: LoginParams;
-  index: number;
-  shouldLogin: boolean;
-  shouldJoinMB: boolean;
-  shouldCreatRoom: boolean;
-  shouldLeave: boolean;
-  shouldDisconnect: boolean;
-}
 
 export const CoupleWaiterStatus = ({
   craw1,
   craw2,
   // index,
   shouldLogin,
-  shouldJoinMB,
+  // shouldJoinMB,
   shouldLeave,
   shouldDisconnect,
-}: // shouldCreatRoom,
-BotStatusProps) => {
+}: BotStatusProps) => {
   const {
     host,
     guess,
-    connectMbHost,
-    connectMbGuess,
+    // connectMbHost,
+    // connectMbGuess,
     loginHost,
     loginGuess,
     msgHost,
@@ -52,12 +40,12 @@ BotStatusProps) => {
     }
   }, [shouldLogin]);
 
-  useEffect(() => {
-    if (shouldJoinMB) {
-      connectMbHost();
-      connectMbGuess();
-    }
-  }, [shouldJoinMB]);
+  // useEffect(() => {
+  //   if (shouldJoinMB) {
+  //     connectMbHost();
+  //     connectMbGuess();
+  //   }
+  // }, [shouldJoinMB]);
 
   useEffect(() => {
     if (shouldLeave) {
@@ -74,7 +62,7 @@ BotStatusProps) => {
   }, [shouldDisconnect]);
 
   return (
-    <div className="flex space-x-4 w-full">
+    <div className="space-y-4 w-full">
       <BotCmp
         name={`Waiter 1`}
         userId={host?.username}

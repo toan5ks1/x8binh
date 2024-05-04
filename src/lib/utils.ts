@@ -130,3 +130,23 @@ export const amIPlaying = (ps: any[], username: string) => {
   const isPlaying = ps.find((obj) => obj.dn === username);
   return isPlaying;
 };
+
+export function areArraysEqual(arr1: number[], arr2: number[]) {
+  // Check if the lengths of the arrays are equal
+  if (arr1.length !== arr2.length) {
+    return false;
+  }
+
+  // Sort both arrays
+  const arr1Sorted = arr1.slice().sort();
+  const arr2Sorted = arr2.slice().sort();
+
+  // Compare sorted arrays element-wise
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1Sorted[i] !== arr2Sorted[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}

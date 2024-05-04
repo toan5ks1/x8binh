@@ -26,6 +26,8 @@ export const setupAccountHandlers = (
     password: string;
     proxy: string;
     port: string;
+    userProxy: string;
+    passProxy: string;
   }) {
     try {
       let userProfilePath;
@@ -59,7 +61,6 @@ export const setupAccountHandlers = (
         ignoreHTTPSErrors: true,
         acceptInsecureCerts: true,
         args: [
-          'about:blank',
           '--no-sandbox',
           '--disable-setuid-sandbox',
           '--disable-infobars',
@@ -69,7 +70,9 @@ export const setupAccountHandlers = (
           '--remote-debugging-port=42796',
           // '--proxy-server=socks5://hndc35.proxyno1.com:42796',
           `${
-            account.proxy && `--proxy-server=${account.proxy}:${account.port}`
+            account.proxy &&
+            account.proxy.trim().toLowerCase() != 'undefined' &&
+            `--proxy-server=${account.proxy.trim()}:${account.port.trim()}`
           }`,
           // `--host-resolver-rules=${hostResolverRules}`,
         ],
@@ -77,19 +80,26 @@ export const setupAccountHandlers = (
       const pages = await browser.pages();
 
       const page = pages[0];
-      // await page.authenticate({
-      //   username: PROXY_USERNAME,
-      //   password: PROXY_PASSWORD,
-      // });
-      await page.evaluateOnNewDocument(() => {
-        const coresOptions = [1, 2, 4, 8, 16, 32];
-        const randomIndex = Math.floor(Math.random() * coresOptions.length);
-        const randomCores = coresOptions[randomIndex];
-
-        Object.defineProperty(navigator, 'hardwareConcurrency', {
-          get: () => randomCores,
+      if (
+        account.userProxy &&
+        account.userProxy.trim().toLowerCase() !== 'undefined'
+      ) {
+        console.log('userProxy', account.userProxy.trim());
+        console.log('passProxy', account.passProxy.trim());
+        await page.authenticate({
+          username: account.userProxy.trim(),
+          password: account.passProxy.trim(),
         });
-      });
+      }
+      // await page.evaluateOnNewDocument(() => {
+      //   const coresOptions = [1, 2, 4, 8, 16, 32];
+      //   const randomIndex = Math.floor(Math.random() * coresOptions.length);
+      //   const randomCores = coresOptions[randomIndex];
+
+      //   Object.defineProperty(navigator, 'hardwareConcurrency', {
+      //     get: () => randomCores,
+      //   });
+      // });
 
       const client = await page.target().createCDPSession();
       await client.send('Network.enable');
@@ -140,12 +150,6 @@ export const setupAccountHandlers = (
 
       await page.goto('https://play.rik.vip/', { waitUntil: 'networkidle2' });
 
-      await page.evaluate(() => {
-        const videos = document.querySelectorAll('video') as any;
-        const audios = document.querySelectorAll('audio') as any;
-        [...videos, ...audios].forEach((media) => (media.muted = true));
-      });
-
       await page.evaluate(`
       let node2 = cc.find("Canvas/MainUIParent/NewLobby/Footder/bottmBar@3x/Public/Layout/dnButtonSmartObjectGroup1@3x").getComponent(cc.Button);
       if (node2) {
@@ -194,8 +198,13 @@ export const setupAccountHandlers = (
       }, 500);
       setTimeout(() => {
         __require('LobbyViewController').default.Instance.onClickIConGame(null,"vgcg_4");
-      }, 2500);
+      }, 3500);
       `);
+
+      await page.evaluate(() => {
+        const audios = document.querySelectorAll('audio') as any;
+        [...audios].forEach((media) => (media.muted = true));
+      });
 
       return { browser, page };
     } catch (error) {
@@ -203,13 +212,18 @@ export const setupAccountHandlers = (
       return true;
     }
   }
+  // const accountArrange = {
+  //   username: 'giuchansapbai',
+  //   password: 'zxcv123123',
+  //   proxy: '',
+  //   port: '',
+  // };
+  // startPuppeteerForAccount(accountArrange);
 
   ipcMain.on('open-accounts', async (event, account) => {
     await startPuppeteerForAccount(account);
-
     event.reply('open-accounts-reply', 'All accounts have been opened.');
   });
-
   ipcMain.on('close-account', async (event, username) => {
     const index = puppeteerInstances.findIndex(
       (instance) => instance.username === username
@@ -226,7 +240,6 @@ export const setupAccountHandlers = (
       event.reply('close-account-reply', `Account ${username} not found.`);
     }
   });
-
   ipcMain.on('execute-script', async (event, { username }, script) => {
     const instance = puppeteerInstances.find(
       (instance) => instance.username === username

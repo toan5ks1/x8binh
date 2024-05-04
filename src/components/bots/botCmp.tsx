@@ -1,5 +1,3 @@
-import { Trash } from 'lucide-react';
-import { Button } from '../ui/button';
 import {
   Card,
   CardContent,
@@ -7,8 +5,6 @@ import {
   CardHeader,
   CardTitle,
 } from '../ui/card';
-import { ScrollArea } from '../ui/scroll-area';
-import { Table, TableBody, TableCell, TableRow } from '../ui/table';
 
 interface BotStatusProps {
   name: string;
@@ -23,40 +19,26 @@ export const BotCmp = ({
   userId,
   connectionStatus,
   messageHistory,
-  setMessageHistory,
-}: BotStatusProps) => {
-  const onClearMessage = () => {
-    setMessageHistory([]);
-  };
+}: // setMessageHistory,
+BotStatusProps) => {
   return (
-    <Card x-chunk="dashboard-07-chunk-1" className="flex-1 p-4">
+    <Card x-chunk="dashboard-07-chunk-1" className="flex-1 p-2">
       <CardHeader className="flex flex-row justify-between items-end px-2 py-0">
         <CardTitle className="text-lg">{name}</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-sm font-normal">
           {connectionStatus === 'Uninstantiated'
             ? userId
               ? userId
               : 'Not logged'
             : connectionStatus}
-        </CardDescription>
-        <Button onClick={onClearMessage} className="h-4">
-          <Trash className="h-3 w-3" />
-        </Button>
+        </CardTitle>
       </CardHeader>
       <CardContent className="p-2">
-        <ScrollArea className="h-36 rounded-md">
-          <Table>
-            <TableBody>
-              {(messageHistory.length ? messageHistory : ['No message']).map(
-                (tag: any, index: number) => (
-                  <TableRow key={index} className="h-2">
-                    <TableCell>{JSON.stringify(tag)}</TableCell>
-                  </TableRow>
-                )
-              )}
-            </TableBody>
-          </Table>
-        </ScrollArea>
+        <CardDescription>
+          {messageHistory.length
+            ? messageHistory[messageHistory.length - 1]
+            : null}
+        </CardDescription>
       </CardContent>
     </Card>
   );

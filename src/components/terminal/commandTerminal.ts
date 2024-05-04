@@ -14,17 +14,17 @@ try{
   }
   if (btnInvite1) {
       btnInvite1.on('touchstart', function() {
-          console.log('Đã mời người khác vào 1.');
+
       });
   }
   if (btnInvite2) {
       btnInvite2.on('touchstart', function() {
-          console.log('Đã mời người khác vào 2.');
+
       });
   }
 if (btnInvite3) {
       btnInvite3.on('touchstart', function() {
-          console.log('Đã mời người khác vào 3.');
+
       });
   }
   if (btnInvite1) {
@@ -65,17 +65,17 @@ if (btnInvite3) {
   }
   if (btnInvite1) {
       btnInvite1.on('touchstart', function() {
-          console.log('Đã mời người khác vào 1.');
+
       });
   }
   if (btnInvite2) {
       btnInvite2.on('touchstart', function() {
-          console.log('Đã mời người khác vào 2.');
+
       });
   }
   if (btnInvite3) {
       btnInvite3.on('touchstart', function() {
-          console.log('Đã mời người khác vào 3.');
+
       });
   }
   if (btnInvite1) {
@@ -126,10 +126,15 @@ export const arrangeCardCommand = `
       window.sapBaiMinh()`;
 
 export const checkPositionCommand = `
-var uuid = __require('GamePlayManager').default.Instance.loginDict.uid;
-var players = cc.find("Canvas/MainUI/MauBinhController")._components[0].cardGameTableController.gameController.AllPlayers;
-var uids = Object.keys(players);
-uids.indexOf(uuid.toString());
+try{
+  var uuid = __require('GamePlayManager').default.Instance.loginDict.uid;
+  var players = cc.find("Canvas/MainUI/MauBinhController")._components[0].cardGameTableController.gameController.AllPlayers;
+  var uids = Object.keys(players);
+  uids.indexOf(uuid.toString());
+}catch{
+
+}
+
 `;
 
 export const getAddNameTagCommand = (main: any) => {
