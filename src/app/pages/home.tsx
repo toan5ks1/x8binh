@@ -47,6 +47,10 @@ export const HomePage: React.FC<any> = (cardDeck) => {
     console.log(getRandomCards());
   };
 
+  useEffect(() => {
+    console.log(state.currentGame.number);
+  }, [state.currentGame]);
+
   const { accounts } = useAccountStore();
 
   return (
@@ -65,9 +69,8 @@ export const HomePage: React.FC<any> = (cardDeck) => {
                 {cards.map((card, index) => (
                   <TableRow
                     key={index}
-                    className={`relative !rounded-[20px] ${
-                      index + 1 == state.currentGame.number &&
-                      'bg-[#9c9c9c] bg-opacity-60 hover:bg-[#9c9c9c]'
+                    className={`relative !rounded-[20px] hover:bg-slate-700 bg-opacity-60 ${
+                      index == state.currentGame.number && 'bg-[#a2a0a0]'
                     }`}
                   >
                     <BoardCard

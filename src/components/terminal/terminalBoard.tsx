@@ -26,17 +26,16 @@ import {
   inviteCommand,
 } from './commandTerminal';
 
-export const TerminalBoard: React.FC<any> = ({ main, index }) => {
+export const TerminalBoard: React.FC<any> = ({ main }) => {
   const { toast } = useToast();
   const [data, setData] = useState<unknown[]>([]);
   const { state, setState } = useContext(AppContext);
   const [isLogin, setIsLogin] = useState(false);
   const [isInLobby, setIsInLobby] = useState(false);
-  const [currentRoom, setCurrentRoom] = useState('');
+  // const [currentRoom, setCurrentRoom] = useState('');
   const [currentSit, setCurrentSit] = useState('');
   const [currentCards, setCurrentCards] = useState<any>();
   const [autoInvite, setAutoInvite] = useState(false);
-  const [currentMessage, setCurrentMessage] = useState('');
 
   // const findCurrent = useCallback((crCard: number[]) => {
   //   let target = 1;
@@ -94,7 +93,7 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
     window.backend.sendMessage(
       'execute-script',
       account,
-      `__require('GamePlayManager').default.getInstance().joinRoom(${state.initialRoom.id},0,'',true);`
+      `__require('GamePlayManager').default.getInstance().joinRoom(${state.targetAt},0,'',true);`
     );
   }
 
@@ -102,13 +101,13 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
     window.backend.sendMessage('check-position', account, checkPositionCommand);
   }
   async function outInRoom(account: any): Promise<void> {
-    if (currentRoom) {
+    if (state.targetAt) {
       await outRoom(account);
       await new Promise((resolve) => setTimeout(resolve, 500));
       window.backend.sendMessage(
         'execute-script',
         account,
-        `__require('GamePlayManager').default.getInstance().joinRoom(${currentRoom},0,'',true);`
+        `__require('GamePlayManager').default.getInstance().joinRoom(${state.targetAt},0,'',true);`
       );
     }
   }
@@ -133,24 +132,21 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
       arrangeCardCommand
     );
   }
-  useEffect(() => {
-    console.log('state.username', state.activeMain);
-  }, [state]);
 
   const handleData = ({ data, username }: any) => {
     if (username === main.username) {
       setIsLogin(true);
       if (!data.includes('[6,1') && !data.includes('["7","Simms",')) {
         const parsedData = parseData(data);
-        if (parsedData[1]?.ri?.rid) {
-          setCurrentRoom(parsedData[1].ri.rid.toString());
-        }
-        if (parsedData[0] == 3) {
-          setCurrentRoom(parsedData[3].toString());
-        }
+        // if (parsedData[1]?.ri?.rid) {
+        //   setCurrentRoom(parsedData[1].ri.rid.toString());
+        // }
+        // if (parsedData[0] == 3) {
+        //   setCurrentRoom(parsedData[3].toString());
+        // }
         if (parsedData[0] == 4 && parsedData[1] == true) {
-          setCurrentRoom('');
-          setCurrentSit('');
+          // setCurrentRoom('');
+          // setCurrentSit('');
         }
         if (parsedData[0] == 5 && parsedData[1].cmd === 317) {
           window.backend.sendMessage(
@@ -160,8 +156,8 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
           );
         }
         if (parsedData[0] == 5 && parsedData[1].cmd === 300) {
-          setCurrentRoom('');
-          setCurrentSit('');
+          // setCurrentRoom('');
+          // setCurrentSit('');
         }
         if (parsedData[0] == 3 && parsedData[1] === true) {
           setState((pre) => ({
@@ -174,8 +170,8 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
         }
         if (parsedData[0] == 5) {
           checkPosition(main);
-          if (parsedData[2] === currentRoom) {
-            console.log('Đang trong ván');
+          if (parsedData[2] === state.targetAt) {
+            // console.log('Đang trong ván');
           }
           if (parsedData[1].p) {
             if (parsedData[1].p.uid) {
@@ -199,15 +195,34 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
               description: 'Đã kết thúc ván bài.',
             });
 
-            console.log(state.activeMain, main.username);
-            state.activeMain === main.username &&
-              setState((pre) => ({
+            setState((pre) => {
+              console.log('update count', pre.activeMain, main.username);
+              return {
                 ...pre,
                 currentGame: {
                   ...pre.currentGame,
-                  number: pre.currentGame.number + 1,
+                  number:
+                    pre.activeMain === main.username
+                      ? pre.currentGame.number + 1
+                      : pre.currentGame.number,
                 },
-              }));
+              };
+            });
+            // setIsEnd(true);
+            // console.log(
+            //   'activeMainTerm',
+            //   state.activeMain,
+            //   'usname',
+            //   main.username
+            // );
+            // activeMainTerm === main.username &&
+            //   setState((pre) => ({
+            //     ...pre,
+            //     currentGame: {
+            //       ...pre.currentGame,
+            //       number: pre.currentGame.number + 1,
+            //     },
+            //   }));
           }
           if (parsedData[1].cs && parsedData[1].cmd === 600) {
             const currentCards = parsedData[1].cs
@@ -224,17 +239,14 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
               parsedData[1].cs.toString().split(',').map(Number),
             ]);
 
-            // console.log('username', main.username);
             // First game
             main.username &&
-              setState((pre) => ({
-                ...pre,
-                currentGame: {
-                  ...pre.currentGame,
-                  number: 1,
-                },
-                activeMain: main.username,
-              }));
+              setState((pre) => {
+                return {
+                  ...pre,
+                  activeMain: main.username,
+                };
+              });
 
             setCurrentCards(currentCards);
             arrangeCards(main);
@@ -275,11 +287,11 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
       }
     }
   };
-  const handleCheckRoom = ({ data, username }: any) => {
-    if (username === main.username) {
-      setCurrentRoom(data);
-    }
-  };
+  // const handleCheckRoom = ({ data, username }: any) => {
+  //   if (username === main.username) {
+  //     setCurrentRoom(data);
+  //   }
+  // };
   const handleCheckPosition = ({ data, username }: any) => {
     if (username === main.username) {
       setCurrentSit(parseInt(data + 1).toString());
@@ -305,13 +317,13 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
   useEffect(() => {
     window.backend.on('websocket-data', handleData);
     window.backend.on('websocket-data-sent', handleDataSent);
-    window.backend.on('check-room', handleCheckRoom);
+    // window.backend.on('check-room', handleCheckRoom);
     window.backend.on('check-position', handleCheckPosition);
 
     return () => {
       window.backend.removeListener('websocket-data', handleData);
       window.backend.removeListener('websocket-data-sent', handleDataSent);
-      window.backend.removeListener('check-room', handleCheckRoom);
+      // window.backend.removeListener('check-room', handleCheckRoom);
       window.backend.removeListener('check-position', handleCheckPosition);
     };
   }, []);
@@ -340,12 +352,12 @@ export const TerminalBoard: React.FC<any> = ({ main, index }) => {
               style={{ fontFamily: 'monospace' }}
               className="flex items-center bg-background border p-[5px]  flex-grow justify-start font-bold rounded-sm"
             >
-              Room:
-              {currentRoom == '19'
+              Room: {state.targetAt ?? ''}
+              {/* {currentRoom == '19'
                 ? 'Chống vây'
                 : currentRoom
                 ? currentRoom
-                : 'Undefined'}
+                : 'Undefined'} */}
             </Label>
 
             <div>

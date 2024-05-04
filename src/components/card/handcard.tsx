@@ -64,7 +64,7 @@ export const HandCard: React.FC<HandCardProps> = ({
   isShowPlayer,
   player,
 }) => {
-  const [cards, setCards] = useState<number[]>(cardProp);
+  const [cards, setCards] = useState<number[]>(cardProp ?? []);
   const [part1, setPart1] = useState<number[]>(cards.slice(0, 5));
   const [part2, setPart2] = useState<number[]>(cards.slice(5, 10));
   const [part3, setPart3] = useState<number[]>([...cards.slice(10, 13)]);
@@ -132,7 +132,7 @@ export const HandCard: React.FC<HandCardProps> = ({
   }, [cards]);
 
   useEffect(() => {
-    setCards(cardProp);
+    setCards(cardProp ?? []);
     handleArrange();
   }, [cardProp]);
 

@@ -159,6 +159,7 @@ export function handleMessageCrawing({
               ...pre.crawingRoom,
               [coupleId]: {
                 ...room,
+                id: undefined,
                 players: [...room.players].slice(0, -1),
               },
             },
