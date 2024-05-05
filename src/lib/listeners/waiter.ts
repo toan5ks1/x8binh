@@ -31,7 +31,7 @@ export function handleMessageWaiter({
       if (message[1].rs && user?.status === BotStatus.Initialized) {
         setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
         setState((pre) => ({ ...pre, isLoggedIn: true }));
-        returnMsg = 'Join Maubinh sucessfully!';
+        returnMsg = 'Đã vào lobby!';
       } else if (
         message[1]?.c === 100 ||
         (message[1]?.cmd === 5 && message[1]?.dn === fullname)

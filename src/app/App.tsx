@@ -62,6 +62,7 @@ export function App() {
   const [isLoging, setIsLoging] = useState(false);
   const [isFinding, setIsFinding] = useState(false);
   const [isQuiting, setIsQuiting] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const onLogin = () => {
     setShouldLogin(true);
@@ -82,7 +83,7 @@ export function App() {
     }
   };
 
-  const onCreatRoom = () => {
+  const onCreateRoom = () => {
     setShouldCreateRoom(true);
     setIsFinding(true);
   };
@@ -94,8 +95,18 @@ export function App() {
     setIsFinding(false);
   };
 
-  const onDisconnect = () => {
-    window.location.reload();
+  const onRefreshBot = () => {
+    setRefreshKey((prevKey) => prevKey + 1);
+    setShouldLeave(true);
+    setShouldLogin(false);
+    setIsLoging(false);
+    setIsFinding(false);
+    setIsQuiting(false);
+    setShouldCreateRoom(false);
+    setState((pre) => ({
+      ...pre,
+      isLoggedIn: false,
+    }));
   };
 
   useEffect(() => {
@@ -161,16 +172,19 @@ export function App() {
                   >
                     <Bot />
                   </Button>
-                  <FindRoomSheet
-                    bots={bots}
-                    craws={craws}
-                    shouldLogin={shouldLogin}
-                    shouldCreatRoom={shouldCreatRoom}
-                    shouldLeave={shouldLeave}
-                    shouldDisconnect={shouldDisconnect}
-                    setIsOpen={setIsOpenBotSheet}
-                    isOpen={isOpenBotSheet}
-                  />
+                  <div key={refreshKey}>
+                    <FindRoomSheet
+                      bots={bots}
+                      craws={craws}
+                      shouldLogin={shouldLogin}
+                      shouldCreatRoom={shouldCreatRoom}
+                      shouldLeave={shouldLeave}
+                      shouldDisconnect={shouldDisconnect}
+                      setIsOpen={setIsOpenBotSheet}
+                      isOpen={isOpenBotSheet}
+                    />
+                  </div>
+
                   <div className="flex gap-2 items-center">
                     <div className="h-8 gap-1 flex flex-row justify-center items-center">
                       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -243,7 +257,7 @@ export function App() {
                     {state.isLoggedIn ? (
                       <>
                         <Button
-                          onClick={onCreatRoom}
+                          onClick={onCreateRoom}
                           size="sm"
                           className="h-8 gap-1"
                           disabled={isFinding}
@@ -286,7 +300,7 @@ export function App() {
                       </Button>
                     )}
                     <Button
-                      onClick={onDisconnect}
+                      onClick={onRefreshBot}
                       size="sm"
                       className="h-8 gap-1 cursor-pointer hover:opacity-70"
                       variant="destructive"
