@@ -143,11 +143,7 @@ export function App() {
         <AccountSection accountType="BOT" />
         <AccountSection accountType="SUB" />
       </MainSetting>
-      {/* <Tabs value={tab} onValueChange={setActiveTab} defaultValue="all"> */}
       <div className="flex w-full flex-col">
-        {/* <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-          <SideBar />
-        </aside> */}
         {loading ? (
           <div className="h-screen w-full flex justify-center items-center">
             <Loader className="w-6.5 h-6.5 animate-spin"></Loader>
@@ -157,12 +153,6 @@ export function App() {
             <main className="grid flex-1 items-start gap-4 bg-background sm:px-6 sm:py-0 md:gap-8 ">
               <div className="flex items-center fixed top-0 left-0 right-0  py-[15px] bg-background border-b z-[21] px-[10px]">
                 <div className="ml-auto w-full flex items-center gap-2 justify-between">
-                  {/* <Sheet>
-                    <SheetTrigger asChild>
-                      <Button size="sm" className="h-8 gap-1">
-                        <Bot />
-                      </Button>
-                    </SheetTrigger> */}
                   <Button
                     onClick={() => setIsOpenBotSheet(true)}
                     size="sm"
@@ -180,7 +170,6 @@ export function App() {
                     setIsOpen={setIsOpenBotSheet}
                     isOpen={isOpenBotSheet}
                   />
-                  {/* </Sheet> */}
                   <div className="flex gap-2 items-center">
                     <div className="h-8 gap-1 flex flex-row justify-center items-center">
                       <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -336,13 +325,6 @@ export function App() {
                   </div>
                 </div>
               </div>
-
-              {/* <TabsContent
-                  forceMount={true}
-                  value="all"
-                  hidden={'all' !== tab}
-                >
-                </TabsContent> */}
               <HomePage cardDeck={cardDeck} />
             </main>
           </div>
