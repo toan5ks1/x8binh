@@ -470,7 +470,7 @@ function getXiIndex(t: string | any[]) {
 
 function getTextOfListCard(t: number) {
   return t > 544
-    ? 'Thùng Phá Sảnh'
+    ? 'TP Sảnh'
     : t > 476
     ? 'Tứ Quý'
     : t > 408
@@ -480,7 +480,7 @@ function getTextOfListCard(t: number) {
     : t > 272
     ? 'Sảnh'
     : t > 204
-    ? 'Sám cô'
+    ? 'Sam'
     : t > 136
     ? 'Thú'
     : t > 68
@@ -496,13 +496,13 @@ function getTextofMauBinh(t: number) {
     : 12 === t
     ? '6 Đôi'
     : 13 === t
-    ? 'Đồngng Hoa'
+    ? 'Đồng Hoa'
     : 14 === t
     ? 'Sảnh Rồng'
     : 15 === t
     ? 'Sảnh Rồng Đồng Hoa'
     : 16 === t
-    ? '5 Đôi 1 Sám Cô'
+    ? '5 Đôi 1 Sam'
     : '';
 }
 

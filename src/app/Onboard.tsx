@@ -15,7 +15,7 @@ export const Onboard = () => {
   useEffect(() => {
     if (
       process.env.NODE_ENV != 'development' &&
-      localStorage.getItem('license-key')
+      !localStorage.getItem('license-key')
     ) {
       setHardwareInfo(validateLicense(setLoading, toast, navigate));
     }

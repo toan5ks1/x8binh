@@ -50,6 +50,7 @@ export function App() {
   const [loading, setLoading] = useState(false);
   const [isOpenSheet, setIsOpenSheet] = useState(false);
   const [isOpenBotSheet, setIsOpenBotSheet] = useState(false);
+  const [numberOfCards, setNumberOfCards] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -118,7 +119,7 @@ export function App() {
   useEffect(() => {
     if (
       process.env.NODE_ENV != 'development' &&
-      localStorage.getItem('license-key')
+      !localStorage.getItem('license-key')
     ) {
       validateLicense(setLoading, toast, navigate);
     }
@@ -307,6 +308,19 @@ export function App() {
                       </span>
                     </Button>
 
+                    {/* <Tooltip>
+                      <TooltipTrigger>
+                        <div
+                          style={{ fontFamily: 'monospace' }}
+                          className="h-8 text-[19px] flex justify-center items-center px-[10px] rounded-sm bg-green-600"
+                        >
+                          <HandCardIcon /> {numberOfCards}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Number of cards crawled</p>
+                      </TooltipContent>
+                    </Tooltip> */}
                     <Tooltip>
                       <TooltipTrigger>
                         <div

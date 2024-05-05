@@ -197,14 +197,61 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
     });
   };
 
-  const refreshAccount = () => {
-    readFile(accountType);
-    toast({
-      title: 'Refreshed ',
-      description: `Table refreshed`,
-    });
-  };
+  const refreshAccount = async () => {
+    const selectedAccounts = accounts[accountType].filter(
+      (account: any) => account.isSelected
+    );
 
+    if (!selectedAccounts.length) {
+      toast({
+        title: 'No Selected Accounts',
+        description: 'No selected accounts available to refresh.',
+      });
+      return;
+    }
+
+    const checkBalances = selectedAccounts.map((account: any) =>
+      checkBalance(account)
+    );
+
+    try {
+      await Promise.all(checkBalances);
+      toast({
+        title: 'Refreshed',
+        description: `Selected accounts refreshed and balances updated.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: `Failed to refresh some accounts`,
+      });
+    }
+  };
+  const onCheckAll = async (value: any) => {
+    const selectedAccounts = accounts[accountType];
+
+    const checkBalances = selectedAccounts.map((account: any) => {
+      updateAccount(accountType, account.username, {
+        isSelected: value,
+      });
+      if (value) {
+        checkBalance(account);
+      }
+    });
+
+    try {
+      await Promise.all(checkBalances);
+      toast({
+        title: 'Updated',
+        description: `Table was update`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: `Failed to this action`,
+      });
+    }
+  };
   const columns: ColumnDef<unknown, any>[] = [
     {
       id: 'select',
@@ -215,7 +262,10 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
             table.getIsAllPageRowsSelected() ||
             (table.getIsSomePageRowsSelected() && 'indeterminate')
           }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          onCheckedChange={(value) => {
+            onCheckAll(value);
+            table.toggleAllPageRowsSelected(!!value);
+          }}
           aria-label="Select all"
         />
       ),
@@ -438,13 +488,19 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
               <Button
                 variant="ghost"
                 size="icon"
+                type="button"
                 onClick={handleDeleteSelectedRows}
               >
                 <Trash className="w-3.5 h-3.5" />
               </Button>
             </TooltipTrigger>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={refreshAccount}>
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                onClick={refreshAccount}
+              >
                 <RefreshCcw className="w-3.5 h-3.5" />
               </Button>
             </TooltipTrigger>

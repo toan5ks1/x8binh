@@ -16,7 +16,7 @@ import { getRandomCards } from '../../lib/card';
 import { AppContext } from '../../renderer/providers/app';
 import useAccountStore from '../../store/accountStore';
 
-export const HomePage: React.FC<any> = (cardDeck) => {
+export const HomePage: React.FC<any> = (cardDeck, setNumberOfCards) => {
   const [cards, setCards] = useState<number[][]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { state } = useContext(AppContext);
@@ -44,12 +44,7 @@ export const HomePage: React.FC<any> = (cardDeck) => {
 
   const addRandomCards = () => {
     setCards((prevCards) => [...prevCards, getRandomCards()]);
-    console.log(getRandomCards());
   };
-
-  useEffect(() => {
-    console.log(state.currentGame.number);
-  }, [state.currentGame]);
 
   const { accounts } = useAccountStore();
 
@@ -69,7 +64,7 @@ export const HomePage: React.FC<any> = (cardDeck) => {
                 {cards.map((card, index) => (
                   <TableRow
                     key={index}
-                    className={`relative !rounded-[20px] hover:bg-slate-700 bg-opacity-60 ${
+                    className={`relative !rounded-[20px] bg-opacity-60 ${
                       index == state.currentGame.number && 'bg-[#a2a0a0]'
                     }`}
                   >
@@ -84,20 +79,22 @@ export const HomePage: React.FC<any> = (cardDeck) => {
               </TableBody>
             </Table>
           </CardContent>
-          <CardFooter>
-            <div className="text-xs text-muted-foreground flex flex-row gap-2 items-center">
-              <Label>
-                Showing <strong>{cards.length}</strong> of cards
-              </Label>
-              <Button
-                variant="ghost"
-                className="h-8 w-8 p-0"
-                onClick={addRandomCards}
-              >
-                <Plus />
-              </Button>
-            </div>
-          </CardFooter>
+          {process.env.NODE_ENV == 'development' && (
+            <CardFooter>
+              <div className="text-xs text-muted-foreground flex flex-row gap-2 items-center">
+                <Label>
+                  Showing <strong>{cards.length}</strong> of cards
+                </Label>
+                <Button
+                  variant="ghost"
+                  className="h-8 w-8 p-0"
+                  onClick={addRandomCards}
+                >
+                  <Plus />
+                </Button>
+              </div>
+            </CardFooter>
+          )}
         </Card>
         {/* <Sticky scrollElement=".scrollarea"> */}
         <div>
