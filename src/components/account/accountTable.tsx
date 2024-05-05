@@ -91,7 +91,7 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
         username: usernameRef.current.value,
         password: passwordRef.current.value,
       };
-      addAccount(accountType, newAccount);
+      addAccount(accountType, generateAccount(newAccount));
       setDialogAddAccountOpen(false);
     }
   };

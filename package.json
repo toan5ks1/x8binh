@@ -1,5 +1,5 @@
 {
-  "name": "mau-binh-helper",
+  "name": "matisse-helper",
   "description": "Matisse",
   "keywords": [
     "electron",
@@ -226,8 +226,8 @@
     "webpack-merge": "^5.8.0"
   },
   "build": {
-    "productName": "MauBinhHelper",
-    "appId": "org.erb.maubinhhelper",
+    "productName": "Matisse",
+    "appId": "org.erb.matisse",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [

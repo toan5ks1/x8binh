@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useContext, useEffect, useMemo } from 'react';
+import { AppContext } from '../../renderer/providers/app';
 import { HandCard } from '../card/handcard';
 import { Label } from '../ui/label';
 import { TableCell } from '../ui/table';
@@ -9,6 +10,7 @@ const BoardCard: React.FC<any> = ({
   numPlayers,
   currentGame,
 }) => {
+  const { state, setState } = useContext(AppContext);
   const playerHands = useMemo(() => {
     const playerHands: number[][] = Array.from(
       { length: numPlayers },
@@ -23,6 +25,10 @@ const BoardCard: React.FC<any> = ({
 
     return playerHands;
   }, [cards, numPlayers]);
+
+  useEffect(() => {
+    console.log('check sheet', state.currentGame.sheet);
+  }, [state.currentGame]);
 
   return (
     <TableCell

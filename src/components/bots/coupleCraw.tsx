@@ -81,14 +81,14 @@ export const CoupleCrawStatus = ({
   return (
     <div className="space-y-4 w-full">
       <BotCmp
-        name={`Craw ${index + 1}`}
+        name={`Bot ${index + 1}`}
         userId={host?.username}
         connectionStatus={connectionStatusHost}
         messageHistory={msgHost}
         setMessageHistory={setMsgHost}
       />
       <BotCmp
-        name={`Craw ${index + 2}`}
+        name={`Bot ${index + 2}`}
         userId={guess?.username}
         connectionStatus={connectionStatusGuess}
         messageHistory={msgGuess}

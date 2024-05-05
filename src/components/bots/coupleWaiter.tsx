@@ -64,14 +64,14 @@ export const CoupleWaiterStatus = ({
   return (
     <div className="space-y-4 w-full">
       <BotCmp
-        name={`Waiter 1`}
+        name={`Bot đợi 1`}
         userId={host?.username}
         connectionStatus={connectionStatusHost}
         messageHistory={msgHost}
         setMessageHistory={setMsgHost}
       />
       <BotCmp
-        name={`waiter 2`}
+        name={`Bot đợi 2`}
         userId={guess?.username}
         connectionStatus={connectionStatusGuess}
         messageHistory={msgGuess}
