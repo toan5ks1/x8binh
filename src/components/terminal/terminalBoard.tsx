@@ -19,6 +19,7 @@ import { useToast } from '../toast/use-toast';
 import { Toggle } from '../ui/toggle';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import {
+  arrangeCardCommand,
   checkPositionCommand,
   getAddNameTagCommand,
   inviteCommand,
@@ -123,13 +124,13 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   async function openAccounts(account: any) {
     await window.backend.sendMessage('open-accounts', account);
   }
-  // async function arrangeCards(account: any) {
-  //   await window.backend.sendMessage(
-  //     'execute-script',
-  //     account,
-  //     arrangeCardCommand
-  //   );
-  // }
+  async function arrangeCards(account: any) {
+    await window.backend.sendMessage(
+      'execute-script',
+      account,
+      arrangeCardCommand
+    );
+  }
 
   const handleData = ({ data, username }: any) => {
     if (username === main.username) {
@@ -247,7 +248,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
               });
 
             // setCurrentCards(currentCards);
-            // arrangeCards(main);
+            arrangeCards(main);
           }
         }
         if (parsedData[0] !== '7' && parsedData[0] != 5) {
