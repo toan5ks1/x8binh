@@ -6,7 +6,6 @@ import {
   MapPin,
   PlusCircle,
   RefreshCcw,
-  SortAsc,
   TrashIcon,
   UserPlus,
 } from 'lucide-react';
@@ -16,12 +15,10 @@ import { Label } from '../../components/ui/label';
 import { ScrollArea } from '../../components/ui/scroll-area';
 import { highlightSyntax } from '../../lib/terminal';
 import { AppContext } from '../../renderer/providers/app';
-import { HandCard } from '../card/handcard';
 import { useToast } from '../toast/use-toast';
 import { Toggle } from '../ui/toggle';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import {
-  arrangeCardCommand,
   checkPositionCommand,
   getAddNameTagCommand,
   inviteCommand,
@@ -35,7 +32,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   const [isInLobby, setIsInLobby] = useState(false);
   // const [currentRoom, setCurrentRoom] = useState('');
   const [currentSit, setCurrentSit] = useState('');
-  const [currentCards, setCurrentCards] = useState<any>();
+  // const [currentCards, setCurrentCards] = useState<any>();
   const [autoInvite, setAutoInvite] = useState(false);
 
   // const findCurrent = useCallback((crCard: number[]) => {
@@ -126,13 +123,13 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   async function openAccounts(account: any) {
     await window.backend.sendMessage('open-accounts', account);
   }
-  async function arrangeCards(account: any) {
-    await window.backend.sendMessage(
-      'execute-script',
-      account,
-      arrangeCardCommand
-    );
-  }
+  // async function arrangeCards(account: any) {
+  //   await window.backend.sendMessage(
+  //     'execute-script',
+  //     account,
+  //     arrangeCardCommand
+  //   );
+  // }
 
   const handleData = ({ data, username }: any) => {
     if (username === main.username) {
@@ -249,8 +246,8 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
                 };
               });
 
-            setCurrentCards(currentCards);
-            arrangeCards(main);
+            // setCurrentCards(currentCards);
+            // arrangeCards(main);
           }
         }
         if (parsedData[0] !== '7' && parsedData[0] != 5) {
@@ -371,7 +368,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
               </Label>
             </div>
           </div>
-          <div className="grid grid-cols-8 gap-2">
+          <div className="grid grid-cols-7 gap-2">
             <Tooltip>
               <TooltipTrigger>
                 <div
@@ -414,7 +411,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
                 <p>Create Room</p>
               </TooltipContent>
             </Tooltip>
-            <Tooltip>
+            {/* <Tooltip>
               <TooltipTrigger>
                 <div
                   onClick={() => arrangeCards(main)}
@@ -427,7 +424,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
               <TooltipContent>
                 <p>Arrange Card</p>
               </TooltipContent>
-            </Tooltip>
+            </Tooltip> */}
             <Tooltip>
               <TooltipTrigger>
                 <div
@@ -503,7 +500,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
           </ScrollArea>
         </div>
       </div>
-      <div className="flex justify-center mt-4">
+      {/* <div className="flex justify-center mt-4">
         <div className="w-[50%]">
           {currentCards && (
             <HandCard
@@ -514,7 +511,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
             />
           )}
         </div>
-      </div>
+      </div> */}
     </fieldset>
   );
 };

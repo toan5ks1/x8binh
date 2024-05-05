@@ -100,6 +100,7 @@ export const validateLicense = async (
   const hardwareInfo = await fetchHardwareInfo();
   if (!licenseKey) {
     toast({ title: 'Error', description: 'No license key found.' });
+    navigate('/');
     setLoading(false);
     return hardwareInfo;
   }
