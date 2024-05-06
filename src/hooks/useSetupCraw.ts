@@ -223,21 +223,44 @@ export function useSetupCraw(
             title: 'Not match',
             description: `Finding again...`,
           });
+          setShouldConnect(false);
+          setState((pre) => ({
+            ...pre,
+            shouldReconnect: false,
+            shouldDisconnect: true,
+          }));
         }
       }
     }
   }, [room, state.initialRoom, state.foundAt]);
 
   useEffect(() => {
-    // Leave room
-    if (
-      // room?.isFinish &&
-      coupleId !== state.foundBy &&
-      user?.status === BotStatus.Finished
-    ) {
-      sendMessage(`[4,"Simms",${room.id}]`);
+    if (state.shouldDisconnect) {
+      setShouldConnect(true);
+      setState((pre) => ({
+        ...pre,
+        shouldDisconnect: false,
+        shouldReconnect: true,
+      }));
     }
+  }, [state.shouldDisconnect]);
+
+  useEffect(() => {
+    user?.status === BotStatus.Connected &&
+      state.shouldReconnect &&
+      handleCreateRoom();
   }, [user]);
+
+  // useEffect(() => {
+  //   // Leave room
+  //   if (
+  //     // room?.isFinish &&
+  //     coupleId !== state.foundBy &&
+  //     user?.status === BotStatus.Finished
+  //   ) {
+  //     sendMessage(`[4,"Simms",${room.id}]`);
+  //   }
+  // }, [user]);
 
   const handleLeaveRoom = () => {
     if (room?.id) {

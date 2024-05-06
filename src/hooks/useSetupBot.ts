@@ -210,16 +210,34 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
   }, [user]);
 
   useEffect(() => {
-    // Leave room
-    if (
-      room.id &&
-      !state.foundBy &&
-      user?.status === BotStatus.Finished &&
-      isAllCrawLeft(state.crawingRoom)
-    ) {
-      sendMessage(`[4,"Simms",${room.id}]`);
+    if (state.shouldReconnect) {
+      setShouldConnect(true);
     }
-  }, [user, state.crawingRoom]);
+  }, [state.shouldReconnect]);
+
+  useEffect(() => {
+    if (state.shouldDisconnect) {
+      setShouldConnect(false);
+    }
+  }, [state.shouldDisconnect]);
+
+  useEffect(() => {
+    user?.status === BotStatus.Connected &&
+      state.shouldReconnect &&
+      handleCreateRoom();
+  }, [user]);
+
+  // useEffect(() => {
+  //   // Leave room
+  //   if (
+  //     room.id &&
+  //     !state.foundBy &&
+  //     user?.status === BotStatus.Finished &&
+  //     isAllCrawLeft(state.crawingRoom)
+  //   ) {
+  //     sendMessage(`[4,"Simms",${room.id}]`);
+  //   }
+  // }, [user, state.crawingRoom]);
 
   // fix lung sub out truoc
   useEffect(() => {

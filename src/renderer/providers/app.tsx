@@ -76,6 +76,8 @@ export interface StateProps {
   isLoggedIn?: boolean;
   isQuited?: boolean;
   activeMain?: string;
+  shouldDisconnect?: boolean;
+  shouldReconnect?: boolean;
 }
 
 export const defaultState = {
