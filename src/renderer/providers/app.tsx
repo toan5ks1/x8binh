@@ -22,6 +22,7 @@ export enum BotStatus {
   PreFinished = 'PREFINISHED',
   Finished = 'FINISHED',
   Left = 'LEFT',
+  Reconnect = 'RECONNECT',
 }
 
 export interface GameState {
@@ -41,11 +42,13 @@ export interface Room {
   owner?: string;
   players: string[];
   cardGame: GameCard[][];
+  cardDesk: number[][];
   shouldOutVote: number;
   isFinish: boolean;
   isHostReady: boolean;
   isSubJoin?: boolean;
   roomType: number;
+  targetCard?: number[];
 }
 
 export interface StateProps {
@@ -78,12 +81,14 @@ export interface StateProps {
   activeMain?: string;
   shouldDisconnect?: boolean;
   shouldReconnect?: boolean;
+  isNotFound?: boolean;
 }
 
 export const defaultState = {
   initialRoom: {
     players: [],
     cardGame: [],
+    cardDesk: [],
     shouldOutVote: 0,
     isFinish: false,
     isHostReady: false,
@@ -112,6 +117,7 @@ const AppProvider = ({ children }: AppProviderProps) => {
     initialRoom: {
       players: [] as string[],
       cardGame: [] as GameCard[][],
+      cardDesk: [] as number[][],
       shouldOutVote: 0,
       isFinish: false,
       isHostReady: false,

@@ -115,6 +115,42 @@ export const isFoundCards = (
   return isFound1 && isFound2;
 };
 
+export const isFoundCardsV2 = (
+  cardPlayer1: number[][],
+  cardPlayer2: number[][]
+) => {
+  if (cardPlayer1.length < 2 || cardPlayer2.length < 2) {
+    return false;
+  }
+
+  const isFound1 =
+    JSON.stringify(cardPlayer1[0]) === JSON.stringify(cardPlayer2[0]) ||
+    JSON.stringify(cardPlayer1[0]) === JSON.stringify(cardPlayer2[1]);
+  const isFound2 =
+    JSON.stringify(cardPlayer1[1]) === JSON.stringify(cardPlayer2[0]) ||
+    JSON.stringify(cardPlayer1[1]) === JSON.stringify(cardPlayer2[1]);
+
+  return isFound1 && isFound2;
+};
+
+export const isFoundCardsV3 = (
+  cardPlayer1: number[][],
+  cardPlayer2: number[][]
+) => {
+  if (cardPlayer1.length < 2 || cardPlayer2.length < 2) {
+    return false;
+  }
+
+  const isFound1 =
+    areArraysEqual(cardPlayer1[0], cardPlayer2[0]) ||
+    areArraysEqual(cardPlayer1[0], cardPlayer2[1]);
+  const isFound2 =
+    areArraysEqual(cardPlayer1[1], cardPlayer2[0]) ||
+    areArraysEqual(cardPlayer1[1], cardPlayer2[1]);
+
+  return isFound1 && isFound2;
+};
+
 export const isAllHostReady = (state: StateProps) => {
   let isAllHostReady = state.initialRoom.isHostReady;
   Object.values(state.crawingRoom).forEach((room) => {

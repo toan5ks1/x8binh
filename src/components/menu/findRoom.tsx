@@ -1,5 +1,4 @@
 import { CoupleCrawStatus } from '../bots/coupleCraw';
-import { CoupleWaiterStatus } from '../bots/coupleWaiter';
 import { MainPlayerStatus } from '../bots/mainPlayer';
 import { ScrollArea } from '../ui/scroll-area';
 import BotSetting from './botSheet';
@@ -63,16 +62,17 @@ export function FindRoomSheet({
                 );
               } else {
                 return (
-                  <CoupleWaiterStatus
-                    key={index}
-                    index={index}
-                    craw1={bot}
-                    craw2={craws[index + 1]}
-                    shouldLogin={shouldLogin}
-                    shouldCreatRoom={shouldCreatRoom}
-                    shouldLeave={shouldLeave}
-                    shouldDisconnect={shouldDisconnect}
-                  />
+                  // <CoupleWaiterStatus
+                  //   key={index}
+                  //   index={index}
+                  //   craw1={bot}
+                  //   craw2={craws[index + 1]}
+                  //   shouldLogin={shouldLogin}
+                  //   shouldCreatRoom={shouldCreatRoom}
+                  //   shouldLeave={shouldLeave}
+                  //   shouldDisconnect={shouldDisconnect}
+                  // />
+                  <></>
                 );
               }
             }
