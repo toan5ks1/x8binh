@@ -59,13 +59,15 @@ export function handleMessageCrawing({
         (message[1]?.cmd === 5 && message[1]?.dn === fullname)
       ) {
         setUser((pre) => ({ ...pre, status: BotStatus.Ready }));
-        setState((pre) => ({
-          ...pre,
-          crawingRoom: {
-            ...pre.crawingRoom,
-            [coupleId]: { ...pre.crawingRoom[coupleId], isHostReady: true },
-          },
-        }));
+        caller !== state.crawingRoom[coupleId].owner &&
+          setState((pre) => ({
+            ...pre,
+            crawingRoom: {
+              ...pre.crawingRoom,
+              // [coupleId]: { ...pre.crawingRoom[coupleId], isHostReady: true },
+            },
+            readyHost: pre.readyHost + 1,
+          }));
       } else if (message[1]?.cs?.length > 0) {
         setUser((pre) => ({
           ...pre,

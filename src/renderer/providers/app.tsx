@@ -82,6 +82,7 @@ export interface StateProps {
   shouldDisconnect?: boolean;
   shouldReconnect?: boolean;
   isNotFound?: boolean;
+  readyHost: number;
 }
 
 export const defaultState = {
@@ -100,6 +101,7 @@ export const defaultState = {
   waiterBots: {},
   currentGame: { number: 0, sheet: {} },
   shouldRecreateRoom: false,
+  readyHost: 0,
 };
 
 interface AppContextProps {
@@ -129,6 +131,7 @@ const AppProvider = ({ children }: AppProviderProps) => {
     waiterBots: {},
     currentGame: { number: 0, sheet: {} },
     shouldRecreateRoom: false,
+    readyHost: 0,
   });
 
   return (

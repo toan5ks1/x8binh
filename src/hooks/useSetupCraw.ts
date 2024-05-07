@@ -164,12 +164,20 @@ export function useSetupCraw(
         if (bot.username !== room.owner) {
           sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
         }
-        if (bot.username === room.owner && room.isHostReady) {
-          sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-        }
       }
     }
   }, [room, user]);
+
+  useEffect(() => {
+    if (!state.foundAt && room?.id) {
+      if (
+        bot.username === room.owner &&
+        state.readyHost === Object.keys(state.crawingRoom).length + 1
+      ) {
+        sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
+      }
+    }
+  }, [state.readyHost]);
 
   useEffect(() => {
     // Submit
@@ -189,16 +197,14 @@ export function useSetupCraw(
   }, [user]);
 
   useEffect(() => {
-    if (isHost && state.isNotFound && initRoom.shouldOutVote === 4) {
+    if (
+      isHost &&
+      state.isNotFound &&
+      initRoom.shouldOutVote === Object.keys(state.crawingRoom).length * 2 + 2
+    ) {
       setState({ ...defaultState, shouldDisconnect: true });
     }
   }, [initRoom.shouldOutVote]);
-
-  // useEffect(() => {
-  //   if (isHost && state.isNotFound && user?.status === BotStatus.Finished) {
-  //     setState((pre) => ({ ...pre, shouldDisconnect: true }));
-  //   }
-  // }, [state.isNotFound, user]);
 
   // Check cards
   useEffect(() => {

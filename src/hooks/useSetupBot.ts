@@ -171,13 +171,21 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
         if (bot.username !== room.owner) {
           sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
         }
-        if (bot.username === room.owner && room.isHostReady) {
-          sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-        }
       }
     }
   }, [room, user]);
 
+  useEffect(() => {
+    console.log(state.readyHost);
+    if (!state.foundAt && room?.id) {
+      if (
+        bot.username === room.owner &&
+        state.readyHost === Object.keys(state.crawingRoom).length + 1
+      ) {
+        sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
+      }
+    }
+  }, [state.readyHost]);
   // // Bot join initial room
   // useEffect(() => {
   //   if (!state.foundAt && room.id) {

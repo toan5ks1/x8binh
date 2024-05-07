@@ -59,10 +59,12 @@ export function handleMessage({
         (message[1]?.cmd === 5 && message[1]?.dn === fullname)
       ) {
         setUser((pre) => ({ ...pre, status: BotStatus.Ready }));
-        setState((pre) => ({
-          ...pre,
-          initialRoom: { ...pre.initialRoom, isHostReady: true },
-        }));
+        caller !== state.initialRoom.owner &&
+          setState((pre) => ({
+            ...pre,
+            // initialRoom: { ...pre.initialRoom, isHostReady: true },
+            readyHost: pre.readyHost + 1,
+          }));
       } else if (message[1]?.cs?.length > 0) {
         setUser((pre) => ({
           ...pre,
