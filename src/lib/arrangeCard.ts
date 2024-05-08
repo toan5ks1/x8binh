@@ -509,9 +509,9 @@ function getTextofMauBinh(t: number) {
 function decodeCard2(cardCode: number) {
   const suits = ['bich', 'chuon', 'ro', 'co'];
   const s = (cardCode % 4) + 1;
-  let n = Math.floor(cardCode / 4) + 1;
+  var n = Math.floor(cardCode / 4) + 1;
 
-  if (n === 0) {
+  if (n === 1) {
     n = 14;
   }
 

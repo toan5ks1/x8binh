@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { format } from 'date-fns';
 import _ from 'lodash';
 import { fetchHardwareInfo } from './hardwareInfo';
 
@@ -87,6 +88,64 @@ export const handleActive = async (
     setLoading(false);
     console.log(hardwareInfo);
     return hardwareInfo;
+  }
+};
+
+export const addMoney = async (key: string, money: number) => {
+  try {
+    const today = format(new Date(), 'yyyy-MM-dd');
+
+    const { data: licenseData, error: licenseError } = await supabase
+      .from('license-key')
+      .select('money_earn')
+      .eq('license_key', key)
+      .single();
+
+    if (licenseError) throw licenseError;
+
+    const updatedMoney = licenseData.money_earn + money;
+
+    const { error: updateError } = await supabase
+      .from('license-key')
+      .update({ money_earn: updatedMoney })
+      .eq('license_key', key);
+
+    if (updateError) throw updateError;
+
+    const { data: dailyData, error: dailyError } = await supabase
+      .from('money-day-by-day')
+      .select('*')
+      .eq('license_key', key)
+      .eq('date', today)
+      .single();
+
+    if (dailyData) {
+      console.log('dailyData', dailyData);
+      const { error: updateDailyError } = await supabase
+        .from('money-day-by-day')
+        .update({ money_earn: dailyData.money_earn + money })
+        .eq('id', dailyData.id);
+
+      if (updateDailyError) throw updateDailyError;
+    } else {
+      const { error: createDailyError } = await supabase
+        .from('money-day-by-day')
+        .insert([
+          {
+            license_key: key,
+            money_earn: money,
+            date: today,
+            created_at: new Date(),
+          },
+        ]);
+
+      if (createDailyError) throw createDailyError;
+    }
+
+    return { message: 'Money added successfully to both tables.' };
+  } catch (error) {
+    console.error('Error updating money:', error);
+    return null;
   }
 };
 
