@@ -9,8 +9,8 @@ import {
   LoginResponseDto,
   login,
 } from '../lib/login';
-import { isAllHostReady, isFoundCards } from '../lib/utils';
-import { AppContext, BotStatus } from '../renderer/providers/app';
+import { isFoundCardsV2 } from '../lib/utils';
+import { AppContext, BotStatus, defaultState } from '../renderer/providers/app';
 
 export function useSetupCraw(
   bot: LoginParams,
@@ -42,6 +42,15 @@ export function useSetupCraw(
       onOpen: () => {
         pingGame(user!);
         setShouldPingMaubinh(true);
+      },
+      onClose: () => {
+        setShouldConnect(true);
+        setUser((pre) => ({
+          ...pre!,
+          status: undefined,
+          isReconnected: true,
+          uit: [],
+        }));
       },
     },
     shouldConnect
@@ -146,98 +155,133 @@ export function useSetupCraw(
 
   // Bot join initial room
   useEffect(() => {
-    if (
-      room &&
-      room.id &&
-      Object.keys(room.cardGame).length === 0 // Make sure cards isn't received
-    ) {
+    if (!state.foundAt && room?.id) {
       // Host and guess join after created room
-      if (
-        bot.username === room.owner &&
-        room.players.length === 0 &&
-        user?.status !== BotStatus.Joined
-      ) {
-        // Host
-        sendMessage(`[3,"Simms",${room.id},""]`);
-      } else if (
-        bot.username !== room.owner &&
-        room.players.length === 1 &&
-        user?.status !== BotStatus.Joined
-      ) {
-        // Guess
-        sendMessage(`[3,"Simms",${room.id},"",true]`);
-      }
-
-      if (
-        room.players.length >= 2 &&
-        user?.status === BotStatus.Joined &&
+      if (user?.status === BotStatus.Connected) {
+        // Join room
         bot.username === room.owner
-      ) {
-        // Host ready
-        sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
+          ? sendMessage(`[3,"Simms",${room.id},""]`)
+          : sendMessage(`[3,"Simms",${room.id},"",true]`);
       }
-    }
-  }, [room]);
 
-  // Guess ready
-  useEffect(() => {
-    if (
-      room &&
-      bot.username !== room.owner &&
-      user?.status === BotStatus.Joined &&
-      isAllHostReady(state) &&
-      !state.foundAt
-    ) {
-      sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-    }
-  }, [state.initialRoom, state.crawingRoom]);
-
-  // Submit
-  useEffect(() => {
-    if (user?.status === BotStatus.Received && !state.foundAt) {
-      // Submit cards
-      sendMessage(
-        `[5,"Simms",${room.id},{"cmd":603,"cs":[${user.currentCard}]}]`
-      );
-    }
-  }, [user]);
-
-  // Check cards
-  useEffect(() => {
-    if (!state.foundAt) {
-      if (room?.cardGame.length && initRoom.cardGame.length) {
-        if (isFoundCards(room.cardGame[0], initRoom.cardGame[0])) {
-          toast({
-            title: 'Successfully',
-            description: `Found: ${room.id}`,
-          });
-          setState((pre) => ({
-            ...pre,
-            foundAt: room.id,
-            foundBy: coupleId,
-            targetAt: initRoom.id,
-          }));
-          console.log(`Found: ${room.id}`);
-        } else {
-          toast({
-            title: 'Not match',
-            description: `Finding again...`,
-          });
+      if (user?.status === BotStatus.Joined) {
+        // Ready
+        if (bot.username !== room.owner) {
+          sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
         }
       }
     }
-  }, [room, state.initialRoom, state.foundAt]);
+  }, [room, user]);
 
   useEffect(() => {
-    // Leave room
-    if (
-      // room?.isFinish &&
-      coupleId !== state.foundBy &&
-      user?.status === BotStatus.Finished
-    ) {
+    if (!state.foundAt && room?.id) {
+      if (
+        bot.username === room.owner &&
+        state.readyHost === Object.keys(state.crawingRoom).length + 1
+      ) {
+        sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
+      }
+    }
+  }, [state.readyHost]);
+
+  useEffect(() => {
+    // Submit
+    if (user?.status === BotStatus.Received && !state.foundAt) {
+      sendMessage(
+        `[5,"Simms",${room.id},{"cmd":603,"cs":[${user!.currentCard}]}]`
+      );
+    } else if (user?.status === BotStatus.Submitted) {
       sendMessage(`[4,"Simms",${room.id}]`);
+    } else if (
+      user?.status === BotStatus.Connected &&
+      user.isReconnected &&
+      isHost
+    ) {
+      handleCreateRoom();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (
+      isHost &&
+      room?.isChecked &&
+      initRoom.shouldOutVote === Object.keys(state.crawingRoom).length * 2 + 2
+    ) {
+      setState({ ...defaultState, shouldDisconnect: true });
+    }
+  }, [initRoom.shouldOutVote]);
+
+  // Check cards
+  useEffect(() => {
+    if (
+      !state.foundAt &&
+      !room?.isChecked &&
+      initRoom.cardDesk.length === 2 &&
+      room.cardDesk.length === 2 &&
+      isHost
+    ) {
+      console.log('initR', initRoom.cardDesk, 'crR', room?.cardDesk);
+      if (isFoundCardsV2(initRoom.cardDesk, room.cardDesk)) {
+        toast({
+          title: 'Successfully',
+          description: `Found: ${room.id}`,
+        });
+        setState((pre) => ({
+          ...pre,
+          foundAt: room.id,
+          foundBy: coupleId,
+          targetAt: initRoom.id,
+        }));
+        console.log(`Found: ${room.id}`);
+      } else {
+        toast({
+          title: 'Not match',
+          description: `Finding again...`,
+        });
+        setState((pre) => ({
+          ...pre,
+          crawingRoom: {
+            ...pre.crawingRoom,
+            [coupleId]: { ...pre.crawingRoom[coupleId], isChecked: true },
+          },
+        }));
+      }
+    }
+  }, [room, initRoom]);
+
+  // useEffect(() => {
+  //   if (state.shouldDisconnect) {
+  //     setShouldConnect(true);
+  //     setState((pre) => ({
+  //       ...pre,
+  //       shouldDisconnect: false,
+  //       shouldReconnect: true,
+  //     }));
+  //   }
+  // }, [state.shouldDisconnect]);
+
+  useEffect(() => {
+    if (state.shouldDisconnect) {
+      disconnectGame();
+    }
+  }, [state.shouldDisconnect]);
+
+  // useEffect(() => {
+  //   if (user?.status === BotStatus.Connected && user.isReconnected && isHost) {
+  //     handleCreateRoom();
+  //   }
+  // }, [user]);
+
+  // useEffect(() => {
+  //   // Leave room
+  //   if (
+  //     // room?.isFinish &&
+  //     coupleId !== state.foundBy &&
+  //     user?.status === BotStatus.Finished
+  //   ) {
+  //     sendMessage(`[4,"Simms",${room.id}]`);
+  //   }
+  // }, [user]);
 
   const handleLeaveRoom = () => {
     if (room?.id) {
@@ -246,18 +290,18 @@ export function useSetupCraw(
   };
 
   // Recreate room
-  useEffect(() => {
-    if (
-      room?.isFinish &&
-      state.shouldRecreateRoom &&
-      isHost &&
-      user &&
-      user?.status !== BotStatus.Finding
-    ) {
-      setUser({ ...user, status: BotStatus.Finding });
-      handleCreateRoom();
-    }
-  }, [state.shouldRecreateRoom]);
+  // useEffect(() => {
+  //   if (
+  //     room?.isFinish &&
+  //     state.shouldRecreateRoom &&
+  //     isHost &&
+  //     user &&
+  //     user?.status !== BotStatus.Finding
+  //   ) {
+  //     setUser({ ...user, status: BotStatus.Finding });
+  //     handleCreateRoom();
+  //   }
+  // }, [state.shouldRecreateRoom]);
 
   // Found room submit cards
   useEffect(() => {
@@ -265,7 +309,7 @@ export function useSetupCraw(
       const { status, currentCard: myCards } = user;
       if (
         status === BotStatus.Received &&
-        room.players.length === 4 &&
+        // room.players.length === 4 &&
         myCards
       ) {
         // Submit cards
@@ -277,14 +321,14 @@ export function useSetupCraw(
   // Found room ready
   useEffect(() => {
     if (coupleId === state.foundBy) {
-      if (user?.status === BotStatus.Finished) {
+      if (user?.status === BotStatus.Submitted) {
         sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
         // ready for new game
       }
 
-      if (isHost && user?.status === BotStatus.Ready) {
-        sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
-      }
+      // if (isHost && user?.status === BotStatus.Ready) {
+      //   sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
+      // }
     }
   }, [user]);
 

@@ -36,6 +36,7 @@ import {
 } from '../components/ui/tooltip';
 import { roomTypes } from '../lib/config';
 import { validateLicense } from '../lib/supabase';
+import { defaultRoom } from '../lib/utils';
 import { AppContext } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
 import { HomePage } from './pages/home';
@@ -86,10 +87,18 @@ export function App() {
   const onCreateRoom = () => {
     setShouldCreateRoom(true);
     setIsFinding(true);
+    state.foundBy &&
+      setState((pre) => ({
+        ...pre,
+        crawingRoom: {
+          ...pre.crawingRoom,
+          [state.foundBy!]: defaultRoom,
+        },
+      }));
   };
 
   const onLeaveRoom = () => {
-    setShouldLeave(true);
+    setState((pre) => ({ ...pre, shouldLeaveAll: true }));
     setShouldCreateRoom(false);
     state.isQuited === false && setIsQuiting(true);
     setIsFinding(false);
