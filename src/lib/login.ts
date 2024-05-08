@@ -16,7 +16,7 @@ export interface LoginResponseDto {
   status?: BotStatus;
   currentCard?: number[];
   isReconnected?: boolean;
-  uid: string;
+  uid: string[];
 }
 
 export interface LoginResponse {

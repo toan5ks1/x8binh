@@ -110,17 +110,14 @@ export function handleMessageCrawing({
         // });
         // setUser((pre) => ({ ...pre, status: BotStatus.Finished }));
         // returnMsg = 'Game finished!';
-      } else if (
-        (message[1].hsl === false || message[1].hsl === true) &&
-        message[1].ps?.length >= 2 &&
-        message[1].cmd === 602
-      ) {
+      } else if (message[1].cmd === 603 && message[1].iar === true) {
         //[5,{"uid":"29_23559922","cmd":603,"iar":true}]
         setUser((pre) => ({
           ...pre,
           status: BotStatus.Submitted,
-          // uid: message[1].uid,
+          // uid: [...(pre.uid ?? []), message[1].uid],
         }));
+
         returnMsg = 'Cards submitted!';
       }
       // } else if (

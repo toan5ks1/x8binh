@@ -45,7 +45,12 @@ export function useSetupCraw(
       },
       onClose: () => {
         setShouldConnect(true);
-        setUser((pre) => ({ ...pre!, status: undefined, isReconnected: true }));
+        setUser((pre) => ({
+          ...pre!,
+          status: undefined,
+          isReconnected: true,
+          uit: [],
+        }));
       },
     },
     shouldConnect
@@ -185,7 +190,7 @@ export function useSetupCraw(
       sendMessage(
         `[5,"Simms",${room.id},{"cmd":603,"cs":[${user!.currentCard}]}]`
       );
-    } else if (user?.status === BotStatus.Submitted && !user?.uid) {
+    } else if (user?.status === BotStatus.Submitted) {
       sendMessage(`[4,"Simms",${room.id}]`);
     } else if (
       user?.status === BotStatus.Connected &&
@@ -209,11 +214,13 @@ export function useSetupCraw(
   // Check cards
   useEffect(() => {
     if (
+      !state.isNotFound &&
       !state.foundAt &&
       initRoom.cardDesk.length === 2 &&
       room.cardDesk.length === 2 &&
       isHost
     ) {
+      console.log('initR', initRoom.cardDesk, 'crR', room?.cardDesk);
       if (isFoundCardsV2(initRoom.cardDesk, room.cardDesk)) {
         toast({
           title: 'Successfully',

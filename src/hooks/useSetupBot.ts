@@ -16,7 +16,6 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
   const [socketUrl, setSocketUrl] = useState('');
   const { state, setState } = useContext(AppContext);
   const room = state.initialRoom;
-  const me = state.mainBots[bot.username];
   const { accounts } = useAccountStore();
   const subMain = accounts['MAIN'].filter((item: any) => item.isSelected)[0];
 
@@ -45,7 +44,12 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       },
       onClose: () => {
         setShouldConnect(true);
-        setUser((pre) => ({ ...pre!, status: undefined, isReconnected: true }));
+        setUser((pre) => ({
+          ...pre!,
+          status: undefined,
+          isReconnected: true,
+          uid: [],
+        }));
         setState((pre) => ({ ...pre, shouldDisconnect: false }));
       },
     },
@@ -176,7 +180,6 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
   }, [room, user]);
 
   useEffect(() => {
-    console.log(state.readyHost);
     if (!state.foundAt && room?.id) {
       if (
         bot.username === room.owner &&
@@ -217,7 +220,7 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       sendMessage(
         `[5,"Simms",${room.id},{"cmd":603,"cs":[${user!.currentCard}]}]`
       );
-    } else if (user?.status === BotStatus.Submitted && !user?.uid) {
+    } else if (user?.status === BotStatus.Submitted && user?.uid.length === 1) {
       sendMessage(`[4,"Simms",${room.id}]`);
     } else if (
       user?.status === BotStatus.Connected &&
