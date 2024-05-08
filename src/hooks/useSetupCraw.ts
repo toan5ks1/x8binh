@@ -181,11 +181,11 @@ export function useSetupCraw(
 
   useEffect(() => {
     // Submit
-    if (user?.status === BotStatus.Received) {
+    if (user?.status === BotStatus.Received && !state.foundAt) {
       sendMessage(
         `[5,"Simms",${room.id},{"cmd":603,"cs":[${user!.currentCard}]}]`
       );
-    } else if (user?.status === BotStatus.Submitted) {
+    } else if (user?.status === BotStatus.Submitted && !user?.uid) {
       sendMessage(`[4,"Simms",${room.id}]`);
     } else if (
       user?.status === BotStatus.Connected &&
@@ -296,7 +296,7 @@ export function useSetupCraw(
       const { status, currentCard: myCards } = user;
       if (
         status === BotStatus.Received &&
-        room.players.length === 4 &&
+        // room.players.length === 4 &&
         myCards
       ) {
         // Submit cards
@@ -308,14 +308,14 @@ export function useSetupCraw(
   // Found room ready
   useEffect(() => {
     if (coupleId === state.foundBy) {
-      if (user?.status === BotStatus.Finished) {
+      if (user?.status === BotStatus.Submitted) {
         sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
         // ready for new game
       }
 
-      if (isHost && user?.status === BotStatus.Ready) {
-        sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
-      }
+      // if (isHost && user?.status === BotStatus.Ready) {
+      //   sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
+      // }
     }
   }, [user]);
 

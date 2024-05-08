@@ -217,7 +217,7 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       sendMessage(
         `[5,"Simms",${room.id},{"cmd":603,"cs":[${user!.currentCard}]}]`
       );
-    } else if (user?.status === BotStatus.Submitted) {
+    } else if (user?.status === BotStatus.Submitted && !user?.uid) {
       sendMessage(`[4,"Simms",${room.id}]`);
     } else if (
       user?.status === BotStatus.Connected &&

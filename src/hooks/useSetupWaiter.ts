@@ -130,18 +130,28 @@ export function useSetupWaiter(bot: LoginParams) {
 
   // Join found room
   useEffect(() => {
-    if (state.foundAt && state.foundBy && user && room) {
-      if (!room.players.includes(bot.username)) {
+    if (state.foundAt && state.foundBy && user) {
+      // const room = state.crawingRoom[state.foundBy];
+      if (user.status === BotStatus.Connected) {
         sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
       }
+      // if (!room.players.includes(bot.username)) {
+      //   sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+      // }
     }
-  }, [state.foundBy, state.foundAt]);
+  }, [state.foundAt]);
 
   // Waiter ready
   useEffect(() => {
-    if (user?.status === BotStatus.Finished) {
+    if (user?.status === BotStatus.Submitted) {
       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
     }
+    // if (user?.status === BotStatus.Joined) {
+    //   // Ready
+    //   if (bot.username !== room.owner) {
+    //     sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
+    //   }
+    // }
   }, [user]);
 
   // Crawing
