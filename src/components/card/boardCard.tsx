@@ -33,7 +33,7 @@ const BoardCard: React.FC<any> = ({
   return (
     <TableCell
       key={indexProps}
-      className={`grid grid-cols-1 tablet:grid-cols-2 laptop:grid-cols-4 !w-[100%] gap-[10px]`}
+      className={`grid grid-cols-1 tablet:grid-cols-2 laptop:grid-cols-4 !w-[100%] gap-[10px] py-6`}
       id={`boardCard-${indexProps}`}
     >
       <Label className="absolute top-[-10px] left-[-10px] border bg-background rounded-md p-2 z-[20]">

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { CoupleCrawStatus } from '../bots/coupleCraw';
 import { CoupleWaiterStatus } from '../bots/coupleWaiter';
 import { MainPlayerStatus } from '../bots/mainPlayer';
@@ -25,6 +26,9 @@ export function FindRoomSheet({
   isOpen,
   setIsOpen,
 }: FindRoomSheetProps) {
+  useEffect(() => {
+    console.log('Đa refresh');
+  }, []);
   return (
     <BotSetting isOpen={isOpen} setIsOpen={setIsOpen}>
       <ScrollArea className="h-full rounded-md flex flex-col">
