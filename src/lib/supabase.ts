@@ -112,17 +112,12 @@ export const addMoney = async (key: string, money: number) => {
 
     if (updateError) throw updateError;
 
-    console.log('today', today);
-
     const { data: dailyData, error: dailyError } = await supabase
       .from('money-day-by-day')
       .select('*')
       .eq('license_key', key)
       .eq('date', today)
       .single();
-
-    // if (dailyError && dailyError.message !== 'No rows found') throw dailyError;
-    console.log('van chay tiep');
 
     if (dailyData) {
       console.log('dailyData', dailyData);
@@ -133,7 +128,6 @@ export const addMoney = async (key: string, money: number) => {
 
       if (updateDailyError) throw updateDailyError;
     } else {
-      console.log('creatda', today);
       const { error: createDailyError } = await supabase
         .from('money-day-by-day')
         .insert([

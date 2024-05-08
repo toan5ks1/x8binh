@@ -189,8 +189,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
                 process.env.NODE_ENV != 'development'
                   ? localStorage.getItem('license-key')
                   : ('local-chase' as string);
-              console.log('local', localStorage.getItem('license-key'));
-              console.log(`Tiền sau ván: ${user.mX}`);
               moneyChange(licenseKey, parseInt(user.mX));
             } else {
               console.log('Username not found.');
