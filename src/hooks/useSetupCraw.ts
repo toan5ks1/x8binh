@@ -204,7 +204,7 @@ export function useSetupCraw(
   useEffect(() => {
     if (
       isHost &&
-      state.isNotFound &&
+      room?.isChecked &&
       initRoom.shouldOutVote === Object.keys(state.crawingRoom).length * 2 + 2
     ) {
       setState({ ...defaultState, shouldDisconnect: true });
@@ -214,8 +214,8 @@ export function useSetupCraw(
   // Check cards
   useEffect(() => {
     if (
-      !state.isNotFound &&
       !state.foundAt &&
+      !room?.isChecked &&
       initRoom.cardDesk.length === 2 &&
       room.cardDesk.length === 2 &&
       isHost
@@ -238,7 +238,13 @@ export function useSetupCraw(
           title: 'Not match',
           description: `Finding again...`,
         });
-        setState((pre) => ({ ...pre, isNotFound: true }));
+        setState((pre) => ({
+          ...pre,
+          crawingRoom: {
+            ...pre.crawingRoom,
+            [coupleId]: { ...pre.crawingRoom[coupleId], isChecked: true },
+          },
+        }));
       }
     }
   }, [room, initRoom]);

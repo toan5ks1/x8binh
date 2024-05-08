@@ -49,6 +49,7 @@ export interface Room {
   isSubJoin?: boolean;
   roomType: number;
   targetCard?: number[];
+  isChecked?: boolean;
 }
 
 export interface StateProps {
