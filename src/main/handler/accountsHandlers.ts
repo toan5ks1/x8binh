@@ -126,11 +126,15 @@ export const setupAccountHandlers = (
 
       client.on(
         'Network.webSocketFrameReceived',
-        ({ requestId, response }: WebSocketFrameReceivedData) => {
+        async ({ requestId, response }: WebSocketFrameReceivedData) => {
           if (requestId === specificWebSocketRequestId) {
+            const displayName = await page.evaluate(
+              `__require('GamePlayManager').default.Instance.displayName`
+            );
             mainWindow.webContents.send('websocket-data', {
               data: response.payloadData,
               username: account.username,
+              displayName: displayName,
             });
           }
         }
@@ -296,6 +300,30 @@ export const setupAccountHandlers = (
         await page.evaluate(script);
         const result = await instance.page.evaluate(script);
         event.reply('check-position', {
+          data: result,
+          username: username,
+        });
+      } catch (error) {
+        console.error(`Error executing script for account ${username}:`, error);
+        event.reply(
+          'execute-script-reply',
+          `Failed to execute script for account ${username}.`
+        );
+      }
+    } else {
+      event.reply('execute-script-reply', `Account ${username} not found.`);
+    }
+  });
+  ipcMain.on('check-display-name', async (event, { username }, script) => {
+    const instance = puppeteerInstances.find(
+      (instance) => instance.username === username
+    );
+    if (instance) {
+      const { page } = instance;
+      try {
+        await page.evaluate(script);
+        const result = await instance.page.evaluate(script);
+        event.reply('check-display-name', {
           data: result,
           username: username,
         });

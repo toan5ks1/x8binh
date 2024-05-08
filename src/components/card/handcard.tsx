@@ -97,7 +97,7 @@ export const HandCard: React.FC<HandCardProps> = ({
   );
 
   function renderBackgroundColor() {
-    const specialEvaluations = ['Thùng Phá Sảnh', 'Tứ Quý'];
+    const specialEvaluations = ['TP Sảnh', 'Tứ Quý'];
     if (isInstant) {
       return 'bg-red-500 bg-opacity-90 shadow-[0_0px_10px_rgba(255,_31,_31,_0.8)]';
     }

@@ -136,6 +136,10 @@ try{
 }
 
 `;
+export const checkDisplayNameCommand = `
+  __require('GamePlayManager').default.Instance.displayName
+
+`;
 
 export const getAddNameTagCommand = (main: any) => {
   return `
