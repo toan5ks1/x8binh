@@ -25,25 +25,11 @@ export function handleMessage({
     case 1:
       if (message[1] === true) {
         setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
-        // setState((pre) => ({
-        //   ...pre,
-        //   mainBots: {
-        //     ...pre.mainBots,
-        //     [caller]: { status: BotStatus.Connected },
-        //   },
-        //   isLoggedIn: true,
-        // }));
-        returnMsg = 'Join Maubinh sucessfully!';
+        returnMsg = 'Đã vào lobby!';
       }
       break;
     case 5:
-      if (message[1].rs && user?.status === BotStatus.Initialized) {
-        // setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
-        // setState((pre) => ({ ...pre, isLoggedIn: true }));
-        // returnMsg = 'Join Maubinh sucessfully!';
-        setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
-        returnMsg = 'Đã vào lobby!';
-      } else if (message[1].ri && message[1].cmd === 308) {
+      if (message[1].ri && message[1].cmd === 308) {
         // Create room response
         const roomId = message[1]?.ri?.rid;
 
@@ -64,7 +50,6 @@ export function handleMessage({
         caller !== state.initialRoom.owner &&
           setState((pre) => ({
             ...pre,
-            // initialRoom: { ...pre.initialRoom, isHostReady: true },
             readyHost: pre.readyHost + 1,
           }));
       } else if (message[1]?.cs?.length > 0) {
@@ -73,23 +58,6 @@ export function handleMessage({
           status: BotStatus.Received,
           currentCard: message[1].cs,
         }));
-
-        // setState((pre) => {
-        //   const room = pre.initialRoom;
-        //   const card = JSON.stringify(message[1].cs)
-        //   const isFound = room.targetCard.includes(card)
-        //   return !isFound ? {
-        //     ...pre,
-        //     initialRoom: {
-        //       ...room,
-        //       targetCard: [...room.targetCard, card],
-        //     },
-        //   } : {
-        //     ...pre,
-        //     targetAt: room.id,
-
-        //   };
-        // });
 
         setState((pre) => ({
           ...pre,
@@ -100,22 +68,13 @@ export function handleMessage({
         }));
         returnMsg = `Card received: ${message[1].cs}`;
       } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
-        // setUser((pre) => ({ ...pre, status: BotStatus.PreFinished }));
+        setUser((pre) => ({ ...pre, status: BotStatus.PreFinished }));
       } else if (
         message[1]?.cmd === 204 &&
         user?.status === BotStatus.PreFinished
       ) {
-        // setState((pre) => {
-        //   return {
-        //     ...pre,
-        //     initialRoom: {
-        //       ...pre.initialRoom,
-        //       isFinish: true,
-        //     },
-        //   };
-        // });
-        // setUser((pre) => ({ ...pre, status: BotStatus.Finished }));
-        // returnMsg = 'Game finished!';
+        setUser((pre) => ({ ...pre, status: BotStatus.Finished }));
+        returnMsg = 'Game finished!';
       } else if (message[1].cmd === 603 && message[1].iar === true) {
         user.status !== BotStatus.Submitted &&
           setUser((pre) => ({
@@ -123,26 +82,6 @@ export function handleMessage({
             status: BotStatus.Submitted,
           }));
         returnMsg = 'Cards submitted!';
-        // } else if (
-        //   (message[1].hsl === false || message[1].hsl === true) &&
-        //   message[1].ps?.length >= 2 &&
-        //   message[1].cmd === 602
-        // ) {
-        // caller === state.initialRoom.owner &&
-        //   setState((pre) => {
-        //     return {
-        //       ...pre,
-        //       initialRoom: {
-        //         ...pre.initialRoom,
-        //         cardGame: [
-        //           ...pre.initialRoom.cardGame,
-        //           getCardsArray(message[1].ps),
-        //         ],
-        //       },
-        //     };
-        //   });
-        // setUser((pre) => ({ ...pre, status: BotStatus.Submitted }));
-        // returnMsg = 'Cards submitted!';
       }
       break;
     case 3:
@@ -165,21 +104,6 @@ export function handleMessage({
     case 4:
       // Left room response
       if (message[1] === true) {
-        // setUser((pre) => ({ ...pre, status: BotStatus.Left }));
-        // setState((pre) => ({
-        //   ...pre,
-        //   initialRoom: {
-        //     ...pre.initialRoom,
-        //     id: undefined,
-        //     players: [...pre.initialRoom.players].slice(0, -1),
-        //   },
-        //   shouldRecreateRoom:
-        //     !state.foundAt &&
-        //     caller === pre.initialRoom.owner &&
-        //     isAllCrawLeft(state.crawingRoom)
-        //       ? true
-        //       : false,
-        // }));
         setState((pre) => ({
           ...pre,
           initialRoom: {

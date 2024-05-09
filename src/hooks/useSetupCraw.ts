@@ -152,6 +152,12 @@ export function useSetupCraw(
     );
   };
 
+  const handleLeaveRoom = () => {
+    if (room?.id) {
+      return sendMessage(`[4,"Simms",${room.id}]`);
+    }
+  };
+
   // Bot join initial room
   useEffect(() => {
     if (!state.foundAt && room?.id) {
@@ -254,24 +260,21 @@ export function useSetupCraw(
     }
   }, [state.shouldDisconnect]);
 
-  const handleLeaveRoom = () => {
-    if (room?.id) {
-      return sendMessage(`[4,"Simms",${room.id}]`);
+  useEffect(() => {
+    if (state.shouldStopCrawing) {
+      if (user?.status === BotStatus.Finished) {
+        handleLeaveRoom();
+      }
     }
-  };
+  }, [state.shouldStopCrawing]);
 
   // Found room submit cards
   useEffect(() => {
     if (coupleId === state.foundBy && user) {
-      const { status, currentCard: myCards } = user;
-      if (
-        status === BotStatus.Received &&
-        // room.players.length === 4 &&
-        myCards
-      ) {
+      if (user.status === BotStatus.Received && user.currentCard) {
         // Submit cards
         sendMessage(
-          `[5,"Simms",${state.foundAt},{"cmd":603,"cs":[${myCards}]}]`
+          `[5,"Simms",${state.foundAt},{"cmd":603,"cs":[${user.currentCard}]}]`
         );
       }
     }
@@ -279,10 +282,13 @@ export function useSetupCraw(
 
   // Found room ready
   useEffect(() => {
-    if (coupleId === state.foundBy) {
-      if (user?.status === BotStatus.Finished) {
+    if (coupleId === state.foundBy && !state.shouldStopCrawing) {
+      if (
+        user?.status === BotStatus.Finished ||
+        user?.status === BotStatus.PreFinished ||
+        user?.status === BotStatus.Saved
+      ) {
         sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-        // ready for new game
       }
     }
   }, [user]);

@@ -128,6 +128,12 @@ export function useSetupWaiter(bot: LoginParams) {
     setShouldPingMaubinh(true);
   };
 
+  const handleLeaveRoom = () => {
+    if (state.foundAt) {
+      return sendMessage(`[4,"Simms",${state.foundAt}]`);
+    }
+  };
+
   // Join found room
   useEffect(() => {
     if (state.foundAt && user) {
@@ -140,29 +146,34 @@ export function useSetupWaiter(bot: LoginParams) {
 
   // Waiter ready
   useEffect(() => {
-    if (user?.status === BotStatus.Finished) {
-      console.log('craw ready', user.username);
-      sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
+    if (!state.shouldStopCrawing) {
+      if (
+        user?.status === BotStatus.Finished ||
+        user?.status === BotStatus.PreFinished ||
+        user?.status === BotStatus.Saved
+      ) {
+        sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
+      }
     }
   }, [user]);
 
   // Crawing
   useEffect(() => {
-    if (user) {
-      if (user.status === BotStatus.Received && user.currentCard) {
-        // Submit cards
-        sendMessage(
-          `[5,"Simms",${state.foundAt},{"cmd":603,"cs":[${user.currentCard}]}]`
-        );
-      }
+    if (user?.status === BotStatus.Received && user?.currentCard) {
+      // Submit cards
+      sendMessage(
+        `[5,"Simms",${state.foundAt},{"cmd":603,"cs":[${user.currentCard}]}]`
+      );
     }
   }, [user]);
 
-  const handleLeaveRoom = () => {
-    if (state.foundAt) {
-      return sendMessage(`[4,"Simms",${state.foundAt}]`);
+  useEffect(() => {
+    if (state.shouldStopCrawing) {
+      if (user?.status === BotStatus.Finished) {
+        handleLeaveRoom();
+      }
     }
-  };
+  }, [state.shouldStopCrawing]);
 
   return {
     user,

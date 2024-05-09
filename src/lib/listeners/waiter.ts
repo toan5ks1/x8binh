@@ -26,18 +26,11 @@ export function handleMessageWaiter({
       if (message[1] === true) {
         setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
         setState((pre) => ({ ...pre, isLoggedIn: true }));
-        returnMsg = 'Join Maubinh sucessfully!';
+        returnMsg = 'Đã vào lobby!';
       }
       break;
     case 5:
-      if (message[1].rs && user?.status === BotStatus.Initialized) {
-        // setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
-        // setState((pre) => ({ ...pre, isLoggedIn: true }));
-        // returnMsg = 'Join Maubinh sucessfully!';
-        setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
-        setState((pre) => ({ ...pre, isLoggedIn: true }));
-        returnMsg = 'Đã vào lobby!';
-      } else if (
+      if (
         message[1]?.c === 100 ||
         (message[1]?.cmd === 5 && message[1]?.dn === fullname)
       ) {
@@ -66,7 +59,7 @@ export function handleMessageWaiter({
         const isPlaying = amIPlaying(message[1].ps, user.fullname);
         setUser((pre) => ({
           ...pre,
-          status: isPlaying ? BotStatus.Submitted : pre.status,
+          status: isPlaying ? BotStatus.Saved : pre.status,
         }));
         returnMsg = 'Cards saved!';
       } else if (message[1].cmd === 603 && message[1].iar === true) {
@@ -84,12 +77,19 @@ export function handleMessageWaiter({
           setUser((pre) => ({ ...pre, status: BotStatus.Joined }));
           returnMsg = `Joined room ${message[3]}`;
         }
+      } else if (message[1] === false) {
+        returnMsg = `${message[4]}`;
       }
       break;
     case 4:
       // Left room response
       if (message[1] === true) {
         setUser((pre) => ({ ...pre, status: BotStatus.Left }));
+        setState((pre) => ({
+          ...pre,
+          isQuited: true,
+          shouldStopCrawing: false,
+        }));
         returnMsg = 'Left room successfully!';
       } else {
         returnMsg = message[5] || 'Left room failed!';

@@ -27,23 +27,16 @@ export function handleMessageCrawing({
     case 1:
       if (message[1] === true) {
         setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
-        setState((pre) => ({ ...pre, isLoggedIn: true }));
-        returnMsg = 'Join Maubinh sucessfully!';
+        returnMsg = 'Đã vào lobby';
       }
       break;
     case 5:
-      if (message[1].rs && user?.status === BotStatus.Initialized) {
-        // setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
-        // returnMsg = 'Join Maubinh sucessfully!';
-        setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
-        returnMsg = 'Đã vào lobby';
-      } else if (message[1].ri && message[1].cmd === 308) {
+      if (message[1].ri && message[1].cmd === 308) {
         // Create room response
         const roomId = message[1]?.ri?.rid;
 
         setState((pre) => {
           const newRoom = {
-            // owner: caller,
             ...defaultRoom,
             id: roomId as number,
           };
@@ -127,7 +120,7 @@ export function handleMessageCrawing({
               },
             };
           });
-        setUser((pre) => ({ ...pre, status: BotStatus.Submitted }));
+        setUser((pre) => ({ ...pre, status: BotStatus.Saved }));
         returnMsg = 'Cards saved!';
       }
       break;
@@ -156,22 +149,6 @@ export function handleMessageCrawing({
     case 4:
       // Left room response
       if (message[1] === true) {
-        // setState((pre) => {
-        //   const room = pre.crawingRoom[coupleId];
-        //   return {
-        //     ...pre,
-        //     crawingRoom: {
-        //       ...pre.crawingRoom,
-        //       [coupleId]: {
-        //         ...room,
-        //         id: undefined,
-        //         players: [...room.players].slice(0, -1),
-        //       },
-        //     },
-        //     isQuited: true,
-        //   };
-        // });
-        // setUser((pre) => ({ ...pre, status: BotStatus.Left }));
         setState((pre) => ({
           ...pre,
           initialRoom: {

@@ -36,24 +36,23 @@ import {
 } from '../components/ui/tooltip';
 import { roomTypes } from '../lib/config';
 import { validateLicense } from '../lib/supabase';
-import { defaultRoom } from '../lib/utils';
-import { AppContext } from '../renderer/providers/app';
+import { AppContext, defaultState } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
 import { HomePage } from './pages/home';
 
 export function App() {
-  // const [tab, setActiveTab] = useState('all');
+  const navigate = useNavigate();
   const { state, setState } = useContext(AppContext);
   const { accounts } = useAccountStore();
+  const { toast } = useToast();
+
   const bots = accounts['SUB'].filter((item: any) => item.isSelected === true);
   const craws = accounts['BOT'].filter((item: any) => item.isSelected === true);
+
   const [cardDeck, setCardDeck] = useState('4');
   const [loading, setLoading] = useState(false);
   const [isOpenSheet, setIsOpenSheet] = useState(false);
   const [isOpenBotSheet, setIsOpenBotSheet] = useState(false);
-  const [numberOfCards, setNumberOfCards] = useState(0);
-  const navigate = useNavigate();
-  const { toast } = useToast();
 
   const [shouldLogin, setShouldLogin] = useState(false);
   const [shouldCreatRoom, setShouldCreateRoom] = useState(false);
@@ -87,34 +86,24 @@ export function App() {
   const onCreateRoom = () => {
     setShouldCreateRoom(true);
     setIsFinding(true);
-    state.foundBy &&
-      setState((pre) => ({
-        ...pre,
-        crawingRoom: {
-          ...pre.crawingRoom,
-          [state.foundBy!]: defaultRoom,
-        },
-      }));
   };
 
-  const onLeaveRoom = () => {
-    setState((pre) => ({ ...pre, shouldLeaveAll: true }));
-    setShouldCreateRoom(false);
-    state.isQuited === false && setIsQuiting(true);
-    setIsFinding(false);
+  const onStopCrawing = () => {
+    setState((pre) => ({ ...pre, shouldStopCrawing: true }));
+    setIsQuiting(true);
   };
 
   const onRefreshBot = () => {
     setRefreshKey((prevKey) => prevKey + 1);
-    setShouldLeave(true);
-    setShouldLogin(false);
-    setIsLoging(false);
-    setIsFinding(false);
-    setIsQuiting(false);
     setShouldCreateRoom(false);
+    setIsFinding(false);
+    setIsLoging(false);
+    setIsQuiting(false);
     setState((pre) => ({
-      ...pre,
-      isLoggedIn: false,
+      ...defaultState,
+      isLoggedIn: pre.isLoggedIn,
+      roomType: pre.roomType,
+      shouldDisconnect: true,
     }));
   };
 
@@ -148,7 +137,7 @@ export function App() {
   const handleRoomTypeChange = (money: number) => {
     setState((pre) => ({
       ...pre,
-      initialRoom: { ...pre.initialRoom, roomType: money },
+      roomType: money,
     }));
   };
 
@@ -239,7 +228,7 @@ export function App() {
                           className="h-8 gap-1 !border-[#fff]"
                         >
                           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                            {formatCurrency(state.initialRoom.roomType)}
+                            {formatCurrency(state.roomType)}
                           </span>
                           <DollarSign className="h-3.5 w-3.5" />
                           <ChevronDown />
@@ -252,7 +241,7 @@ export function App() {
                         {roomTypes.map((rType) => (
                           <DropdownMenuCheckboxItem
                             key={rType}
-                            checked={state.initialRoom.roomType === rType}
+                            checked={state.roomType === rType}
                             onSelect={() => handleRoomTypeChange(rType)}
                           >
                             {formatCurrency(rType)}
@@ -280,7 +269,7 @@ export function App() {
                         </Button>
 
                         <Button
-                          onClick={onLeaveRoom}
+                          onClick={onStopCrawing}
                           size="sm"
                           className="h-8 gap-1 bg-yellow-500 cursor-pointer hover:opacity-70"
                           disabled={isQuiting}
@@ -290,7 +279,7 @@ export function App() {
                           ) : (
                             <LogOut className="h-3.5 w-3.5" />
                           )}
-                          Cancel
+                          Stop crawing
                         </Button>
                       </>
                     ) : (

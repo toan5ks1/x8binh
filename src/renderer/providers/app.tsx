@@ -19,6 +19,7 @@ export enum BotStatus {
   Ready = 'READY',
   Received = 'RECEIVED',
   Submitted = 'SUBMITTED',
+  Saved = 'SAVED',
   PreFinished = 'PREFINISHED',
   Finished = 'FINISHED',
   Left = 'LEFT',
@@ -47,7 +48,6 @@ export interface Room {
   isFinish: boolean;
   isHostReady: boolean;
   isSubJoin?: boolean;
-  roomType: number;
   targetCard?: number[];
   isChecked?: boolean;
 }
@@ -80,10 +80,12 @@ export interface StateProps {
   isLoggedIn?: boolean;
   isQuited?: boolean;
   activeMain?: string;
+  shouldStopCrawing?: boolean;
   shouldDisconnect?: boolean;
-  shouldReconnect?: boolean;
+  shouldRefresh?: boolean;
   isNotFound?: boolean;
   readyHost: number;
+  roomType: number;
 }
 
 export const defaultState = {
@@ -94,7 +96,6 @@ export const defaultState = {
     shouldOutVote: 0,
     isFinish: false,
     isHostReady: false,
-    roomType: roomTypes[0],
   },
   mainBots: {},
   crawingRoom: {},
@@ -103,6 +104,7 @@ export const defaultState = {
   currentGame: { number: 0, sheet: {} },
   shouldRecreateRoom: false,
   readyHost: 0,
+  roomType: roomTypes[0],
 };
 
 interface AppContextProps {
@@ -124,7 +126,6 @@ const AppProvider = ({ children }: AppProviderProps) => {
       shouldOutVote: 0,
       isFinish: false,
       isHostReady: false,
-      roomType: roomTypes[0],
     },
     mainBots: {},
     crawingRoom: {},
@@ -133,6 +134,7 @@ const AppProvider = ({ children }: AppProviderProps) => {
     currentGame: { number: 0, sheet: {} },
     shouldRecreateRoom: false,
     readyHost: 0,
+    roomType: roomTypes[0],
   });
 
   return (

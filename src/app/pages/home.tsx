@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import BoardCard from '../../components/card/boardCard';
 import { TerminalBoard } from '../../components/terminal/terminalBoard';
 import { Button } from '../../components/ui/button';
@@ -16,9 +16,8 @@ import { getRandomCards } from '../../lib/card';
 import { AppContext } from '../../renderer/providers/app';
 import useAccountStore from '../../store/accountStore';
 
-export const HomePage: React.FC<any> = (cardDeck, setNumberOfCards) => {
+export const HomePage: React.FC<any> = (cardDeck) => {
   const [cards, setCards] = useState<number[][]>([]);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const { state } = useContext(AppContext);
 
   useEffect(() => {
@@ -31,16 +30,25 @@ export const HomePage: React.FC<any> = (cardDeck, setNumberOfCards) => {
         const mappedCard = lastGame.map((gameCard) => gameCard.cs);
 
         const boBai: number[] = [];
-        for (let i = 0; i < 13; i++) {
-          boBai.push(mappedCard[0][i]);
-          boBai.push(mappedCard[1][i]);
-          boBai.push(mappedCard[2][i]);
-          boBai.push(mappedCard[3][i]);
+
+        if (mappedCard.length === 4) {
+          for (let i = 0; i < 13; i++) {
+            boBai.push(mappedCard[0][i]);
+            boBai.push(mappedCard[1][i]);
+            boBai.push(mappedCard[2][i]);
+            boBai.push(mappedCard[3][i]);
+          }
+          setCards((pre) => [...pre, boBai]);
         }
-        setCards((pre) => [...pre, boBai]);
       }
     }
   }, [state.foundAt, state.crawingRoom]);
+
+  useEffect(() => {
+    if (state.shouldDisconnect) {
+      setCards([]);
+    }
+  }, [state.shouldDisconnect]);
 
   const addRandomCards = () => {
     setCards((prevCards) => [...prevCards, getRandomCards()]);
