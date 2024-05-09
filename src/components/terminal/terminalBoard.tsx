@@ -13,12 +13,14 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Button } from '../../components/ui/button';
 import { Label } from '../../components/ui/label';
 import { ScrollArea } from '../../components/ui/scroll-area';
+import { addMoney } from '../../lib/supabase';
 import { highlightSyntax } from '../../lib/terminal';
 import { AppContext } from '../../renderer/providers/app';
 import { useToast } from '../toast/use-toast';
 import { Toggle } from '../ui/toggle';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import {
+  arrangeCardCommand,
   checkPositionCommand,
   getAddNameTagCommand,
   inviteCommand,
@@ -30,26 +32,8 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   const { state, setState } = useContext(AppContext);
   const [isLogin, setIsLogin] = useState(false);
   const [isInLobby, setIsInLobby] = useState(false);
-  // const [currentRoom, setCurrentRoom] = useState('');
   const [currentSit, setCurrentSit] = useState('');
-  // const [currentCards, setCurrentCards] = useState<any>();
   const [autoInvite, setAutoInvite] = useState(false);
-
-  // const findCurrent = useCallback((crCard: number[]) => {
-  //   let target = 1;
-  //   const crawledCards = state.crawingRoom[state.foundBy ?? '']?.cardGame ?? [];
-  //   if (crawledCards.length) {
-  //     for (let i = state.currentGame.number; i < crawledCards.length; i++) {
-  //       for (const card of crawledCards[i]) {
-  //         if (areArraysEqual(card.cs, crCard)) {
-  //           target = i;
-  //           break;
-  //         }
-  //       }
-  //     }
-  //   }
-  //   return target;
-  // }, []);
 
   useEffect(() => {
     setState((pre) => ({
@@ -98,6 +82,13 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   function checkPosition(account: any): void {
     window.backend.sendMessage('check-position', account, checkPositionCommand);
   }
+  const moneyChange = async (key: string | null, money: number) => {
+    if (money && key) {
+      addMoney(key, money);
+    } else {
+      toast({ title: 'Error', description: 'Not have money to change.' });
+    }
+  };
   async function outInRoom(account: any): Promise<void> {
     if (state.targetAt) {
       await outRoom(account);
@@ -123,15 +114,15 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   async function openAccounts(account: any) {
     await window.backend.sendMessage('open-accounts', account);
   }
-  // async function arrangeCards(account: any) {
-  //   await window.backend.sendMessage(
-  //     'execute-script',
-  //     account,
-  //     arrangeCardCommand
-  //   );
-  // }
+  async function arrangeCards(account: any) {
+    await window.backend.sendMessage(
+      'execute-script',
+      account,
+      arrangeCardCommand
+    );
+  }
 
-  const handleData = ({ data, username }: any) => {
+  const handleData = ({ data, username, displayName }: any) => {
     if (username === main.username) {
       setIsLogin(true);
       if (!data.includes('[6,1') && !data.includes('["7","Simms",')) {
@@ -171,6 +162,8 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
           if (parsedData[2] === state.targetAt) {
             // console.log('Đang trong ván');
           }
+          if (parsedData[1].cmd === 205) {
+          }
           if (parsedData[1].p) {
             if (parsedData[1].p.uid) {
               toast({
@@ -188,13 +181,20 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
             parsedData[1].cmd === 602 &&
             (parsedData[1].hsl == false || parsedData[1].hsl == true)
           ) {
-            toast({
-              title: 'Thông báo',
-              description: 'Đã kết thúc ván bài.',
-            });
+            const user = parsedData[1].ps.find(
+              (item: { dn: string }) => item.dn === displayName
+            );
+            if (user) {
+              const licenseKey =
+                process.env.NODE_ENV != 'development'
+                  ? localStorage.getItem('license-key')
+                  : ('local-chase' as string);
+              moneyChange(licenseKey, parseInt(user.mX));
+            } else {
+              console.log('Username not found.');
+            }
 
             setState((pre) => {
-              console.log('update count', pre.activeMain, main.username);
               return {
                 ...pre,
                 currentGame: {
@@ -206,21 +206,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
                 },
               };
             });
-            // setIsEnd(true);
-            // console.log(
-            //   'activeMainTerm',
-            //   state.activeMain,
-            //   'usname',
-            //   main.username
-            // );
-            // activeMainTerm === main.username &&
-            //   setState((pre) => ({
-            //     ...pre,
-            //     currentGame: {
-            //       ...pre.currentGame,
-            //       number: pre.currentGame.number + 1,
-            //     },
-            //   }));
           }
           if (parsedData[1].cs && parsedData[1].cmd === 600) {
             const currentCards = parsedData[1].cs
@@ -229,7 +214,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
               .map(Number);
             toast({
               title: 'Đã phát bài',
-              description: parsedData[1].cs.toString(),
+              description: currentCards,
             });
 
             setData((currentData) => [
@@ -246,8 +231,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
                 };
               });
 
-            // setCurrentCards(currentCards);
-            // arrangeCards(main);
+            arrangeCards(main);
           }
         }
         if (parsedData[0] !== '7' && parsedData[0] != 5) {
@@ -285,11 +269,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
       }
     }
   };
-  // const handleCheckRoom = ({ data, username }: any) => {
-  //   if (username === main.username) {
-  //     setCurrentRoom(data);
-  //   }
-  // };
+
   const handleCheckPosition = ({ data, username }: any) => {
     if (username === main.username) {
       setCurrentSit(parseInt(data + 1).toString());
@@ -315,13 +295,11 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   useEffect(() => {
     window.backend.on('websocket-data', handleData);
     window.backend.on('websocket-data-sent', handleDataSent);
-    // window.backend.on('check-room', handleCheckRoom);
     window.backend.on('check-position', handleCheckPosition);
 
     return () => {
       window.backend.removeListener('websocket-data', handleData);
       window.backend.removeListener('websocket-data-sent', handleDataSent);
-      // window.backend.removeListener('check-room', handleCheckRoom);
       window.backend.removeListener('check-position', handleCheckPosition);
     };
   }, []);
@@ -351,11 +329,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
               className="flex items-center bg-background border p-[5px]  flex-grow justify-start font-bold rounded-sm"
             >
               Room: {state.targetAt ?? ''}
-              {/* {currentRoom == '19'
-                ? 'Chống vây'
-                : currentRoom
-                ? currentRoom
-                : 'Undefined'} */}
             </Label>
 
             <div>
@@ -411,20 +384,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
                 <p>Create Room</p>
               </TooltipContent>
             </Tooltip>
-            {/* <Tooltip>
-              <TooltipTrigger>
-                <div
-                  onClick={() => arrangeCards(main)}
-                  style={{ fontFamily: 'monospace' }}
-                  className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
-                >
-                  <SortAsc className="h-3.5 w-3.5 text-black" />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Arrange Card</p>
-              </TooltipContent>
-            </Tooltip> */}
             <Tooltip>
               <TooltipTrigger>
                 <div

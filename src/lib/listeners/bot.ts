@@ -41,6 +41,8 @@ export function handleMessage({
         // setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
         // setState((pre) => ({ ...pre, isLoggedIn: true }));
         // returnMsg = 'Join Maubinh sucessfully!';
+        setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
+        returnMsg = 'Đã vào lobby!';
       } else if (message[1].ri && message[1].cmd === 308) {
         // Create room response
         const roomId = message[1]?.ri?.rid;

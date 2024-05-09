@@ -35,6 +35,8 @@ export function handleMessageCrawing({
       if (message[1].rs && user?.status === BotStatus.Initialized) {
         // setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
         // returnMsg = 'Join Maubinh sucessfully!';
+        setUser((pre) => ({ ...pre, status: BotStatus.Connected }));
+        returnMsg = 'Đã vào lobby';
       } else if (message[1].ri && message[1].cmd === 308) {
         // Create room response
         const roomId = message[1]?.ri?.rid;
