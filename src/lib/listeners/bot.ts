@@ -52,7 +52,7 @@ export function handleMessage({
           initialRoom: {
             ...defaultRoom,
             id: roomId as number,
-            owner: caller,
+            // owner: caller,
           },
         }));
         returnMsg = `Created room ${roomId}`;
@@ -151,14 +151,13 @@ export function handleMessage({
       if (message[1] === true) {
         // Host join room response
         setUser((pre) => ({ ...pre, status: BotStatus.Joined }));
-        !state.initialRoom.owner &&
-          setState((pre) => ({
-            ...pre,
-            initialRoom: {
-              ...pre.initialRoom,
-              owner: caller,
-            },
-          }));
+        setState((pre) => ({
+          ...pre,
+          initialRoom: {
+            ...pre.initialRoom,
+            owner: pre.initialRoom.owner ?? caller,
+          },
+        }));
 
         returnMsg = `Joined room ${message[3]}`;
       } else if (message[1] === false) {
