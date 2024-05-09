@@ -189,29 +189,6 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       }
     }
   }, [state.readyHost]);
-  // // Bot join initial room
-  // useEffect(() => {
-  //   if (!state.foundAt && room.id) {
-  //     if (me?.status === BotStatus.Connected) {
-  //       // Join room
-  //       bot.username === room.owner
-  //         ? sendMessage(`[3,"Simms",${room.id},""]`)
-  //         : sendMessage(`[3,"Simms",${room.id},"",true]`);
-  //     }
-  //   }
-  // }, [room.id]);
-  // useEffect(() => {
-  //   if (!state.foundAt) {
-  //     // Host and guess join after created room
-  //     if (!isHost && me?.status === BotStatus.Joined) {
-  //       // Ready
-  //       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-  //     }
-  //     if (isHost && me?.status === BotStatus.Joined && room.isHostReady) {
-  //       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-  //     }
-  //   }
-  // }, [state.mainBots]);
 
   // Submit
   useEffect(() => {
@@ -220,7 +197,7 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
       sendMessage(
         `[5,"Simms",${room.id},{"cmd":603,"cs":[${user!.currentCard}]}]`
       );
-    } else if (user?.status === BotStatus.Submitted && user?.uid.length === 1) {
+    } else if (!state.foundAt && user?.status === BotStatus.Submitted) {
       sendMessage(`[4,"Simms",${room.id}]`);
     } else if (
       user?.status === BotStatus.Connected &&
@@ -231,67 +208,17 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
     }
   }, [user]);
 
-  // useEffect(() => {
-  //   if (user?.status === BotStatus.Submitted) {
-  //     setShouldConnect(false);
-  //   }
-  // }, [user]);
-
   useEffect(() => {
     if (state.shouldDisconnect) {
       disconnectGame();
     }
   }, [state.shouldDisconnect]);
 
-  // useEffect(() => {
-  //   if (user?.status === BotStatus.Connected && user.isReconnected && isHost) {
-  //     handleCreateRoom();
-  //   }
-  // }, [user]);
-
-  // useEffect(() => {
-  //   // Leave room
-  //   if (
-  //     room.id &&
-  //     !state.foundBy &&
-  //     user?.status === BotStatus.Finished &&
-  //     isAllCrawLeft(state.crawingRoom)
-  //   ) {
-  //     sendMessage(`[4,"Simms",${room.id}]`);
-  //   }
-  // }, [user, state.crawingRoom]);
-
-  // fix lung sub out truoc
-  // useEffect(() => {
-  //   if (
-  //     user?.status === BotStatus.Left &&
-  //     isHost &&
-  //     state.shouldRecreateRoom === false &&
-  //     isAllCrawLeft(state.crawingRoom)
-  //   ) {
-  //     setState((pre) => ({ ...pre, shouldRecreateRoom: true }));
-  //   }
-  // }, [state.crawingRoom]);
-
   const handleLeaveRoom = () => {
     if (room?.id) {
       return sendMessage(`[4,"Simms",${room.id}]`);
     }
   };
-
-  // Recreate room
-  // useEffect(() => {
-  //   if (
-  //     state.shouldRecreateRoom &&
-  //     isHost &&
-  //     room?.isFinish &&
-  //     user &&
-  //     user?.status !== BotStatus.Finding
-  //   ) {
-  //     handleCreateRoom();
-  //     setUser({ ...user, status: BotStatus.Finding });
-  //   }
-  // }, [state.shouldRecreateRoom]);
 
   // Call sub join
   useEffect(() => {

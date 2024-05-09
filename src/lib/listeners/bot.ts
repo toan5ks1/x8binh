@@ -115,12 +115,10 @@ export function handleMessage({
         // setUser((pre) => ({ ...pre, status: BotStatus.Finished }));
         // returnMsg = 'Game finished!';
       } else if (message[1].cmd === 603 && message[1].iar === true) {
-        //[5,{"uid":"29_23559922","cmd":603,"iar":true}]
         user.status !== BotStatus.Submitted &&
           setUser((pre) => ({
             ...pre,
             status: BotStatus.Submitted,
-            uid: [...(pre.uid ?? []), message[1].uid],
           }));
         returnMsg = 'Cards submitted!';
         // } else if (

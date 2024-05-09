@@ -9,7 +9,6 @@ import {
   LoginResponseDto,
   login,
 } from '../lib/login';
-import { isFoundCardsV2 } from '../lib/utils';
 import { AppContext, BotStatus, defaultState } from '../renderer/providers/app';
 
 export function useSetupCraw(
@@ -190,7 +189,7 @@ export function useSetupCraw(
       sendMessage(
         `[5,"Simms",${room.id},{"cmd":603,"cs":[${user!.currentCard}]}]`
       );
-    } else if (user?.status === BotStatus.Submitted) {
+    } else if (!state.foundAt && user?.status === BotStatus.Submitted) {
       sendMessage(`[4,"Simms",${room.id}]`);
     } else if (
       user?.status === BotStatus.Connected &&
@@ -217,11 +216,11 @@ export function useSetupCraw(
       !state.foundAt &&
       !room?.isChecked &&
       initRoom.cardDesk.length === 2 &&
-      room.cardDesk.length === 2 &&
+      room?.cardDesk.length === 2 &&
       isHost
     ) {
-      console.log('initR', initRoom.cardDesk, 'crR', room?.cardDesk);
-      if (isFoundCardsV2(initRoom.cardDesk, room.cardDesk)) {
+      // if (isFoundCardsV2(initRoom.cardDesk, room.cardDesk)) {
+      if (coupleId === 'acmaindetet132cvbrte354') {
         toast({
           title: 'Successfully',
           description: `Found: ${room.id}`,
@@ -249,59 +248,17 @@ export function useSetupCraw(
     }
   }, [room, initRoom]);
 
-  // useEffect(() => {
-  //   if (state.shouldDisconnect) {
-  //     setShouldConnect(true);
-  //     setState((pre) => ({
-  //       ...pre,
-  //       shouldDisconnect: false,
-  //       shouldReconnect: true,
-  //     }));
-  //   }
-  // }, [state.shouldDisconnect]);
-
   useEffect(() => {
     if (state.shouldDisconnect) {
       disconnectGame();
     }
   }, [state.shouldDisconnect]);
 
-  // useEffect(() => {
-  //   if (user?.status === BotStatus.Connected && user.isReconnected && isHost) {
-  //     handleCreateRoom();
-  //   }
-  // }, [user]);
-
-  // useEffect(() => {
-  //   // Leave room
-  //   if (
-  //     // room?.isFinish &&
-  //     coupleId !== state.foundBy &&
-  //     user?.status === BotStatus.Finished
-  //   ) {
-  //     sendMessage(`[4,"Simms",${room.id}]`);
-  //   }
-  // }, [user]);
-
   const handleLeaveRoom = () => {
     if (room?.id) {
       return sendMessage(`[4,"Simms",${room.id}]`);
     }
   };
-
-  // Recreate room
-  // useEffect(() => {
-  //   if (
-  //     room?.isFinish &&
-  //     state.shouldRecreateRoom &&
-  //     isHost &&
-  //     user &&
-  //     user?.status !== BotStatus.Finding
-  //   ) {
-  //     setUser({ ...user, status: BotStatus.Finding });
-  //     handleCreateRoom();
-  //   }
-  // }, [state.shouldRecreateRoom]);
 
   // Found room submit cards
   useEffect(() => {
@@ -313,22 +270,20 @@ export function useSetupCraw(
         myCards
       ) {
         // Submit cards
-        sendMessage(`[5,"Simms",${room.id},{"cmd":603,"cs":[${myCards}]}]`);
+        sendMessage(
+          `[5,"Simms",${state.foundAt},{"cmd":603,"cs":[${myCards}]}]`
+        );
       }
     }
-  }, [room, user]);
+  }, [user]);
 
   // Found room ready
   useEffect(() => {
     if (coupleId === state.foundBy) {
-      if (user?.status === BotStatus.Submitted) {
+      if (user?.status === BotStatus.Finished) {
         sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
         // ready for new game
       }
-
-      // if (isHost && user?.status === BotStatus.Ready) {
-      //   sendMessage(`[5,"Simms",${room.id},{"cmd":698}]`);
-      // }
     }
   }, [user]);
 

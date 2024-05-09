@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from 'react';
 import { BotStatus, StateProps } from '../../renderer/providers/app';
 import { LoginResponseDto } from '../login';
-import { defaultRoom } from '../utils';
+import { defaultRoom, getCardsArray } from '../utils';
 
 interface HandleCRMessageCrawingProps {
   message: any;
@@ -90,59 +90,44 @@ export function handleMessageCrawing({
         });
 
         returnMsg = `Card received: ${message[1].cs}`;
-        // } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
-        //   setUser((pre) => ({ ...pre, status: BotStatus.PreFinished }));
-        // } else if (
-        //   message[1]?.cmd === 204 &&
-        //   user.status === BotStatus.PreFinished
-        // ) {
-        // setState((pre) => {
-        //   return {
-        //     ...pre,
-        //     crawingRoom: {
-        //       ...pre.crawingRoom,
-        //       [coupleId]: {
-        //         ...pre.crawingRoom[coupleId],
-        //         isFinish: true,
-        //       },
-        //     },
-        //   };
-        // });
-        // setUser((pre) => ({ ...pre, status: BotStatus.Finished }));
-        // returnMsg = 'Game finished!';
+      } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
+        setUser((pre) => ({ ...pre, status: BotStatus.PreFinished }));
+      } else if (
+        message[1]?.cmd === 204 &&
+        user.status === BotStatus.PreFinished
+      ) {
+        setUser((pre) => ({ ...pre, status: BotStatus.Finished }));
+        returnMsg = 'Game finished!';
       } else if (message[1].cmd === 603 && message[1].iar === true) {
-        //[5,{"uid":"29_23559922","cmd":603,"iar":true}]
         user.status !== BotStatus.Submitted &&
           setUser((pre) => ({
             ...pre,
             status: BotStatus.Submitted,
-            // uid: [...(pre.uid ?? []), message[1].uid],
           }));
 
         returnMsg = 'Cards submitted!';
+      } else if (
+        (message[1].hsl === false || message[1].hsl === true) &&
+        message[1].ps?.length >= 2 &&
+        message[1].cmd === 602
+      ) {
+        const room = state.crawingRoom[coupleId];
+        caller === room.owner &&
+          setState((pre) => {
+            return {
+              ...pre,
+              crawingRoom: {
+                ...pre.crawingRoom,
+                [coupleId]: {
+                  ...room,
+                  cardGame: [...room.cardGame, getCardsArray(message[1].ps)],
+                },
+              },
+            };
+          });
+        setUser((pre) => ({ ...pre, status: BotStatus.Submitted }));
+        returnMsg = 'Cards saved!';
       }
-      // } else if (
-      //   (message[1].hsl === false || message[1].hsl === true) &&
-      //   message[1].ps?.length >= 2 &&
-      //   message[1].cmd === 602
-      // ) {
-      // const room = state.crawingRoom[coupleId];
-      // caller === room.owner &&
-      //   setState((pre) => {
-      //     return {
-      //       ...pre,
-      //       crawingRoom: {
-      //         ...pre.crawingRoom,
-      //         [coupleId]: {
-      //           ...room,
-      //           cardGame: [...room.cardGame, getCardsArray(message[1].ps)],
-      //         },
-      //       },
-      //     };
-      //   });
-      // setUser((pre) => ({ ...pre, status: BotStatus.Submitted }));
-      // returnMsg = 'Cards submitted!';
-      // }
       break;
     case 3:
       if (message[1] === true) {

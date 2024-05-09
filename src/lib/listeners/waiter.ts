@@ -1,6 +1,7 @@
 import { Dispatch, SetStateAction } from 'react';
 import { BotStatus, StateProps } from '../../renderer/providers/app';
 import { LoginResponseDto } from '../login';
+import { amIPlaying } from '../utils';
 
 interface HandleMessageWaiterProps {
   message: any;
@@ -46,31 +47,29 @@ export function handleMessageWaiter({
         }));
 
         returnMsg = `Card received: ${message[1].cs}`;
-        // } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
-        //   setUser((pre) => ({ ...pre, status: BotStatus.PreFinished }));
-        // } else if (
-        //   message[1]?.cmd === 204 &&
-        //   user.status === BotStatus.PreFinished
-        // ) {
-        //   setUser((pre) => ({ ...pre, status: BotStatus.Finished }));
-        //   returnMsg = 'Game finished!';
-        // } else if (
-        //   (message[1].hsl === false || message[1].hsl === true) &&
-        //   message[1].ps?.length >= 2 &&
-        //   message[1].cmd === 602
-        // ) {
-        //   const isPlaying = amIPlaying(message[1].ps, user.fullname);
-        //   setUser((pre) => ({
-        //     ...pre,
-        //     status: isPlaying ? BotStatus.Submitted : pre.status,
-        //   }));
-        //   returnMsg = 'Cards submitted!';
+      } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
+        setUser((pre) => ({ ...pre, status: BotStatus.PreFinished }));
+      } else if (
+        message[1]?.cmd === 204 &&
+        user.status === BotStatus.PreFinished
+      ) {
+        setUser((pre) => ({ ...pre, status: BotStatus.Finished }));
+        returnMsg = 'Game finished!';
+      } else if (
+        (message[1].hsl === false || message[1].hsl === true) &&
+        message[1].ps?.length >= 2 &&
+        message[1].cmd === 602
+      ) {
+        const isPlaying = amIPlaying(message[1].ps, user.fullname);
+        setUser((pre) => ({
+          ...pre,
+          status: isPlaying ? BotStatus.Submitted : pre.status,
+        }));
+        returnMsg = 'Cards saved!';
       } else if (message[1].cmd === 603 && message[1].iar === true) {
-        //[5,{"uid":"29_23559922","cmd":603,"iar":true}]
         setUser((pre) => ({
           ...pre,
           status: BotStatus.Submitted,
-          uid: message[1].uid,
         }));
         returnMsg = 'Cards submitted!';
       }
@@ -79,23 +78,8 @@ export function handleMessageWaiter({
       if (message[1] === true) {
         // Join room response
         if (state.foundBy) {
-          // const currentRoom = state.crawingRoom[state.foundBy];
-          // const currentPlayers = [...currentRoom.players, caller];
-
-          // setState((pre) => {
-          //   return {
-          //     ...pre,
-          //     crawingRoom: {
-          //       ...pre.crawingRoom,
-          //       [state.foundBy!]: {
-          //         ...currentRoom,
-          //         players: currentPlayers,
-          //       },
-          //     },
-          //   };
-          // });
           setUser((pre) => ({ ...pre, status: BotStatus.Joined }));
-          // returnMsg = `Joined room ${message[3]} (room now has ${currentPlayers.length} players)`;
+          returnMsg = `Joined room ${message[3]}`;
         }
       }
       break;
