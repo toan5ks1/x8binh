@@ -41,9 +41,9 @@ export function handleMessageCrawing({
 
         setState((pre) => {
           const newRoom = {
-            id: roomId as number,
-            owner: caller,
+            // owner: caller,
             ...defaultRoom,
+            id: roomId as number,
           };
           return {
             ...pre,
@@ -149,17 +149,16 @@ export function handleMessageCrawing({
         // Join room response
         if (coupleId) {
           setUser((pre) => ({ ...pre, status: BotStatus.Joined }));
-          !state.crawingRoom[coupleId].owner &&
-            setState((pre) => ({
-              ...pre,
-              crawingRoom: {
-                ...pre.crawingRoom,
-                [coupleId]: {
-                  ...pre.crawingRoom[coupleId],
-                  owner: caller,
-                },
+          setState((pre) => ({
+            ...pre,
+            crawingRoom: {
+              ...pre.crawingRoom,
+              [coupleId]: {
+                ...pre.crawingRoom[coupleId],
+                owner: state.crawingRoom[coupleId].owner ?? caller,
               },
-            }));
+            },
+          }));
 
           returnMsg = `Joined room ${message[3]}`;
         }
