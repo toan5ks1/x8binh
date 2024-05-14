@@ -18,11 +18,11 @@ import useAccountStore from '../../store/accountStore';
 
 export const HomePage: React.FC<any> = (cardDeck) => {
   const [cards, setCards] = useState<number[][]>([]);
-  const { state } = useContext(AppContext);
+  const { state, crawingRoom } = useContext(AppContext);
 
   useEffect(() => {
-    if (state.foundBy) {
-      const desk = state.crawingRoom[state.foundBy].cardGame;
+    if (state.foundAt) {
+      const desk = crawingRoom.cardGame;
       const lastIndex = desk.length - 1;
       const lastGame = desk[lastIndex];
 
@@ -42,7 +42,7 @@ export const HomePage: React.FC<any> = (cardDeck) => {
         }
       }
     }
-  }, [state.foundAt, state.crawingRoom]);
+  }, [state.foundAt, crawingRoom.cardGame]);
 
   useEffect(() => {
     if (state.shouldDisconnect) {

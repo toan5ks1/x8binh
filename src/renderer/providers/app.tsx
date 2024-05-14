@@ -6,6 +6,7 @@ import {
   useState,
 } from 'react';
 import { roomTypes } from '../../lib/config';
+import { defaultRoom } from '../../lib/utils';
 
 interface AppProviderProps {
   children: ReactNode;
@@ -44,38 +45,23 @@ export interface Room {
   players: string[];
   cardGame: GameCard[][];
   cardDesk: number[][];
-  shouldOutVote: number;
   isFinish: boolean;
-  isHostReady: boolean;
+  isPrefinish: boolean;
   isSubJoin?: boolean;
   targetCard?: number[];
-  isChecked?: boolean;
+  isHostJoin: boolean;
+  isHostOut: boolean;
+  isGuessOut: boolean;
+  shouldGuessJoin: boolean;
+  shouldHostReady: boolean;
+  shouldGuessReady: boolean;
+  shouldOut?: boolean;
 }
 
 export interface StateProps {
-  initialRoom: Room;
-  crawingRoom: {
-    [key: string]: Room;
-  };
-  crawingBots: {
-    [key: string]: {
-      status: BotStatus;
-    };
-  };
-  mainBots: {
-    [key: string]: {
-      status: BotStatus;
-    };
-  };
-  waiterBots: {
-    [key: string]: {
-      status: BotStatus;
-    };
-  };
   foundAt?: number;
   targetAt?: number;
-  foundBy?: string;
-  shouldRecreateRoom: boolean;
+  recreateTime: number;
   currentGame: GameState;
   isLoggedIn?: boolean;
   isQuited?: boolean;
@@ -84,61 +70,50 @@ export interface StateProps {
   shouldDisconnect?: boolean;
   shouldRefresh?: boolean;
   isNotFound?: boolean;
-  readyHost: number;
   roomType: number;
 }
 
 export const defaultState = {
-  initialRoom: {
-    players: [],
-    cardGame: [],
-    cardDesk: [],
-    shouldOutVote: 0,
-    isFinish: false,
-    isHostReady: false,
-  },
-  mainBots: {},
-  crawingRoom: {},
-  crawingBots: {},
-  waiterBots: {},
   currentGame: { number: 0, sheet: {} },
-  shouldRecreateRoom: false,
-  readyHost: 0,
+  recreateTime: 0,
   roomType: roomTypes[0],
 };
 
 interface AppContextProps {
   state: StateProps;
   setState: Dispatch<SetStateAction<StateProps>>;
+  initialRoom: Room;
+  setInitialRoom: Dispatch<SetStateAction<Room>>;
+  crawingRoom: Room;
+  setCrawingRoom: Dispatch<SetStateAction<Room>>;
 }
 
 export const AppContext = createContext<AppContextProps>({
   state: defaultState,
+  initialRoom: defaultRoom,
+  crawingRoom: defaultRoom,
   setState: () => {},
+  setInitialRoom: () => {},
+  setCrawingRoom: () => {},
 });
 
 const AppProvider = ({ children }: AppProviderProps) => {
-  const [state, setState] = useState({
-    initialRoom: {
-      players: [] as string[],
-      cardGame: [] as GameCard[][],
-      cardDesk: [] as number[][],
-      shouldOutVote: 0,
-      isFinish: false,
-      isHostReady: false,
-    },
-    mainBots: {},
-    crawingRoom: {},
-    crawingBots: {},
-    waiterBots: {},
-    currentGame: { number: 0, sheet: {} },
-    shouldRecreateRoom: false,
-    readyHost: 0,
-    roomType: roomTypes[0],
-  });
+  const [state, setState] = useState(defaultState);
+
+  const [initialRoom, setInitialRoom] = useState(defaultRoom);
+  const [crawingRoom, setCrawingRoom] = useState(defaultRoom);
 
   return (
-    <AppContext.Provider value={{ state, setState }}>
+    <AppContext.Provider
+      value={{
+        state,
+        setState,
+        initialRoom,
+        setInitialRoom,
+        crawingRoom,
+        setCrawingRoom,
+      }}
+    >
       {children}
     </AppContext.Provider>
   );

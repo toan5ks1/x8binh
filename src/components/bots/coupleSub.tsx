@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
-import { useSetupBot } from '../../hooks/useSetupBot';
+import { useSetupSubGuess } from '../../hooks/useSetupSubGuess';
+import { useSetupSubHost } from '../../hooks/useSetupSubHost';
 import { BotCmp } from './botCmp';
 import { BotStatusProps } from './coupleCraw';
 
-export const MainPlayerStatus = ({
+export const CoupleSubStatus = ({
   craw1,
   craw2,
   index,
@@ -21,7 +22,7 @@ export const MainPlayerStatus = ({
     handleLoginClick: loginBot1,
     handleCreateRoom: handleCreateRoomBot1,
     disconnectGame: disconnectBot1,
-  } = useSetupBot(craw1, true);
+  } = useSetupSubHost(craw1);
 
   const {
     user: user2,
@@ -31,7 +32,7 @@ export const MainPlayerStatus = ({
     connectionStatus: connectionStatusBot2,
     handleLoginClick: loginBot2,
     disconnectGame: disconnectBot2,
-  } = useSetupBot(craw2, false);
+  } = useSetupSubGuess(craw2);
 
   useEffect(() => {
     if (shouldLogin) {

@@ -15,7 +15,9 @@ import {
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AccountSection } from '../components/account/accountSection';
-import { FindRoomSheet } from '../components/menu/findRoom';
+import { CoupleCrawStatus } from '../components/bots/coupleCraw';
+import { CoupleSubStatus } from '../components/bots/coupleSub';
+import BotSetting from '../components/menu/botSheet';
 import MainSetting from '../components/menu/mainSetting';
 import { useToast } from '../components/toast/use-toast';
 import { Button } from '../components/ui/button';
@@ -29,6 +31,7 @@ import {
 } from '../components/ui/dropdown-menu';
 import { Label } from '../components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio';
+import { ScrollArea } from '../components/ui/scroll-area';
 import {
   Tooltip,
   TooltipContent,
@@ -42,7 +45,7 @@ import { HomePage } from './pages/home';
 
 export function App() {
   const navigate = useNavigate();
-  const { state, setState } = useContext(AppContext);
+  const { state, setState, initialRoom, crawingRoom } = useContext(AppContext);
   const { accounts } = useAccountStore();
   const { toast } = useToast();
 
@@ -66,7 +69,10 @@ export function App() {
 
   const onLogin = () => {
     setShouldLogin(true);
-    setIsLoging(true);
+    // setIsLoging(true);
+
+    // tests
+    setState((pre) => ({ ...pre, isLoggedIn: true }));
   };
 
   const onScrollToBoardCard = () => {
@@ -107,11 +113,11 @@ export function App() {
     }));
   };
 
-  useEffect(() => {
-    if (state.isLoggedIn) {
-      setIsLoging(false);
-    }
-  }, [state.isLoggedIn]);
+  // useEffect(() => {
+  //   if (state.isLoggedIn) {
+  //     setIsLoging(false);
+  //   }
+  // }, [state.isLoggedIn]);
 
   useEffect(() => {
     if (state.foundAt) {
@@ -124,6 +130,29 @@ export function App() {
       setIsQuiting(false);
     }
   }, [state.isQuited]);
+
+  useEffect(() => {
+    if (
+      initialRoom.isGuessOut &&
+      initialRoom.isHostOut &&
+      crawingRoom.isHostOut &&
+      crawingRoom.isGuessOut
+    ) {
+      setShouldCreateRoom(true);
+    }
+  }, [
+    initialRoom.isGuessOut,
+    initialRoom.isHostOut,
+    crawingRoom.isHostOut,
+    crawingRoom.isGuessOut,
+  ]);
+
+  useEffect(() => {
+    if (state.recreateTime) {
+      setShouldCreateRoom(false);
+      setState((pre) => ({ ...defaultState, roomType: pre.roomType }));
+    }
+  }, [state.recreateTime]);
 
   useEffect(() => {
     if (
@@ -171,16 +200,64 @@ export function App() {
                     <Bot />
                   </Button>
                   <div key={refreshKey}>
-                    <FindRoomSheet
-                      bots={bots}
-                      craws={craws}
-                      shouldLogin={shouldLogin}
-                      shouldCreatRoom={shouldCreatRoom}
-                      shouldLeave={shouldLeave}
-                      shouldDisconnect={shouldDisconnect}
-                      setIsOpen={setIsOpenBotSheet}
+                    <BotSetting
                       isOpen={isOpenBotSheet}
-                    />
+                      setIsOpen={setIsOpenBotSheet}
+                    >
+                      <ScrollArea className="h-full rounded-md flex flex-col">
+                        <div className="flex flex-col  text-white space-y-4 flex-1 w-full">
+                          {bots.map(
+                            (bot: any, index: any) =>
+                              index % 2 === 0 &&
+                              index < bots.length - 1 && (
+                                <CoupleSubStatus
+                                  key={index}
+                                  index={index}
+                                  craw1={bot}
+                                  craw2={bots[index + 1]}
+                                  shouldLogin={shouldLogin}
+                                  shouldCreatRoom={shouldCreatRoom}
+                                  shouldLeave={shouldLeave}
+                                  shouldDisconnect={shouldDisconnect}
+                                />
+                              )
+                          )}
+
+                          {craws.map((bot: any, index: any) => {
+                            if (index % 2 === 0 && index < craws.length - 1) {
+                              if (index < craws.length - 3) {
+                                return (
+                                  <CoupleCrawStatus
+                                    key={index}
+                                    index={index}
+                                    craw1={bot}
+                                    craw2={craws[index + 1]}
+                                    shouldLogin={shouldLogin}
+                                    shouldCreatRoom={shouldCreatRoom}
+                                    shouldLeave={shouldLeave}
+                                    shouldDisconnect={shouldDisconnect}
+                                  />
+                                );
+                              } else {
+                                return (
+                                  // <CoupleWaiterStatus
+                                  //   key={index}
+                                  //   index={index}
+                                  //   craw1={bot}
+                                  //   craw2={craws[index + 1]}
+                                  //   shouldLogin={shouldLogin}
+                                  //   shouldCreatRoom={shouldCreatRoom}
+                                  //   shouldLeave={shouldLeave}
+                                  //   shouldDisconnect={shouldDisconnect}
+                                  // />
+                                  <></>
+                                );
+                              }
+                            }
+                          })}
+                        </div>
+                      </ScrollArea>
+                    </BotSetting>
                   </div>
 
                   <div className="flex gap-2 items-center">

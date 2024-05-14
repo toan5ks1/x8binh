@@ -1,27 +1,21 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { handleMessage } from '../lib/listeners/bot';
+import { toast } from '../components/toast/use-toast';
+import { roomTypes } from '../lib/config';
+import { handleMessageCrawHost } from '../lib/listeners/crawHost';
 import {
   LoginParams,
   LoginResponse,
   LoginResponseDto,
-  joinRoom,
   login,
-  openAccounts,
 } from '../lib/login';
-import { AppContext, BotStatus } from '../renderer/providers/app';
-import useAccountStore from '../store/accountStore';
+import { isFoundCards } from '../lib/utils';
+import { AppContext } from '../renderer/providers/app';
 
-export function useSetupBot(bot: LoginParams, isHost: boolean) {
+export function useSetupCrawHost(bot: LoginParams) {
   const [socketUrl, setSocketUrl] = useState('');
-  const { state, setState } = useContext(AppContext);
-  const room = state.initialRoom;
-  const { accounts } = useAccountStore();
-  const subMain = accounts['MAIN'].filter((item: any) => item.isSelected)[0];
-
-  const subJoin = () => {
-    joinRoom(subMain, room.id);
-  };
+  const { state, setState, crawingRoom, setCrawingRoom, initialRoom } =
+    useContext(AppContext);
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
   const [shouldPingMaubinh, setShouldPingMaubinh] = useState(false);
@@ -42,16 +36,9 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
         pingGame(user!);
         setShouldPingMaubinh(true);
       },
-      onClose: () => {
-        setShouldConnect(true);
-        setUser((pre) => ({
-          ...pre!,
-          status: undefined,
-          isReconnected: true,
-          uid: [],
-        }));
-        setState((pre) => ({ ...pre, shouldDisconnect: false }));
-      },
+      // onClose: () => {
+      //   setShouldConnect(true);
+      // },
     },
     shouldConnect
   );
@@ -72,14 +59,12 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
   useEffect(() => {
     if (lastMessage !== null && user) {
       const message = JSON.parse(lastMessage.data);
-      const newMsg = handleMessage({
+      const newMsg = handleMessageCrawHost({
         message,
-        state,
-        setState,
-        user,
-        setUser: setUser as React.Dispatch<
-          React.SetStateAction<LoginResponseDto>
-        >,
+        crawingRoom,
+        initialRoom,
+        setCrawingRoom,
+        sendMessage,
       });
 
       newMsg && setMessageHistory((msgs) => [...msgs, newMsg]);
@@ -116,19 +101,12 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
         if (user) {
           setUser(user);
           connectMainGame(user);
-          loginSubMain();
         }
       })
       .catch((err: Error) =>
         console.error('Error when calling login function:', err)
       );
   };
-
-  const loginSubMain = useCallback(async () => {
-    if (subMain && isHost) {
-      openAccounts(subMain);
-    }
-  }, [subMain]);
 
   const connectMainGame = (user: LoginResponseDto) => {
     if (user?.token) {
@@ -155,84 +133,112 @@ export function useSetupBot(bot: LoginParams, isHost: boolean) {
 
   const handleCreateRoom = () => {
     sendMessage(
-      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":${state.roomType},"Mu":4,"iJ":true,"inc":false,"pwd":""}]`
+      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":${roomTypes[0]},"Mu":4,"iJ":true,"inc":false,"pwd":""}]`
     );
   };
 
-  // Bot join initial room
+  // Host ready initial room
   useEffect(() => {
-    if (!state.foundAt && room?.id) {
-      // Host and guess join after created room
-      if (user?.status === BotStatus.Connected) {
-        // Join room
-        bot.username === room.owner
-          ? sendMessage(`[3,"Simms",${room.id},""]`)
-          : sendMessage(`[3,"Simms",${room.id},"",true]`);
-      }
-
-      if (user?.status === BotStatus.Joined) {
-        // Ready
-        if (bot.username !== room.owner) {
-          sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-        }
+    if (!state.foundAt) {
+      if (crawingRoom.shouldHostReady && initialRoom.shouldHostReady) {
+        sendMessage(`[5,"Simms",${crawingRoom.id},{"cmd":698}]`);
       }
     }
-  }, [room, user]);
+  }, [crawingRoom.shouldHostReady, initialRoom.shouldHostReady]);
 
+  // Check cards
   useEffect(() => {
-    if (!state.foundAt && room?.id) {
-      if (
-        bot.username === room.owner &&
-        state.readyHost === Object.keys(state.crawingRoom).length + 1
-      ) {
-        sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
+    if (
+      !state.foundAt &&
+      initialRoom.cardGame[0]?.length === 2 &&
+      crawingRoom.cardGame[0]?.length === 2
+    ) {
+      if (isFoundCards(initialRoom.cardGame[0], crawingRoom.cardGame[0])) {
+        setState((pre) => ({
+          ...pre,
+          foundAt: crawingRoom.id,
+          targetAt: initialRoom.id,
+        }));
+
+        toast({
+          title: 'Successfully',
+          description: `Found: ${crawingRoom.id}`,
+        });
+        console.log('found at: ', crawingRoom.id);
+      } else {
+        toast({
+          title: 'Not match',
+          description: `Finding again...`,
+        });
+        setState((pre) => ({
+          ...pre,
+          isNotFound: true,
+          recreateTime: pre.recreateTime + 1,
+        }));
       }
     }
-  }, [state.readyHost]);
+  }, [initialRoom.cardGame, crawingRoom.cardGame]);
+
+  // useEffect(() => {
+  //   if (!state.foundAt && room?.id) {
+  //     if (
+  //       bot.username === room.owner &&
+  //       state.readyHost === Object.keys(state.crawingRoom).length + 1
+  //     ) {
+  //       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
+  //     }
+  //   }
+  // }, [state.readyHost]);
 
   // Submit
-  useEffect(() => {
-    // Submit
-    if (user?.status === BotStatus.Received) {
-      sendMessage(
-        `[5,"Simms",${room.id},{"cmd":603,"cs":[${user!.currentCard}]}]`
-      );
-    } else if (!state.foundAt && user?.status === BotStatus.Submitted) {
-      sendMessage(`[4,"Simms",${room.id}]`);
-    } else if (
-      user?.status === BotStatus.Connected &&
-      user.isReconnected &&
-      isHost
-    ) {
-      handleCreateRoom();
-    }
-  }, [user]);
+  // useEffect(() => {
+  //   // Submit
+  //   if (user?.status === BotStatus.Received) {
+  //     sendMessage(
+  //       `[5,"Simms",${room.id},{"cmd":603,"cs":[${user!.currentCard}]}]`
+  //     );
+  //   } else if (!state.foundAt && user?.status === BotStatus.Submitted) {
+  //     sendMessage(`[4,"Simms",${room.id}]`);
+  //   } else if (
+  //     user?.status === BotStatus.Connected &&
+  //     user.isReconnected &&
+  //     isHost
+  //   ) {
+  //     handleCreateRoom();
+  //   }
+  // }, [user]);
+
+  // useEffect(() => {
+  //   if (crawingRoom.isPrefinish) {
+  //     handleLeaveRoom();
+  //   }
+  // }, [crawingRoom.isPrefinish]);
 
   useEffect(() => {
-    if (state.shouldDisconnect) {
-      disconnectGame();
+    if (state.isNotFound) {
+      handleLeaveRoom();
     }
-  }, [state.shouldDisconnect]);
+  }, [state.isNotFound]);
 
   const handleLeaveRoom = () => {
-    if (room?.id) {
-      return sendMessage(`[4,"Simms",${room.id}]`);
+    if (crawingRoom?.id) {
+      return sendMessage(`[4,"Simms",${crawingRoom.id}]`);
     }
   };
 
-  // Call sub join
-  useEffect(() => {
-    if (state.targetAt && subMain && isHost) {
-      subJoin();
-    }
-  }, [state.targetAt]);
+  // // Call sub join
+  // useEffect(() => {
+  //   if (state.targetAt && subMain && isHost) {
+  //     subJoin();
+  //   }
+  // }, [state.targetAt]);
 
-  // sub leave
-  useEffect(() => {
-    if (user?.status === BotStatus.Finished && room.isSubJoin) {
-      sendMessage(`[4,"Simms",${room.id}]`);
-    }
-  }, [room]);
+  // // sub leave
+  // useEffect(() => {
+  //   if (user?.status === BotStatus.Finished && room.isSubJoin) {
+  //     sendMessage(`[4,"Simms",${room.id}]`);
+  //   }
+  // }, [room]);
 
   return {
     user,

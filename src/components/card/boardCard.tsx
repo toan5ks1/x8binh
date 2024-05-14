@@ -10,7 +10,7 @@ const BoardCard: React.FC<any> = ({
   numPlayers,
   currentGame,
 }) => {
-  const { state, setState } = useContext(AppContext);
+  const { state } = useContext(AppContext);
   const playerHands = useMemo(() => {
     const playerHands: number[][] = Array.from(
       { length: numPlayers },
@@ -26,9 +26,7 @@ const BoardCard: React.FC<any> = ({
     return playerHands;
   }, [cards, numPlayers]);
 
-  useEffect(() => {
-    console.log('check sheet', state.currentGame.sheet);
-  }, [state.currentGame]);
+  useEffect(() => {}, [state.currentGame]);
 
   return (
     <TableCell

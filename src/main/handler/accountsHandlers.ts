@@ -152,7 +152,9 @@ export const setupAccountHandlers = (
         }
       );
 
-      await page.goto('https://play.rik.vip/', { waitUntil: 'networkidle2' });
+      await page.goto('https://play.rikvip.win/', {
+        waitUntil: 'networkidle2',
+      });
 
       await page.evaluate(`
       let node2 = cc.find("Canvas/MainUIParent/NewLobby/Footder/bottmBar@3x/Public/Layout/dnButtonSmartObjectGroup1@3x").getComponent(cc.Button);
