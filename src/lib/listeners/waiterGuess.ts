@@ -6,17 +6,17 @@ import { LoginResponseDto } from '../login';
 
 interface HandleCRMessageProps {
   message: any;
-  initialRoom: Room;
-  setInitialRoom: Dispatch<SetStateAction<Room>>;
+  waiterRoom: Room;
+  setWaiterRoom: Dispatch<SetStateAction<Room>>;
   sendMessage: SendMessage;
   user: LoginResponseDto;
   state: StateProps;
 }
 
-export function handleMessageSubGuess({
+export function handleMessageWaiterGuess({
   message,
-  initialRoom,
-  setInitialRoom,
+  waiterRoom,
+  setWaiterRoom,
   sendMessage,
   user,
   state,
@@ -35,20 +35,15 @@ export function handleMessageSubGuess({
         message[1]?.c === 100 ||
         (message[1]?.cmd === 5 && message[1]?.dn === fullname)
       ) {
-        setInitialRoom((pre) => ({
+        setWaiterRoom((pre) => ({
           ...pre,
           shouldHostReady: true,
         }));
       } else if (message[1]?.cs?.length > 0) {
-        setInitialRoom((pre) => ({
-          ...pre,
-          isFinish: false,
-          cardDesk: [...pre.cardDesk, { cs: message[1].cs, dn: 'guess' }],
-        }));
         // Submit cards
         sendMessage(
           `[5,"Simms",${
-            state?.foundAt ?? initialRoom.id
+            state?.foundAt ?? waiterRoom.id
           },{"cmd":603,"cs":[${binhlung(message[1].cs)}]}]`
         );
 
@@ -58,14 +53,12 @@ export function handleMessageSubGuess({
     case 3:
       if (message[1] === true) {
         // Guess join room response
-        setInitialRoom((pre) => ({
+        setWaiterRoom((pre) => ({
           ...pre,
           isGuessJoin: true,
         }));
 
-        // Guess ready
-        !state.foundAt &&
-          sendMessage(`[5,"Simms",${initialRoom.id},{"cmd":5}]`);
+        !state.foundAt && sendMessage(`[5,"Simms",${waiterRoom.id},{"cmd":5}]`);
 
         returnMsg = `Joined room ${message[3]}`;
       } else if (message[1] === false) {
@@ -75,7 +68,7 @@ export function handleMessageSubGuess({
     case 4:
       // Left room response
       if (message[1] === true) {
-        setInitialRoom((pre) => ({
+        setWaiterRoom((pre) => ({
           ...pre,
           isGuessOut: true,
           isGuessJoin: false,

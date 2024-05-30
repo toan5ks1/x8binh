@@ -1,21 +1,20 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { handleMessageWaiter } from '../lib/listeners/waiter';
+import { handleMessageWaiterGuess } from '../lib/listeners/waiterGuess';
 import {
   LoginParams,
   LoginResponse,
   LoginResponseDto,
   login,
 } from '../lib/login';
-import { AppContext, BotStatus } from '../renderer/providers/app';
+import { AppContext } from '../renderer/providers/app';
 
-export function useSetupWaiter(bot: LoginParams) {
+export function useSetupWaiterGuess(bot: LoginParams) {
   const [socketUrl, setSocketUrl] = useState('');
-  const { state, setState } = useContext(AppContext);
-  const room = state.crawingRoom[state.foundBy ?? ''];
+  const { state, waiterRoom, setWaiterRoom, crawingRoom } =
+    useContext(AppContext);
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
-
   const [shouldPingMaubinh, setShouldPingMaubinh] = useState(false);
 
   const [iTime, setITime] = useState(1);
@@ -34,6 +33,9 @@ export function useSetupWaiter(bot: LoginParams) {
         pingGame(user!);
         setShouldPingMaubinh(true);
       },
+      // onClose: () => {
+      //   setShouldConnect(true);
+      // },
     },
     shouldConnect
   );
@@ -54,14 +56,13 @@ export function useSetupWaiter(bot: LoginParams) {
   useEffect(() => {
     if (lastMessage !== null && user) {
       const message = JSON.parse(lastMessage.data);
-      const newMsg = handleMessageWaiter({
+      const newMsg = handleMessageWaiterGuess({
         message,
-        state,
-        setState,
+        waiterRoom,
+        setWaiterRoom,
+        sendMessage,
         user,
-        setUser: setUser as React.Dispatch<
-          React.SetStateAction<LoginResponseDto>
-        >,
+        state,
       });
 
       newMsg && setMessageHistory((msgs) => [...msgs, newMsg]);
@@ -124,65 +125,123 @@ export function useSetupWaiter(bot: LoginParams) {
     setShouldConnect(false);
   };
 
-  const handleConnectMauBinh = (): void => {
+  const handleConnectMauBinh = () => {
     setShouldPingMaubinh(true);
   };
 
+  const handleCreateRoom = () => {
+    sendMessage(
+      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":${state.roomType},"Mu":4,"iJ":true,"inc":false,"pwd":""}]`
+    );
+  };
+
+  // Guess join initial room
+  useEffect(() => {
+    if (!state.foundAt) {
+      if (waiterRoom.shouldGuessJoin) {
+        sendMessage(`[3,"Simms",${waiterRoom.id},"",true]`);
+      }
+    }
+  }, [waiterRoom.shouldGuessJoin]);
+
+  // useEffect(() => {
+  //   if (!state.foundAt && room?.id) {
+  //     if (
+  //       bot.username === room.owner &&
+  //       state.readyHost === Object.keys(state.waiterRoom).length + 1
+  //     ) {
+  //       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
+  //     }
+  //   }
+  // }, [state.readyHost]);
+
+  // Submit
+  // useEffect(() => {
+  //   // Submit
+  //   if (user?.status === BotStatus.Received) {
+  //     sendMessage(
+  //       `[5,"Simms",${room.id},{"cmd":603,"cs":[${user!.currentCard}]}]`
+  //     );
+  //   } else if (!state.foundAt && user?.status === BotStatus.Submitted) {
+  //     sendMessage(`[4,"Simms",${room.id}]`);
+  //   } else if (
+  //     user?.status === BotStatus.Connected &&
+  //     user.isReconnected &&
+  //     isHost
+  //   ) {
+  //     handleCreateRoom();
+  //   }
+  // }, [user]);
+
+  // useEffect(() => {
+  //   if (state.shouldDisconnect) {
+  //     disconnectGame();
+  //   }
+  // }, [state.shouldDisconnect]);
+
+  // useEffect(() => {
+  //   if (waiterRoom.isPrefinish) {
+  //     handleLeaveRoom();
+  //   }
+  // }, [waiterRoom.isPrefinish]);
+
+  useEffect(() => {
+    if (waiterRoom.isFinish) {
+      handleLeaveRoom();
+    }
+  }, [waiterRoom.isFinish]);
+
   const handleLeaveRoom = () => {
-    if (state.foundAt) {
-      return sendMessage(`[4,"Simms",${state.foundAt}]`);
+    if (waiterRoom?.id) {
+      return sendMessage(`[4,"Simms",${waiterRoom.id}]`);
     }
   };
 
   // Join found room
   useEffect(() => {
-    if (state.foundAt && user) {
-      // const room = state.crawingRoom[state.foundBy];
-      if (user.status === BotStatus.Connected) {
-        sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
-      }
+    if (
+      state.foundAt &&
+      state.foundAt !== waiterRoom.id &&
+      waiterRoom.isGuessOut
+    ) {
+      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
     }
-  }, [state.foundAt]);
+  }, [state.foundAt, waiterRoom.isGuessOut]);
 
-  // Waiter ready
+  // Ready to crawing (Craw found)
   useEffect(() => {
-    if (!state.shouldStopCrawing) {
-      if (
-        user?.status === BotStatus.Finished ||
-        user?.status === BotStatus.PreFinished ||
-        user?.status === BotStatus.Saved
-      ) {
-        sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-      }
+    if (
+      state.foundAt &&
+      state.foundAt !== waiterRoom.id &&
+      crawingRoom.isFinish &&
+      waiterRoom.isGuessOut &&
+      waiterRoom.isGuessJoin
+    ) {
+      sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
     }
-  }, [user]);
+  }, [crawingRoom.isFinish, waiterRoom.isGuessJoin]);
 
-  // Crawing
+  // Ready to crawing (Waiter found)
   useEffect(() => {
-    if (user?.status === BotStatus.Received && user?.currentCard) {
-      // Submit cards
-      sendMessage(
-        `[5,"Simms",${state.foundAt},{"cmd":603,"cs":[${user.currentCard}]}]`
-      );
+    if (
+      state.foundAt &&
+      state.foundAt === waiterRoom.id &&
+      waiterRoom.isFinish
+    ) {
+      sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
     }
-  }, [user]);
-
-  useEffect(() => {
-    if (state.shouldStopCrawing) {
-      if (user?.status === BotStatus.Finished) {
-        handleLeaveRoom();
-      }
-    }
-  }, [state.shouldStopCrawing]);
+  }, [waiterRoom.isFinish]);
 
   return {
     user,
-    handleLoginClick,
-    handleConnectMauBinh,
+    handleCreateRoom,
     messageHistory,
     setMessageHistory,
-    connectionStatus,
     handleLeaveRoom,
+    connectionStatus,
+    handleLoginClick,
+    connectMainGame,
+    handleConnectMauBinh,
     disconnectGame,
   };
 }

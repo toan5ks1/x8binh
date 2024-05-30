@@ -1,6 +1,8 @@
 import { Dispatch, SetStateAction } from 'react';
 import { SendMessage } from 'react-use-websocket';
-import { Room } from '../../renderer/providers/app';
+import { Room, StateProps } from '../../renderer/providers/app';
+import { binhlung } from '../binhlung';
+import { LoginResponseDto } from '../login';
 import { defaultRoom, getCardsArray } from '../utils';
 
 interface HandleCRMessageProps {
@@ -9,6 +11,8 @@ interface HandleCRMessageProps {
   crawingRoom: Room;
   setInitialRoom: Dispatch<SetStateAction<Room>>;
   sendMessage: SendMessage;
+  user: LoginResponseDto;
+  state: StateProps;
 }
 
 export function handleMessageSubHost({
@@ -16,8 +20,11 @@ export function handleMessageSubHost({
   initialRoom,
   setInitialRoom,
   sendMessage,
+  user,
+  state,
 }: HandleCRMessageProps) {
   let returnMsg;
+  const { fullname } = user;
 
   switch (message[0]) {
     case 1:
@@ -26,7 +33,15 @@ export function handleMessageSubHost({
       }
       break;
     case 5:
-      if (message[1].ri && message[1].cmd === 308) {
+      if (
+        message[1]?.c === 100 ||
+        (message[1]?.cmd === 5 && message[1]?.dn === fullname)
+      ) {
+        setInitialRoom((pre) => ({
+          ...pre,
+          isHostReady: true,
+        }));
+      } else if (message[1].ri && message[1].cmd === 308) {
         // Create room response
         const roomId = message[1]?.ri?.rid;
 
@@ -38,27 +53,29 @@ export function handleMessageSubHost({
 
         // Host join
         sendMessage(`[3,"Simms",${roomId},""]`);
-        // } else if (
-        //   message[1]?.c === 100 ||
-        //   (message[1]?.cmd === 5 && message[1]?.dn === fullname)
-        // ) {
-        //   setUser((pre) => ({ ...pre, status: BotStatus.Ready }));
-        //   caller !== state.initialRoom.owner &&
-        //     setState((pre) => ({
-        //       ...pre,
-        //       readyHost: pre.readyHost + 1,
-        //     }));
       } else if (message[1]?.cs?.length > 0) {
+        setInitialRoom((pre) => ({
+          ...pre,
+          isFinish: false,
+          cardDesk: [...pre.cardDesk, { cs: message[1].cs, dn: 'host' }],
+        }));
         // Submit cards
         sendMessage(
-          `[5,"Simms",${initialRoom.id},{"cmd":603,"cs":[${message[1].cs}]}]`
+          `[5,"Simms",${
+            state?.foundAt ?? initialRoom.id
+          },{"cmd":603,"cs":[${binhlung(message[1].cs)}]}]`
         );
 
         returnMsg = `Card received: ${message[1].cs}`;
       } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
         setInitialRoom((pre) => ({ ...pre, isPrefinish: true }));
       } else if (message[1]?.cmd === 204 && initialRoom.isPrefinish) {
-        setInitialRoom((pre) => ({ ...pre, isFinish: true }));
+        setInitialRoom((pre) => ({
+          ...pre,
+          isFinish: true,
+          isHostReady: false,
+          shouldHostReady: false,
+        }));
         returnMsg = 'Game finished!';
       } else if (
         (message[1].hsl === false || message[1].hsl === true) &&
@@ -82,6 +99,7 @@ export function handleMessageSubHost({
         setInitialRoom((pre) => ({
           ...pre,
           shouldGuessJoin: true,
+          isHostJoin: true,
         }));
 
         returnMsg = `Joined room ${message[3]}`;
@@ -95,6 +113,7 @@ export function handleMessageSubHost({
         setInitialRoom((pre) => ({
           ...pre,
           isHostOut: true,
+          isHostJoin: false,
         }));
 
         returnMsg = 'Left room successfully!';

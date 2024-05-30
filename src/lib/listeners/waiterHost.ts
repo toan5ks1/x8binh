@@ -7,18 +7,17 @@ import { defaultRoom, getCardsArray } from '../utils';
 
 interface HandleCRMessageProps {
   message: any;
-  crawingRoom: Room;
-  initialRoom: Room;
-  setCrawingRoom: Dispatch<SetStateAction<Room>>;
+  waiterRoom: Room;
+  setWaiterRoom: Dispatch<SetStateAction<Room>>;
   sendMessage: SendMessage;
   user: LoginResponseDto;
   state: StateProps;
 }
 
-export function handleMessageCrawHost({
+export function handleMessageWaiterHost({
   message,
-  crawingRoom,
-  setCrawingRoom,
+  waiterRoom,
+  setWaiterRoom,
   sendMessage,
   user,
   state,
@@ -37,7 +36,7 @@ export function handleMessageCrawHost({
         message[1]?.c === 100 ||
         (message[1]?.cmd === 5 && message[1]?.dn === fullname)
       ) {
-        setCrawingRoom((pre) => ({
+        setWaiterRoom((pre) => ({
           ...pre,
           isHostReady: true,
         }));
@@ -45,7 +44,7 @@ export function handleMessageCrawHost({
         // Create room response
         const roomId = message[1]?.ri?.rid;
 
-        setCrawingRoom({
+        setWaiterRoom({
           ...defaultRoom,
           id: roomId as number,
         });
@@ -54,25 +53,18 @@ export function handleMessageCrawHost({
         // Host join
         sendMessage(`[3,"Simms",${roomId},""]`);
       } else if (message[1]?.cs?.length > 0) {
-        setCrawingRoom((pre) => ({
-          ...pre,
-          isFinish: false,
-          cardDesk: [...pre.cardDesk, { cs: message[1].cs, dn: 'host' }],
-        }));
-
+        setWaiterRoom((pre) => ({ ...pre, isFinish: false }));
         // Submit cards
-        state.foundAt &&
-          sendMessage(
-            `[5,"Simms",${
-              state?.foundAt ?? crawingRoom.id
-            },{"cmd":603,"cs":[${binhlung(message[1].cs)}]}]`
-          );
-
+        sendMessage(
+          `[5,"Simms",${
+            state?.foundAt ?? waiterRoom.id
+          },{"cmd":603,"cs":[${binhlung(message[1].cs)}]}]`
+        );
         returnMsg = `Card received: ${message[1].cs}`;
       } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
-        setCrawingRoom((pre) => ({ ...pre, isPrefinish: true }));
-      } else if (message[1]?.cmd === 204 && crawingRoom.isPrefinish) {
-        setCrawingRoom((pre) => ({
+        setWaiterRoom((pre) => ({ ...pre, isPrefinish: true }));
+      } else if (message[1]?.cmd === 204 && waiterRoom.isPrefinish) {
+        setWaiterRoom((pre) => ({
           ...pre,
           isFinish: true,
           isHostReady: false,
@@ -85,10 +77,10 @@ export function handleMessageCrawHost({
         message[1].cmd === 602
       ) {
         const newCards = getCardsArray(message[1].ps);
-        setCrawingRoom((pre) => {
+        setWaiterRoom((pre) => {
           return {
             ...pre,
-            cardGame: [...crawingRoom.cardGame, newCards],
+            cardGame: [...waiterRoom.cardGame, newCards],
           };
         });
 
@@ -98,7 +90,7 @@ export function handleMessageCrawHost({
     case 3:
       if (message[1] === true) {
         // Host join room response
-        setCrawingRoom((pre) => ({
+        setWaiterRoom((pre) => ({
           ...pre,
           shouldGuessJoin: true,
           isHostJoin: true,
@@ -112,7 +104,7 @@ export function handleMessageCrawHost({
     case 4:
       // Left room response
       if (message[1] === true) {
-        setCrawingRoom((pre) => ({
+        setWaiterRoom((pre) => ({
           ...pre,
           isHostOut: true,
           isHostJoin: false,

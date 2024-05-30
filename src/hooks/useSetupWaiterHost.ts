@@ -1,27 +1,27 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { handleMessageSubHost } from '../lib/listeners/subHost';
+import { toast } from '../components/toast/use-toast';
+import { roomTypes } from '../lib/config';
+import { handleMessageWaiterHost } from '../lib/listeners/waiterHost';
 import {
   LoginParams,
   LoginResponse,
   LoginResponseDto,
-  joinRoom,
   login,
-  openAccounts,
 } from '../lib/login';
+import { isFoundCards } from '../lib/utils';
 import { AppContext } from '../renderer/providers/app';
-import useAccountStore from '../store/accountStore';
 
-export function useSetupSubHost(bot: LoginParams) {
+export function useSetupWaiterHost(bot: LoginParams) {
   const [socketUrl, setSocketUrl] = useState('');
-  const { state, initialRoom, setInitialRoom, crawingRoom } =
-    useContext(AppContext);
-  const { accounts } = useAccountStore();
-  const subMain = accounts['MAIN'].filter((item: any) => item.isSelected)[0];
-
-  const subJoin = () => {
-    joinRoom(subMain, initialRoom.id);
-  };
+  const {
+    state,
+    setState,
+    waiterRoom,
+    setWaiterRoom,
+    initialRoom,
+    crawingRoom,
+  } = useContext(AppContext);
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
   const [shouldPingMaubinh, setShouldPingMaubinh] = useState(false);
@@ -65,12 +65,11 @@ export function useSetupSubHost(bot: LoginParams) {
   useEffect(() => {
     if (lastMessage !== null && user) {
       const message = JSON.parse(lastMessage.data);
-      const newMsg = handleMessageSubHost({
+      const newMsg = handleMessageWaiterHost({
         message,
-        initialRoom,
-        setInitialRoom,
+        waiterRoom,
+        setWaiterRoom,
         sendMessage,
-        crawingRoom,
         user,
         state,
       });
@@ -109,19 +108,12 @@ export function useSetupSubHost(bot: LoginParams) {
         if (user) {
           setUser(user);
           connectMainGame(user);
-          loginSubMain();
         }
       })
       .catch((err: Error) =>
         console.error('Error when calling login function:', err)
       );
   };
-
-  const loginSubMain = useCallback(async () => {
-    if (subMain) {
-      openAccounts(subMain);
-    }
-  }, [subMain]);
 
   const connectMainGame = (user: LoginResponseDto) => {
     if (user?.token) {
@@ -148,49 +140,135 @@ export function useSetupSubHost(bot: LoginParams) {
 
   const handleCreateRoom = () => {
     sendMessage(
-      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":${state.roomType},"Mu":4,"iJ":true,"inc":false,"pwd":""}]`
+      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":${roomTypes[0]},"Mu":4,"iJ":true,"inc":false,"pwd":""}]`
     );
   };
 
   // Host ready initial room
   useEffect(() => {
     if (!state.foundAt) {
-      if (initialRoom.shouldHostReady && crawingRoom.shouldHostReady) {
-        sendMessage(`[5,"Simms",${initialRoom.id},{"cmd":698}]`);
+      if (
+        waiterRoom.shouldHostReady &&
+        initialRoom.shouldHostReady &&
+        crawingRoom.shouldHostReady
+      ) {
+        sendMessage(`[5,"Simms",${waiterRoom.id},{"cmd":698}]`);
       }
     }
-  }, [initialRoom.shouldHostReady, crawingRoom.shouldHostReady]);
+  }, [
+    waiterRoom.shouldHostReady,
+    initialRoom.shouldHostReady,
+    crawingRoom.shouldHostReady,
+  ]);
+
+  // Check cards
+  useEffect(() => {
+    if (
+      !state.foundAt &&
+      initialRoom.cardGame[0]?.length === 2 &&
+      waiterRoom.cardGame[0]?.length === 2
+    ) {
+      if (isFoundCards(initialRoom.cardGame[0], waiterRoom.cardGame[0])) {
+        setState((pre) => ({
+          ...pre,
+          foundAt: waiterRoom.id,
+          targetAt: initialRoom.id,
+        }));
+
+        toast({
+          title: 'Successfully',
+          description: `Found: ${waiterRoom.id}`,
+        });
+        console.log('Waiter found at: ', waiterRoom.id);
+      } else {
+        toast({
+          title: 'Not match',
+          description: `Finding again...`,
+        });
+        setWaiterRoom((pre) => ({
+          ...pre,
+          isNotFound: true,
+        }));
+      }
+    }
+  }, [initialRoom.cardGame, waiterRoom.cardGame]);
 
   useEffect(() => {
-    if (initialRoom.isFinish) {
+    if (waiterRoom.isFinish) {
       handleLeaveRoom();
     }
-  }, [initialRoom.isFinish]);
+  }, [waiterRoom.isFinish]);
 
   const handleLeaveRoom = () => {
-    if (initialRoom?.id) {
-      return sendMessage(`[4,"Simms",${initialRoom.id}]`);
+    if (waiterRoom?.id) {
+      return sendMessage(`[4,"Simms",${waiterRoom.id}]`);
     }
   };
 
   // Join found room
   useEffect(() => {
-    if (state.foundAt && initialRoom.isHostOut) {
+    if (
+      state.foundAt &&
+      state.foundAt !== waiterRoom.id &&
+      waiterRoom.isHostOut
+    ) {
       sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
     }
-  }, [state.foundAt, initialRoom.isHostOut]);
+  }, [state.foundAt, waiterRoom.isHostOut]);
 
   // Ready to crawing (Craw found)
   useEffect(() => {
     if (
       state.foundAt &&
+      state.foundAt !== waiterRoom.id &&
       crawingRoom.isFinish &&
-      initialRoom.isHostOut &&
-      initialRoom.isHostJoin
+      waiterRoom.isHostOut &&
+      waiterRoom.isHostJoin
     ) {
       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
     }
-  }, [crawingRoom.isFinish, initialRoom.isHostJoin]);
+  }, [crawingRoom.isFinish, waiterRoom.isHostJoin]);
+
+  // // Ready to crawing (Waiter found)
+  // useEffect(() => {
+  //   if (
+  //     state.foundAt &&
+  //     state.foundAt === waiterRoom.id &&
+  //     waiterRoom.isFinish
+  //   ) {
+  //     console.log('waiter host call ready');
+  //     sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
+  //   }
+  // }, [waiterRoom.isFinish]);
+
+  useEffect(() => {
+    if (
+      state.foundAt &&
+      state.foundAt === waiterRoom.id &&
+      waiterRoom.isFinish &&
+      waiterRoom.shouldHostReady &&
+      crawingRoom.shouldHostReady &&
+      crawingRoom.isHostReady
+    ) {
+      // console.log(waiterRoom.cardGame);
+      sendMessage(`[5,"Simms",${state.foundAt},{"cmd":698}]`);
+    }
+  }, [
+    waiterRoom.isFinish,
+    waiterRoom.shouldHostReady,
+    crawingRoom.shouldHostReady,
+    crawingRoom.isHostReady,
+  ]);
+
+  // Host ready found room
+  // useEffect(() => {
+  //   if (state.foundAt) {
+  //     if (crawingRoom.isFinish && waiterRoom.isHostJoin) {
+  //       // Host is joined
+  //       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
+  //     }
+  //   }
+  // }, [crawingRoom.isFinish, waiterRoom.isHostJoin]);
 
   // // Call sub join
   // useEffect(() => {

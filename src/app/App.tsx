@@ -45,7 +45,8 @@ import { HomePage } from './pages/home';
 
 export function App() {
   const navigate = useNavigate();
-  const { state, setState, initialRoom, crawingRoom } = useContext(AppContext);
+  const { state, setState, initialRoom, crawingRoom, recreateTime } =
+    useContext(AppContext);
   const { accounts } = useAccountStore();
   const { toast } = useToast();
 
@@ -148,11 +149,15 @@ export function App() {
   ]);
 
   useEffect(() => {
-    if (state.recreateTime) {
+    if (recreateTime) {
       setShouldCreateRoom(false);
-      setState((pre) => ({ ...defaultState, roomType: pre.roomType }));
+      setState((pre) => ({
+        ...defaultState,
+        foundAt: pre.foundAt,
+        roomType: pre.roomType,
+      }));
     }
-  }, [state.recreateTime]);
+  }, [recreateTime]);
 
   useEffect(() => {
     if (
@@ -222,39 +227,17 @@ export function App() {
                                 />
                               )
                           )}
-
-                          {craws.map((bot: any, index: any) => {
-                            if (index % 2 === 0 && index < craws.length - 1) {
-                              if (index < craws.length - 3) {
-                                return (
-                                  <CoupleCrawStatus
-                                    key={index}
-                                    index={index}
-                                    craw1={bot}
-                                    craw2={craws[index + 1]}
-                                    shouldLogin={shouldLogin}
-                                    shouldCreatRoom={shouldCreatRoom}
-                                    shouldLeave={shouldLeave}
-                                    shouldDisconnect={shouldDisconnect}
-                                  />
-                                );
-                              } else {
-                                return (
-                                  // <CoupleWaiterStatus
-                                  //   key={index}
-                                  //   index={index}
-                                  //   craw1={bot}
-                                  //   craw2={craws[index + 1]}
-                                  //   shouldLogin={shouldLogin}
-                                  //   shouldCreatRoom={shouldCreatRoom}
-                                  //   shouldLeave={shouldLeave}
-                                  //   shouldDisconnect={shouldDisconnect}
-                                  // />
-                                  <></>
-                                );
-                              }
-                            }
-                          })}
+                          <CoupleCrawStatus
+                            key={'xxx'}
+                            index={0}
+                            craw1={craws[0]}
+                            craw2={craws[1]}
+                            shouldLogin={shouldLogin}
+                            shouldCreatRoom={shouldCreatRoom}
+                            shouldLeave={shouldLeave}
+                            shouldDisconnect={shouldDisconnect}
+                          />
+                          ;
                         </div>
                       </ScrollArea>
                     </BotSetting>
@@ -329,51 +312,53 @@ export function App() {
                   </div>
 
                   <div className="flex gap-2 items-center">
-                    {state.isLoggedIn ? (
-                      <>
-                        <Button
-                          onClick={onCreateRoom}
-                          size="sm"
-                          className="h-8 gap-1"
-                          disabled={isFinding}
-                        >
-                          {isFinding ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin cursor-pointer hover:opacity-70" />
-                          ) : (
-                            <SearchCheck className="h-3.5 w-3.5" />
-                          )}
-                          Find room
-                        </Button>
+                    <Button
+                      onClick={onLogin}
+                      size="sm"
+                      className="h-8 gap-1 cursor-pointer hover:opacity-70"
+                      disabled={isLoging}
+                    >
+                      {isLoging ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <LogIn className="h-3.5 w-3.5" />
+                      )}
+                      Login
+                    </Button>
+                    <Button
+                      onClick={onCreateRoom}
+                      size="sm"
+                      className="h-8 gap-1"
+                      disabled={isFinding}
+                    >
+                      {isFinding ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin cursor-pointer hover:opacity-70" />
+                      ) : (
+                        <SearchCheck className="h-3.5 w-3.5" />
+                      )}
+                      Find room
+                    </Button>
+                    <Button
+                      onClick={(pre) => setShouldLeave(!pre)}
+                      size="sm"
+                      className="h-8 gap-1"
+                    >
+                      Leave room
+                    </Button>
 
-                        <Button
-                          onClick={onStopCrawing}
-                          size="sm"
-                          className="h-8 gap-1 bg-yellow-500 cursor-pointer hover:opacity-70"
-                          disabled={isQuiting}
-                        >
-                          {isQuiting ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <LogOut className="h-3.5 w-3.5" />
-                          )}
-                          Stop crawing
-                        </Button>
-                      </>
-                    ) : (
-                      <Button
-                        onClick={onLogin}
-                        size="sm"
-                        className="h-8 gap-1 cursor-pointer hover:opacity-70"
-                        disabled={isLoging}
-                      >
-                        {isLoging ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <LogIn className="h-3.5 w-3.5" />
-                        )}
-                        Login
-                      </Button>
-                    )}
+                    <Button
+                      onClick={onStopCrawing}
+                      size="sm"
+                      className="h-8 gap-1 bg-yellow-500 cursor-pointer hover:opacity-70"
+                      disabled={isQuiting}
+                    >
+                      {isQuiting ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <LogOut className="h-3.5 w-3.5" />
+                      )}
+                      Stop crawing
+                    </Button>
                     <Button
                       onClick={onRefreshBot}
                       size="sm"
@@ -385,20 +370,6 @@ export function App() {
                         Refresh
                       </span>
                     </Button>
-
-                    {/* <Tooltip>
-                      <TooltipTrigger>
-                        <div
-                          style={{ fontFamily: 'monospace' }}
-                          className="h-8 text-[19px] flex justify-center items-center px-[10px] rounded-sm bg-green-600"
-                        >
-                          <HandCardIcon /> {numberOfCards}
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Number of cards crawled</p>
-                      </TooltipContent>
-                    </Tooltip> */}
                     <Tooltip>
                       <TooltipTrigger>
                         <div

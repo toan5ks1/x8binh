@@ -44,17 +44,19 @@ export interface Room {
   owner?: string;
   players: string[];
   cardGame: GameCard[][];
-  cardDesk: number[][];
-  isFinish: boolean;
-  isPrefinish: boolean;
+  cardDesk: GameCard[];
+  isFinish?: boolean;
+  isPrefinish?: boolean;
   isSubJoin?: boolean;
   targetCard?: number[];
-  isHostJoin: boolean;
-  isHostOut: boolean;
-  isGuessOut: boolean;
-  shouldGuessJoin: boolean;
-  shouldHostReady: boolean;
-  shouldGuessReady: boolean;
+  isNotFound?: boolean;
+  isHostOut?: boolean;
+  isGuessOut?: boolean;
+  isHostReady?: boolean;
+  isGuessJoin?: boolean;
+  isHostJoin?: boolean;
+  shouldGuessJoin?: boolean;
+  shouldHostReady?: boolean;
   shouldOut?: boolean;
 }
 
@@ -69,7 +71,6 @@ export interface StateProps {
   shouldStopCrawing?: boolean;
   shouldDisconnect?: boolean;
   shouldRefresh?: boolean;
-  isNotFound?: boolean;
   roomType: number;
 }
 
@@ -86,15 +87,23 @@ interface AppContextProps {
   setInitialRoom: Dispatch<SetStateAction<Room>>;
   crawingRoom: Room;
   setCrawingRoom: Dispatch<SetStateAction<Room>>;
+  waiterRoom: Room;
+  setWaiterRoom: Dispatch<SetStateAction<Room>>;
+  recreateTime: number;
+  tobeRecreateRoom: () => void;
 }
 
 export const AppContext = createContext<AppContextProps>({
   state: defaultState,
   initialRoom: defaultRoom,
   crawingRoom: defaultRoom,
+  waiterRoom: defaultRoom,
+  recreateTime: 0,
   setState: () => {},
   setInitialRoom: () => {},
   setCrawingRoom: () => {},
+  setWaiterRoom: () => {},
+  tobeRecreateRoom: () => {},
 });
 
 const AppProvider = ({ children }: AppProviderProps) => {
@@ -102,6 +111,9 @@ const AppProvider = ({ children }: AppProviderProps) => {
 
   const [initialRoom, setInitialRoom] = useState(defaultRoom);
   const [crawingRoom, setCrawingRoom] = useState(defaultRoom);
+  const [waiterRoom, setWaiterRoom] = useState(defaultRoom);
+  const [recreateTime, setRecreateTime] = useState(0);
+  const tobeRecreateRoom = () => setRecreateTime((pre) => pre + 1);
 
   return (
     <AppContext.Provider
@@ -112,6 +124,10 @@ const AppProvider = ({ children }: AppProviderProps) => {
         setInitialRoom,
         crawingRoom,
         setCrawingRoom,
+        waiterRoom,
+        setWaiterRoom,
+        recreateTime,
+        tobeRecreateRoom,
       }}
     >
       {children}

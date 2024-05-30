@@ -11,7 +11,7 @@ import { AppContext } from '../renderer/providers/app';
 
 export function useSetupSubGuess(bot: LoginParams) {
   const [socketUrl, setSocketUrl] = useState('');
-  const { state, setState, initialRoom, setInitialRoom } =
+  const { state, initialRoom, setInitialRoom, crawingRoom } =
     useContext(AppContext);
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
@@ -62,6 +62,7 @@ export function useSetupSubGuess(bot: LoginParams) {
         setInitialRoom,
         sendMessage,
         user,
+        state,
       });
 
       newMsg && setMessageHistory((msgs) => [...msgs, newMsg]);
@@ -136,64 +137,41 @@ export function useSetupSubGuess(bot: LoginParams) {
 
   // Guess join initial room
   useEffect(() => {
-    if (!state.foundAt) {
-      if (initialRoom.shouldGuessJoin) {
-        sendMessage(`[3,"Simms",${initialRoom.id},"",true]`);
-      }
-
-      // if (initialRoom.shouldGuessReady) {
-      //   // Ready
-      //   sendMessage(`[5,"Simms",${initialRoom.id},{"cmd":5}]`);
-      // }
+    if (!state.foundAt && initialRoom.shouldGuessJoin) {
+      sendMessage(`[3,"Simms",${initialRoom.id},"",true]`);
     }
-  }, [initialRoom]);
-
-  // useEffect(() => {
-  //   if (!state.foundAt && room?.id) {
-  //     if (
-  //       bot.username === room.owner &&
-  //       state.readyHost === Object.keys(state.crawingRoom).length + 1
-  //     ) {
-  //       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-  //     }
-  //   }
-  // }, [state.readyHost]);
-
-  // Submit
-  // useEffect(() => {
-  //   // Submit
-  //   if (user?.status === BotStatus.Received) {
-  //     sendMessage(
-  //       `[5,"Simms",${room.id},{"cmd":603,"cs":[${user!.currentCard}]}]`
-  //     );
-  //   } else if (!state.foundAt && user?.status === BotStatus.Submitted) {
-  //     sendMessage(`[4,"Simms",${room.id}]`);
-  //   } else if (
-  //     user?.status === BotStatus.Connected &&
-  //     user.isReconnected &&
-  //     isHost
-  //   ) {
-  //     handleCreateRoom();
-  //   }
-  // }, [user]);
+  }, [initialRoom.shouldGuessJoin]);
 
   useEffect(() => {
-    if (state.isNotFound) {
+    if (initialRoom.isFinish) {
       handleLeaveRoom();
     }
-  }, [state.isNotFound]);
-
-  // useEffect(() => {
-  //   if (initialRoom.isPrefinish) {
-  //     handleLeaveRoom();
-  //   }
-  // }, [initialRoom.isPrefinish]);
+  }, [initialRoom.isFinish]);
 
   const handleLeaveRoom = () => {
     if (initialRoom?.id) {
       return sendMessage(`[4,"Simms",${initialRoom.id}]`);
     }
   };
+
+  // Join found room
+  useEffect(() => {
+    if (state.foundAt && initialRoom.isGuessOut) {
+      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+    }
+  }, [state.foundAt, initialRoom.isGuessOut]);
+
+  // Ready to crawing (Craw found)
+  useEffect(() => {
+    if (
+      state.foundAt &&
+      crawingRoom.isFinish &&
+      initialRoom.isGuessOut &&
+      initialRoom.isGuessJoin
+    ) {
+      sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
+    }
+  }, [crawingRoom.isFinish, initialRoom.isGuessJoin]);
 
   // // Call sub join
   // useEffect(() => {

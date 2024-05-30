@@ -28,6 +28,7 @@ export const HomePage: React.FC<any> = (cardDeck) => {
 
       if (lastIndex > 0 && cards.length === lastIndex - 1) {
         const mappedCard = lastGame.map((gameCard) => gameCard.cs);
+        console.log(mappedCard);
 
         const boBai: number[] = [];
 

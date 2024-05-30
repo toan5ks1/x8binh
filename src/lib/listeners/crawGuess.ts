@@ -1,6 +1,7 @@
 import { Dispatch, SetStateAction } from 'react';
 import { SendMessage } from 'react-use-websocket';
-import { Room } from '../../renderer/providers/app';
+import { Room, StateProps } from '../../renderer/providers/app';
+import { binhlung } from '../binhlung';
 import { LoginResponseDto } from '../login';
 
 interface HandleCRMessageProps {
@@ -9,6 +10,7 @@ interface HandleCRMessageProps {
   setCrawingRoom: Dispatch<SetStateAction<Room>>;
   sendMessage: SendMessage;
   user: LoginResponseDto;
+  state: StateProps;
 }
 
 export function handleMessageCrawGuess({
@@ -17,6 +19,7 @@ export function handleMessageCrawGuess({
   setCrawingRoom,
   sendMessage,
   user,
+  state,
 }: HandleCRMessageProps) {
   let returnMsg;
   const { fullname } = user;
@@ -37,27 +40,19 @@ export function handleMessageCrawGuess({
           shouldHostReady: true,
         }));
       } else if (message[1]?.cs?.length > 0) {
+        setCrawingRoom((pre) => ({
+          ...pre,
+          isFinish: false,
+          cardDesk: [...pre.cardDesk, { cs: message[1].cs, dn: 'guess' }],
+        }));
         // Submit cards
         sendMessage(
-          `[5,"Simms",${crawingRoom.id},{"cmd":603,"cs":[${message[1].cs}]}]`
+          `[5,"Simms",${
+            state?.foundAt ?? crawingRoom.id
+          },{"cmd":603,"cs":[${binhlung(message[1].cs)}]}]`
         );
 
         returnMsg = `Card received: ${message[1].cs}`;
-        //   } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
-        //     setUser((pre) => ({ ...pre, status: BotStatus.PreFinished }));
-        //   } else if (
-        //     message[1]?.cmd === 204 &&
-        //     user?.status === BotStatus.PreFinished
-        //   ) {
-        //     setUser((pre) => ({ ...pre, status: BotStatus.Finished }));
-        //     returnMsg = 'Game finished!';
-        //   } else if (message[1].cmd === 603 && message[1].iar === true) {
-        //     user.status !== BotStatus.Submitted &&
-        //       setUser((pre) => ({
-        //         ...pre,
-        //         status: BotStatus.Submitted,
-        //       }));
-        //     returnMsg = 'Cards submitted!';
       }
       break;
     case 3:
@@ -65,10 +60,11 @@ export function handleMessageCrawGuess({
         // Guess join room response
         setCrawingRoom((pre) => ({
           ...pre,
-          shouldGuessJoin: false,
+          isGuessJoin: true,
         }));
 
-        sendMessage(`[5,"Simms",${crawingRoom.id},{"cmd":5}]`);
+        !state.foundAt &&
+          sendMessage(`[5,"Simms",${crawingRoom.id},{"cmd":5}]`);
 
         returnMsg = `Joined room ${message[3]}`;
       } else if (message[1] === false) {
@@ -81,6 +77,7 @@ export function handleMessageCrawGuess({
         setCrawingRoom((pre) => ({
           ...pre,
           isGuessOut: true,
+          isGuessJoin: false,
         }));
 
         returnMsg = 'Left room successfully!';

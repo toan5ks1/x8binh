@@ -1,6 +1,7 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { toast } from '../components/toast/use-toast';
+import { binhlung } from '../lib/binhlung';
 import { roomTypes } from '../lib/config';
 import { handleMessageCrawHost } from '../lib/listeners/crawHost';
 import {
@@ -14,8 +15,14 @@ import { AppContext } from '../renderer/providers/app';
 
 export function useSetupCrawHost(bot: LoginParams) {
   const [socketUrl, setSocketUrl] = useState('');
-  const { state, setState, crawingRoom, setCrawingRoom, initialRoom } =
-    useContext(AppContext);
+  const {
+    state,
+    setState,
+    crawingRoom,
+    setCrawingRoom,
+    initialRoom,
+    tobeRecreateRoom,
+  } = useContext(AppContext);
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
   const [shouldPingMaubinh, setShouldPingMaubinh] = useState(false);
@@ -65,6 +72,8 @@ export function useSetupCrawHost(bot: LoginParams) {
         initialRoom,
         setCrawingRoom,
         sendMessage,
+        user,
+        state,
       });
 
       newMsg && setMessageHistory((msgs) => [...msgs, newMsg]);
@@ -150,10 +159,10 @@ export function useSetupCrawHost(bot: LoginParams) {
   useEffect(() => {
     if (
       !state.foundAt &&
-      initialRoom.cardGame[0]?.length === 2 &&
-      crawingRoom.cardGame[0]?.length === 2
+      initialRoom.cardDesk.length === 2 &&
+      crawingRoom.cardDesk.length === 2
     ) {
-      if (isFoundCards(initialRoom.cardGame[0], crawingRoom.cardGame[0])) {
+      if (isFoundCards(initialRoom.cardDesk, crawingRoom.cardDesk)) {
         setState((pre) => ({
           ...pre,
           foundAt: crawingRoom.id,
@@ -164,61 +173,29 @@ export function useSetupCrawHost(bot: LoginParams) {
           title: 'Successfully',
           description: `Found: ${crawingRoom.id}`,
         });
-        console.log('found at: ', crawingRoom.id);
+        console.log('Craw found at: ', crawingRoom.id);
       } else {
+        const card = crawingRoom?.cardDesk.find((item) => item.dn === 'host');
         toast({
           title: 'Not match',
           description: `Finding again...`,
         });
-        setState((pre) => ({
-          ...pre,
-          isNotFound: true,
-          recreateTime: pre.recreateTime + 1,
-        }));
+        card?.cs.length &&
+          sendMessage(
+            `[5,"Simms",${crawingRoom.id},{"cmd":603,"cs":[${binhlung(
+              card.cs
+            )}]}]`
+          );
       }
     }
-  }, [initialRoom.cardGame, crawingRoom.cardGame]);
-
-  // useEffect(() => {
-  //   if (!state.foundAt && room?.id) {
-  //     if (
-  //       bot.username === room.owner &&
-  //       state.readyHost === Object.keys(state.crawingRoom).length + 1
-  //     ) {
-  //       sendMessage(`[5,"Simms",${room.id},{"cmd":5}]`);
-  //     }
-  //   }
-  // }, [state.readyHost]);
-
-  // Submit
-  // useEffect(() => {
-  //   // Submit
-  //   if (user?.status === BotStatus.Received) {
-  //     sendMessage(
-  //       `[5,"Simms",${room.id},{"cmd":603,"cs":[${user!.currentCard}]}]`
-  //     );
-  //   } else if (!state.foundAt && user?.status === BotStatus.Submitted) {
-  //     sendMessage(`[4,"Simms",${room.id}]`);
-  //   } else if (
-  //     user?.status === BotStatus.Connected &&
-  //     user.isReconnected &&
-  //     isHost
-  //   ) {
-  //     handleCreateRoom();
-  //   }
-  // }, [user]);
-
-  // useEffect(() => {
-  //   if (crawingRoom.isPrefinish) {
-  //     handleLeaveRoom();
-  //   }
-  // }, [crawingRoom.isPrefinish]);
+  }, [initialRoom.cardDesk, crawingRoom.cardDesk]);
 
   useEffect(() => {
-    if (state.isNotFound) {
+    if (crawingRoom.isFinish && !state.foundAt) {
+      tobeRecreateRoom();
       handleLeaveRoom();
     }
-  }, [state.isNotFound]);
+  }, [crawingRoom.isFinish]);
 
   const handleLeaveRoom = () => {
     if (crawingRoom?.id) {
@@ -226,19 +203,31 @@ export function useSetupCrawHost(bot: LoginParams) {
     }
   };
 
-  // // Call sub join
-  // useEffect(() => {
-  //   if (state.targetAt && subMain && isHost) {
-  //     subJoin();
-  //   }
-  // }, [state.targetAt]);
+  useEffect(() => {
+    const card = crawingRoom?.cardDesk.find((item) => item.dn === 'host');
+    if (
+      state.foundAt &&
+      initialRoom.isGuessJoin &&
+      initialRoom.isHostJoin &&
+      card?.cs.length
+    ) {
+      sendMessage(
+        `[5,"Simms",${state.foundAt},{"cmd":603,"cs":[${binhlung(card.cs)}]}]`
+      );
+    }
+  }, [initialRoom.isGuessJoin, initialRoom.isHostJoin]);
 
-  // // sub leave
-  // useEffect(() => {
-  //   if (user?.status === BotStatus.Finished && room.isSubJoin) {
-  //     sendMessage(`[4,"Simms",${room.id}]`);
-  //   }
-  // }, [room]);
+  useEffect(() => {
+    if (
+      state.foundAt &&
+      crawingRoom.isFinish &&
+      crawingRoom.shouldHostReady &&
+      initialRoom.shouldHostReady &&
+      initialRoom.isHostReady
+    ) {
+      sendMessage(`[5,"Simms",${state.foundAt},{"cmd":698}]`);
+    }
+  }, [crawingRoom.isFinish, crawingRoom.shouldHostReady]);
 
   return {
     user,

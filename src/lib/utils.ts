@@ -78,15 +78,7 @@ export function handleStartActionTimer(message: any) {
 export const defaultRoom = {
   players: [] as string[],
   cardGame: [] as GameCard[][],
-  cardDesk: [] as number[][],
-  isFinish: false,
-  isPrefinish: false,
-  isHostJoin: false,
-  shouldGuessJoin: false,
-  shouldHostReady: false,
-  shouldGuessReady: false,
-  isHostOut: false,
-  isGuessOut: false,
+  cardDesk: [] as GameCard[],
 };
 
 // export const isAllCrawLeft = (rooms: StateProps['crawingRoom']) => {
@@ -106,9 +98,6 @@ export const isFoundCards = (
 ) => {
   if (cardPlayer1?.length < 2 || cardPlayer2?.length < 2) {
     return false;
-  } else {
-    console.log('checking...');
-    console.log(cardPlayer1, cardPlayer2);
   }
 
   const isFound1 =
