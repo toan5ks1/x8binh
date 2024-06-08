@@ -7,15 +7,12 @@ const updateFile = async (accountsUpdate: any, accountType: string) => {
   const accountsText = accountsUpdate
     .map(
       (account: {
-        proxy: any;
-        port: any;
         isSelected: any;
         username: any;
         password: any;
-        passProxy: any;
-        userProxy: any;
+        token: any;
       }) =>
-        `${account.username}|${account.password}|${account.isSelected}|${account.proxy}|${account.port}|${account.userProxy}|${account.passProxy}|`
+        `${account.username}|${account.password}|${account.isSelected}|${account.token}`
     )
     .join('\n');
   if (accountsText) {

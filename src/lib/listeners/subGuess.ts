@@ -18,12 +18,9 @@ export function handleMessageSubGuess({
   initialRoom,
   setInitialRoom,
   sendMessage,
-  user,
   state,
 }: HandleCRMessageProps) {
   let returnMsg;
-  const { fullname } = user;
-
   switch (message[0]) {
     case 1:
       if (message[1] === true) {
@@ -31,18 +28,15 @@ export function handleMessageSubGuess({
       }
       break;
     case 5:
-      if (
-        message[1]?.c === 100 ||
-        (message[1]?.cmd === 5 && message[1]?.dn === fullname)
-      ) {
+      if (message[1]?.b === 100 && message[1]?.re === false) {
         setInitialRoom((pre) => ({
           ...pre,
+          isGuessReady: true,
           shouldHostReady: true,
         }));
       } else if (message[1]?.cs?.length > 0) {
         setInitialRoom((pre) => ({
           ...pre,
-          isFinish: false,
           cardDesk: [...pre.cardDesk, { cs: message[1].cs, dn: 'guess' }],
         }));
         // Submit cards
@@ -81,7 +75,7 @@ export function handleMessageSubGuess({
           isGuessJoin: false,
         }));
 
-        returnMsg = 'Left room successfully!';
+        returnMsg = message[5] || 'Left room successfully!';
       } else {
         returnMsg = message[5] || 'Left room failed!';
       }

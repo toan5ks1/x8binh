@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { connectURLB52 } from '../lib/config';
 import { handleMessageSubHost } from '../lib/listeners/subHost';
 import {
   LoginParams,
@@ -7,13 +8,11 @@ import {
   LoginResponseDto,
   joinRoom,
   login,
-  openAccounts,
 } from '../lib/login';
 import { AppContext } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
 
 export function useSetupSubHost(bot: LoginParams) {
-  const [socketUrl, setSocketUrl] = useState('');
   const { state, initialRoom, setInitialRoom, crawingRoom } =
     useContext(AppContext);
   const { accounts } = useAccountStore();
@@ -33,7 +32,7 @@ export function useSetupSubHost(bot: LoginParams) {
   const iTimeRef = useRef(iTime);
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(
-    socketUrl,
+    connectURLB52,
     {
       shouldReconnect: () => true,
       reconnectInterval: 3000,
@@ -42,9 +41,6 @@ export function useSetupSubHost(bot: LoginParams) {
         pingGame(user!);
         setShouldPingMaubinh(true);
       },
-      // onClose: () => {
-      //   setShouldConnect(true);
-      // },
     },
     shouldConnect
   );
@@ -88,12 +84,12 @@ export function useSetupSubHost(bot: LoginParams) {
       const intervalId1 = setInterval(() => {
         sendMessage(pingPongMessage);
         setITime((prevITime) => prevITime + 1);
-      }, 4000);
+      }, 5000);
 
       const intervalId2 = setInterval(() => {
         sendMessage(maubinhPingMessage);
         setITime((prevITime) => prevITime + 1);
-      }, 6000);
+      }, 5000);
 
       return () => {
         clearInterval(intervalId1);
@@ -119,14 +115,12 @@ export function useSetupSubHost(bot: LoginParams) {
 
   const loginSubMain = useCallback(async () => {
     if (subMain) {
-      openAccounts(subMain);
+      // openAccounts(subMain);
     }
   }, [subMain]);
 
   const connectMainGame = (user: LoginResponseDto) => {
     if (user?.token) {
-      const connectURL = 'wss://cardskgw.ryksockesg.net/websocket';
-      setSocketUrl(connectURL);
       setShouldConnect(true);
     }
   };
@@ -154,18 +148,16 @@ export function useSetupSubHost(bot: LoginParams) {
 
   // Host ready initial room
   useEffect(() => {
-    if (!state.foundAt) {
-      if (initialRoom.shouldHostReady && crawingRoom.shouldHostReady) {
-        sendMessage(`[5,"Simms",${initialRoom.id},{"cmd":698}]`);
-      }
+    if (!state.foundAt && initialRoom.shouldHostReady) {
+      sendMessage(`[5,"Simms",${initialRoom.id},{"cmd":698}]`);
     }
-  }, [initialRoom.shouldHostReady, crawingRoom.shouldHostReady]);
+  }, [initialRoom.shouldHostReady]);
 
   useEffect(() => {
-    if (initialRoom.isFinish) {
+    if (initialRoom.isPrefinish && !initialRoom.findRoomDone) {
       handleLeaveRoom();
     }
-  }, [initialRoom.isFinish]);
+  }, [initialRoom.isPrefinish]);
 
   const handleLeaveRoom = () => {
     if (initialRoom?.id) {
@@ -177,6 +169,7 @@ export function useSetupSubHost(bot: LoginParams) {
   useEffect(() => {
     if (state.foundAt && initialRoom.isHostOut) {
       sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+      setInitialRoom((pre) => ({ ...pre, findRoomDone: true }));
     }
   }, [state.foundAt, initialRoom.isHostOut]);
 
@@ -191,6 +184,13 @@ export function useSetupSubHost(bot: LoginParams) {
       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
     }
   }, [crawingRoom.isFinish, initialRoom.isHostJoin]);
+
+  // // Recreate room
+  // useEffect(() => {
+  //   if (!state.foundAt && initialRoom.isHostOut && initialRoom.isGuessOut) {
+  //     handleCreateRoom();
+  //   }
+  // }, [initialRoom.isGuessOut, initialRoom.isHostOut]);
 
   // // Call sub join
   // useEffect(() => {

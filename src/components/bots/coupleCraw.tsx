@@ -7,7 +7,6 @@ import { BotCmp } from './botCmp';
 export interface BotStatusProps {
   craw1: LoginParams;
   craw2: LoginParams;
-  index: number;
   shouldLogin: boolean;
   shouldCreatRoom: boolean;
   shouldLeave: boolean;
@@ -17,7 +16,6 @@ export interface BotStatusProps {
 export const CoupleCrawStatus = ({
   craw1,
   craw2,
-  index,
   shouldLogin,
   shouldCreatRoom,
   shouldLeave,
@@ -74,14 +72,14 @@ export const CoupleCrawStatus = ({
   return (
     <div className="space-y-4 w-full">
       <BotCmp
-        name={`Bot ${index + 1}`}
+        name={`Bot 1`}
         userId={user1?.username}
         connectionStatus={connectionStatusBot1}
         messageHistory={messageHistoryBot1}
         setMessageHistory={setMessageHistoryBot1}
       />
       <BotCmp
-        name={`Bot ${index + 2}`}
+        name={`Bot 2`}
         userId={user2?.username}
         connectionStatus={connectionStatusBot2}
         messageHistory={messageHistoryBot2}

@@ -1,5 +1,6 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { connectURLB52 } from '../lib/config';
 import { handleMessageCrawGuess } from '../lib/listeners/crawGuess';
 import {
   LoginParams,
@@ -10,7 +11,6 @@ import {
 import { AppContext } from '../renderer/providers/app';
 
 export function useSetupCrawGuess(bot: LoginParams) {
-  const [socketUrl, setSocketUrl] = useState('');
   const { state, crawingRoom, setCrawingRoom } = useContext(AppContext);
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
@@ -23,7 +23,7 @@ export function useSetupCrawGuess(bot: LoginParams) {
   const iTimeRef = useRef(iTime);
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(
-    socketUrl,
+    connectURLB52,
     {
       shouldReconnect: () => true,
       reconnectInterval: 3000,
@@ -32,9 +32,6 @@ export function useSetupCrawGuess(bot: LoginParams) {
         pingGame(user!);
         setShouldPingMaubinh(true);
       },
-      // onClose: () => {
-      //   setShouldConnect(true);
-      // },
     },
     shouldConnect
   );
@@ -77,12 +74,12 @@ export function useSetupCrawGuess(bot: LoginParams) {
       const intervalId1 = setInterval(() => {
         sendMessage(pingPongMessage);
         setITime((prevITime) => prevITime + 1);
-      }, 4000);
+      }, 5000);
 
       const intervalId2 = setInterval(() => {
         sendMessage(maubinhPingMessage);
         setITime((prevITime) => prevITime + 1);
-      }, 6000);
+      }, 5000);
 
       return () => {
         clearInterval(intervalId1);
@@ -107,8 +104,6 @@ export function useSetupCrawGuess(bot: LoginParams) {
 
   const connectMainGame = (user: LoginResponseDto) => {
     if (user?.token) {
-      const connectURL = 'wss://cardskgw.ryksockesg.net/websocket';
-      setSocketUrl(connectURL);
       setShouldConnect(true);
     }
   };
@@ -142,10 +137,10 @@ export function useSetupCrawGuess(bot: LoginParams) {
   }, [crawingRoom.shouldGuessJoin]);
 
   useEffect(() => {
-    if (crawingRoom.isFinish && !state.foundAt) {
+    if (crawingRoom.isPrefinish && !state.foundAt) {
       handleLeaveRoom();
     }
-  }, [crawingRoom.isFinish]);
+  }, [crawingRoom.isPrefinish]);
 
   const handleLeaveRoom = () => {
     if (crawingRoom?.id) {

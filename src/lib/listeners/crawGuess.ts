@@ -18,12 +18,9 @@ export function handleMessageCrawGuess({
   crawingRoom,
   setCrawingRoom,
   sendMessage,
-  user,
   state,
 }: HandleCRMessageProps) {
   let returnMsg;
-  const { fullname } = user;
-
   switch (message[0]) {
     case 1:
       if (message[1] === true) {
@@ -31,10 +28,7 @@ export function handleMessageCrawGuess({
       }
       break;
     case 5:
-      if (
-        message[1]?.c === 100 ||
-        (message[1]?.cmd === 5 && message[1]?.dn === fullname)
-      ) {
+      if (message[1]?.b === 100 && message[1]?.re === false) {
         setCrawingRoom((pre) => ({
           ...pre,
           shouldHostReady: true,
@@ -42,7 +36,6 @@ export function handleMessageCrawGuess({
       } else if (message[1]?.cs?.length > 0) {
         setCrawingRoom((pre) => ({
           ...pre,
-          isFinish: false,
           cardDesk: [...pre.cardDesk, { cs: message[1].cs, dn: 'guess' }],
         }));
         // Submit cards
@@ -80,7 +73,7 @@ export function handleMessageCrawGuess({
           isGuessJoin: false,
         }));
 
-        returnMsg = 'Left room successfully!';
+        returnMsg = message[5] || 'Left room successfully!';
       } else {
         returnMsg = message[5] || 'Left room failed!';
       }

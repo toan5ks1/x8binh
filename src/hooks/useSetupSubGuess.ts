@@ -1,5 +1,6 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { connectURLB52 } from '../lib/config';
 import { handleMessageSubGuess } from '../lib/listeners/subGuess';
 import {
   LoginParams,
@@ -10,7 +11,6 @@ import {
 import { AppContext } from '../renderer/providers/app';
 
 export function useSetupSubGuess(bot: LoginParams) {
-  const [socketUrl, setSocketUrl] = useState('');
   const { state, initialRoom, setInitialRoom, crawingRoom } =
     useContext(AppContext);
 
@@ -24,7 +24,7 @@ export function useSetupSubGuess(bot: LoginParams) {
   const iTimeRef = useRef(iTime);
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(
-    socketUrl,
+    connectURLB52,
     {
       shouldReconnect: () => true,
       reconnectInterval: 3000,
@@ -33,9 +33,6 @@ export function useSetupSubGuess(bot: LoginParams) {
         pingGame(user!);
         setShouldPingMaubinh(true);
       },
-      // onClose: () => {
-      //   setShouldConnect(true);
-      // },
     },
     shouldConnect
   );
@@ -78,12 +75,12 @@ export function useSetupSubGuess(bot: LoginParams) {
       const intervalId1 = setInterval(() => {
         sendMessage(pingPongMessage);
         setITime((prevITime) => prevITime + 1);
-      }, 4000);
+      }, 5000);
 
       const intervalId2 = setInterval(() => {
         sendMessage(maubinhPingMessage);
         setITime((prevITime) => prevITime + 1);
-      }, 6000);
+      }, 5000);
 
       return () => {
         clearInterval(intervalId1);
@@ -108,8 +105,6 @@ export function useSetupSubGuess(bot: LoginParams) {
 
   const connectMainGame = (user: LoginResponseDto) => {
     if (user?.token) {
-      const connectURL = 'wss://cardskgw.ryksockesg.net/websocket';
-      setSocketUrl(connectURL);
       setShouldConnect(true);
     }
   };
@@ -143,10 +138,10 @@ export function useSetupSubGuess(bot: LoginParams) {
   }, [initialRoom.shouldGuessJoin]);
 
   useEffect(() => {
-    if (initialRoom.isFinish) {
+    if (initialRoom.isPrefinish && !initialRoom.findRoomDone) {
       handleLeaveRoom();
     }
-  }, [initialRoom.isFinish]);
+  }, [initialRoom.isPrefinish]);
 
   const handleLeaveRoom = () => {
     if (initialRoom?.id) {

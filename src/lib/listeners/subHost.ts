@@ -20,11 +20,9 @@ export function handleMessageSubHost({
   initialRoom,
   setInitialRoom,
   sendMessage,
-  user,
   state,
 }: HandleCRMessageProps) {
   let returnMsg;
-  const { fullname } = user;
 
   switch (message[0]) {
     case 1:
@@ -33,10 +31,7 @@ export function handleMessageSubHost({
       }
       break;
     case 5:
-      if (
-        message[1]?.c === 100 ||
-        (message[1]?.cmd === 5 && message[1]?.dn === fullname)
-      ) {
+      if (message[1]?.b === 100 && message[1]?.re === false) {
         setInitialRoom((pre) => ({
           ...pre,
           isHostReady: true,
@@ -72,9 +67,8 @@ export function handleMessageSubHost({
       } else if (message[1]?.cmd === 204 && initialRoom.isPrefinish) {
         setInitialRoom((pre) => ({
           ...pre,
+          isPrefinish: false,
           isFinish: true,
-          isHostReady: false,
-          shouldHostReady: false,
         }));
         returnMsg = 'Game finished!';
       } else if (
@@ -86,6 +80,7 @@ export function handleMessageSubHost({
         setInitialRoom((pre) => {
           return {
             ...pre,
+            isSubmitCard: true,
             cardGame: [...initialRoom.cardGame, newCards],
           };
         });
@@ -116,7 +111,7 @@ export function handleMessageSubHost({
           isHostJoin: false,
         }));
 
-        returnMsg = 'Left room successfully!';
+        returnMsg = message[5] || 'Left room successfully!';
       } else {
         returnMsg = message[5] || 'Left room failed!';
       }

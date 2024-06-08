@@ -76,7 +76,6 @@ export function handleStartActionTimer(message: any) {
 }
 
 export const defaultRoom = {
-  players: [] as string[],
   cardGame: [] as GameCard[][],
   cardDesk: [] as GameCard[],
 };

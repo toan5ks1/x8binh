@@ -1,5 +1,12 @@
-import { now } from 'lodash';
 import { toast } from '../components/toast/use-toast';
+
+const defaultLoginParams = {
+  app_id: 'b52.club',
+  os: 'OS X',
+  device: 'Computer',
+  browser: 'chrome',
+  fg: '94c4b7799e307a8ad4b6a666bd26bd11',
+};
 
 const readValidAccount = (input: string): any => {
   return input
@@ -7,30 +14,13 @@ const readValidAccount = (input: string): any => {
     .split('\n')
     .map((line) => {
       if (line != '') {
-        const [
-          username,
-          password,
-          IsSelected,
-          proxy,
-          port,
-          userProxy,
-          passProxy,
-        ] = line.trim().split('|');
+        const [username, password, isSelected, token] = line.trim().split('|');
         return {
           username,
-          password: password || '',
-          app_id: 'rik.vip',
-          os: 'Windows',
-          device: 'Computer',
-          browser: 'chrome',
-          proxy: proxy,
-          port: port,
-          passProxy: passProxy,
-          userProxy: userProxy,
-          fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
-          time: now(),
-          aff_id: 'hit',
-          isSelected: IsSelected === 'true',
+          password,
+          isSelected: Boolean(isSelected),
+          token,
+          fg: defaultLoginParams.fg,
         };
       } else {
         return;
@@ -79,29 +69,13 @@ const addUniqueAccounts = async (
   });
 };
 
-const generateAccount = (account: any) => {
-  var cash = 0;
-  // if (account.isSelected) {
-  //   const data = (await accountLogin(account)) as any;
-  //   cash = Array.isArray(data?.data) ? data?.data[0].main_balance : 0;
-  // }
-
+const generateAccount = ({ username, password, token, isSelected }: any) => {
   return {
-    username: account.username,
-    password: account.password,
-    isSelected: account.isSelected,
-    app_id: 'rik.vip',
-    os: 'Windows',
-    device: 'Computer',
-    browser: 'chrome',
-    fg: 'fea47ac6e0fd72cd768e977d51f3dc45',
-    proxy: account.proxy,
-    port: account.port,
-    userProxy: account.userProxy,
-    passProxy: account.userProxy,
-    time: now(),
-    aff_id: 'hit',
-    main_balance: 0,
+    username,
+    password,
+    isSelected: Boolean(isSelected),
+    token,
+    fg: defaultLoginParams.fg,
   };
 };
 

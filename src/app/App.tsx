@@ -70,7 +70,7 @@ export function App() {
 
   const onLogin = () => {
     setShouldLogin(true);
-    // setIsLoging(true);
+    setIsLoging(true);
 
     // tests
     setState((pre) => ({ ...pre, isLoggedIn: true }));
@@ -105,7 +105,6 @@ export function App() {
     setShouldCreateRoom(false);
     setIsFinding(false);
     setIsLoging(false);
-    setIsQuiting(false);
     setState((pre) => ({
       ...defaultState,
       isLoggedIn: pre.isLoggedIn,
@@ -114,23 +113,17 @@ export function App() {
     }));
   };
 
-  // useEffect(() => {
-  //   if (state.isLoggedIn) {
-  //     setIsLoging(false);
-  //   }
-  // }, [state.isLoggedIn]);
+  useEffect(() => {
+    if (state.isLoggedIn) {
+      setIsLoging(false);
+    }
+  }, [state.isLoggedIn]);
 
   useEffect(() => {
     if (state.foundAt) {
       setIsFinding(false);
     }
   }, [state.foundAt]);
-
-  useEffect(() => {
-    if (state.isQuited) {
-      setIsQuiting(false);
-    }
-  }, [state.isQuited]);
 
   useEffect(() => {
     if (
@@ -211,25 +204,15 @@ export function App() {
                     >
                       <ScrollArea className="h-full rounded-md flex flex-col">
                         <div className="flex flex-col  text-white space-y-4 flex-1 w-full">
-                          {bots.map(
-                            (bot: any, index: any) =>
-                              index % 2 === 0 &&
-                              index < bots.length - 1 && (
-                                <CoupleSubStatus
-                                  key={index}
-                                  index={index}
-                                  craw1={bot}
-                                  craw2={bots[index + 1]}
-                                  shouldLogin={shouldLogin}
-                                  shouldCreatRoom={shouldCreatRoom}
-                                  shouldLeave={shouldLeave}
-                                  shouldDisconnect={shouldDisconnect}
-                                />
-                              )
-                          )}
+                          <CoupleSubStatus
+                            craw1={bots[0]}
+                            craw2={bots[1]}
+                            shouldLogin={shouldLogin}
+                            shouldCreatRoom={shouldCreatRoom}
+                            shouldLeave={shouldLeave}
+                            shouldDisconnect={shouldDisconnect}
+                          />
                           <CoupleCrawStatus
-                            key={'xxx'}
-                            index={0}
                             craw1={craws[0]}
                             craw2={craws[1]}
                             shouldLogin={shouldLogin}
@@ -237,7 +220,6 @@ export function App() {
                             shouldLeave={shouldLeave}
                             shouldDisconnect={shouldDisconnect}
                           />
-                          ;
                         </div>
                       </ScrollArea>
                     </BotSetting>
@@ -339,18 +321,10 @@ export function App() {
                       Find room
                     </Button>
                     <Button
-                      onClick={(pre) => setShouldLeave(!pre)}
-                      size="sm"
-                      className="h-8 gap-1"
-                    >
-                      Leave room
-                    </Button>
-
-                    <Button
                       onClick={onStopCrawing}
                       size="sm"
                       className="h-8 gap-1 bg-yellow-500 cursor-pointer hover:opacity-70"
-                      disabled={isQuiting}
+                      disabled={!Boolean(state.foundAt) || isQuiting}
                     >
                       {isQuiting ? (
                         <Loader2 className="h-3.5 w-3.5 animate-spin" />

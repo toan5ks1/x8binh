@@ -42,7 +42,6 @@ export interface GameCard {
 export interface Room {
   id?: number;
   owner?: string;
-  players: string[];
   cardGame: GameCard[][];
   cardDesk: GameCard[];
   isFinish?: boolean;
@@ -53,11 +52,13 @@ export interface Room {
   isHostOut?: boolean;
   isGuessOut?: boolean;
   isHostReady?: boolean;
+  isGuessReady?: boolean;
   isGuessJoin?: boolean;
   isHostJoin?: boolean;
   shouldGuessJoin?: boolean;
   shouldHostReady?: boolean;
-  shouldOut?: boolean;
+  isSubmitCard?: boolean;
+  findRoomDone?: boolean;
 }
 
 export interface StateProps {

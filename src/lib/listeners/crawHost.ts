@@ -20,12 +20,9 @@ export function handleMessageCrawHost({
   crawingRoom,
   setCrawingRoom,
   sendMessage,
-  user,
   state,
 }: HandleCRMessageProps) {
   let returnMsg;
-  const { fullname } = user;
-
   switch (message[0]) {
     case 1:
       if (message[1] === true) {
@@ -33,10 +30,7 @@ export function handleMessageCrawHost({
       }
       break;
     case 5:
-      if (
-        message[1]?.c === 100 ||
-        (message[1]?.cmd === 5 && message[1]?.dn === fullname)
-      ) {
+      if (message[1]?.b === 100 && message[1]?.re === false) {
         setCrawingRoom((pre) => ({
           ...pre,
           isHostReady: true,
@@ -74,9 +68,8 @@ export function handleMessageCrawHost({
       } else if (message[1]?.cmd === 204 && crawingRoom.isPrefinish) {
         setCrawingRoom((pre) => ({
           ...pre,
+          isPrefinish: false,
           isFinish: true,
-          isHostReady: false,
-          shouldHostReady: false,
         }));
         returnMsg = 'Game finished!';
       } else if (
@@ -88,6 +81,7 @@ export function handleMessageCrawHost({
         setCrawingRoom((pre) => {
           return {
             ...pre,
+            isSubmitCard: true,
             cardGame: [...crawingRoom.cardGame, newCards],
           };
         });
@@ -118,7 +112,7 @@ export function handleMessageCrawHost({
           isHostJoin: false,
         }));
 
-        returnMsg = 'Left room successfully!';
+        returnMsg = message[5] || 'Left room successfully!';
       } else {
         returnMsg = message[5] || 'Left room failed!';
       }

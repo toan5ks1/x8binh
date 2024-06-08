@@ -80,42 +80,44 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const tokenRef = useRef<HTMLInputElement>(null);
   const proxyRef = useRef<HTMLInputElement>(null);
   const portRef = useRef<HTMLInputElement>(null);
   const authUsernameRef = useRef<HTMLInputElement>(null);
   const authPasswordRef = useRef<HTMLInputElement>(null);
 
   const handleAddAccount = () => {
-    if (usernameRef.current && passwordRef.current) {
+    if (usernameRef.current && passwordRef.current && tokenRef.current) {
       const newAccount = {
         username: usernameRef.current.value,
         password: passwordRef.current.value,
+        token: tokenRef.current.value,
       };
       addAccount(accountType, generateAccount(newAccount));
       setDialogAddAccountOpen(false);
     }
   };
-  const handleAddProxy = (row: any) => {
-    if (!proxyRef.current?.value) {
-      setErrorAddProxy('Please input proxy');
-      return;
-    }
-    if (!portRef.current?.value) {
-      setErrorAddProxy('Please input port');
-      return;
-    }
+  // const handleAddProxy = (row: any) => {
+  //   if (!proxyRef.current?.value) {
+  //     setErrorAddProxy('Please input proxy');
+  //     return;
+  //   }
+  //   if (!portRef.current?.value) {
+  //     setErrorAddProxy('Please input port');
+  //     return;
+  //   }
 
-    if (proxyRef.current && portRef.current && row) {
-      const newProxy = {
-        proxy: proxyRef.current.value,
-        port: portRef.current.value,
-        userProxy: useAuthForProxy ? authUsernameRef.current?.value : '',
-        passProxy: useAuthForProxy ? authPasswordRef.current?.value : '',
-      };
-      updateAccount(accountType, row.username, newProxy);
-      setDialogProxyOpen(false);
-    }
-  };
+  //   if (proxyRef.current && portRef.current && row) {
+  //     const newProxy = {
+  //       proxy: proxyRef.current.value,
+  //       port: portRef.current.value,
+  //       userProxy: useAuthForProxy ? authUsernameRef.current?.value : '',
+  //       passProxy: useAuthForProxy ? authPasswordRef.current?.value : '',
+  //     };
+  //     updateAccount(accountType, row.username, newProxy);
+  //     setDialogProxyOpen(false);
+  //   }
+  // };
   const handleFileChange = (event: any) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -647,9 +649,9 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
             >
               Cancel
             </Button>
-            <Button onClick={() => handleAddProxy(rowSelected)}>
+            {/* <Button onClick={() => handleAddProxy(rowSelected)}>
               Set proxy
-            </Button>
+            </Button> */}
           </div>
         </DialogContent>
       </Dialog>
@@ -669,6 +671,7 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
             placeholder="Password"
             className="mb-4"
           />
+          <Input ref={tokenRef} placeholder="Token" className="mb-4" />
           <div className="flex justify-end space-x-2">
             <Button
               variant="secondary"

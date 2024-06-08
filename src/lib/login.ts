@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { BotStatus } from '../renderer/providers/app';
-import { loginUrl } from './config';
 
 export interface LoginResponseDto {
   avatar: string;
@@ -36,15 +35,16 @@ export interface LoginParams {
   fg: string;
   time: number;
   aff_id: string;
+  token: string;
 }
 
 const login = async (botInfo: LoginParams): Promise<LoginResponse | null> => {
-  const credentials = {
-    ...botInfo,
-  };
+  const loginUrl = 'https://bfivegwlog.gwtenkges.com/gwms/v1/verifytoken.aspx';
 
   try {
-    const response = await axios.post<LoginResponse>(loginUrl, credentials);
+    const response = await axios.get<LoginResponse>(loginUrl, {
+      params: { fg: botInfo.fg, token: botInfo.token },
+    });
     return response.data;
   } catch (error) {
     console.error(
@@ -53,6 +53,18 @@ const login = async (botInfo: LoginParams): Promise<LoginResponse | null> => {
     );
     return null;
   }
+
+  // try {
+  //   axios.defaults.headers.common['User-Agent'] = agent;
+  //   const response = await axios.post<LoginResponse>(loginUrlB52, credentials);
+  //   return response.data;
+  // } catch (error) {
+  //   console.error(
+  //     'Login failed:',
+  //     axios.isAxiosError(error) ? error.response?.data : error
+  //   );
+  //   return null;
+  // }
 };
 
 interface ConnectTokenResponse {

@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { toast } from '../components/toast/use-toast';
 import { binhlung } from '../lib/binhlung';
-import { roomTypes } from '../lib/config';
+import { connectURLB52, roomTypes } from '../lib/config';
 import { handleMessageCrawHost } from '../lib/listeners/crawHost';
 import {
   LoginParams,
@@ -14,7 +14,6 @@ import { isFoundCards } from '../lib/utils';
 import { AppContext } from '../renderer/providers/app';
 
 export function useSetupCrawHost(bot: LoginParams) {
-  const [socketUrl, setSocketUrl] = useState('');
   const {
     state,
     setState,
@@ -34,7 +33,7 @@ export function useSetupCrawHost(bot: LoginParams) {
   const iTimeRef = useRef(iTime);
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(
-    socketUrl,
+    connectURLB52,
     {
       shouldReconnect: () => true,
       reconnectInterval: 3000,
@@ -43,9 +42,6 @@ export function useSetupCrawHost(bot: LoginParams) {
         pingGame(user!);
         setShouldPingMaubinh(true);
       },
-      // onClose: () => {
-      //   setShouldConnect(true);
-      // },
     },
     shouldConnect
   );
@@ -89,12 +85,12 @@ export function useSetupCrawHost(bot: LoginParams) {
       const intervalId1 = setInterval(() => {
         sendMessage(pingPongMessage);
         setITime((prevITime) => prevITime + 1);
-      }, 4000);
+      }, 5000);
 
       const intervalId2 = setInterval(() => {
         sendMessage(maubinhPingMessage);
         setITime((prevITime) => prevITime + 1);
-      }, 6000);
+      }, 5000);
 
       return () => {
         clearInterval(intervalId1);
@@ -108,6 +104,7 @@ export function useSetupCrawHost(bot: LoginParams) {
       .then((data: LoginResponse | null) => {
         const user = data?.data[0];
         if (user) {
+          setState((pre) => ({ ...pre, isLoggedIn: true }));
           setUser(user);
           connectMainGame(user);
         }
@@ -119,8 +116,6 @@ export function useSetupCrawHost(bot: LoginParams) {
 
   const connectMainGame = (user: LoginResponseDto) => {
     if (user?.token) {
-      const connectURL = 'wss://cardskgw.ryksockesg.net/websocket';
-      setSocketUrl(connectURL);
       setShouldConnect(true);
     }
   };
@@ -148,12 +143,10 @@ export function useSetupCrawHost(bot: LoginParams) {
 
   // Host ready initial room
   useEffect(() => {
-    if (!state.foundAt) {
-      if (crawingRoom.shouldHostReady && initialRoom.shouldHostReady) {
-        sendMessage(`[5,"Simms",${crawingRoom.id},{"cmd":698}]`);
-      }
+    if (!state.foundAt && crawingRoom.shouldHostReady) {
+      sendMessage(`[5,"Simms",${crawingRoom.id},{"cmd":698}]`);
     }
-  }, [crawingRoom.shouldHostReady, initialRoom.shouldHostReady]);
+  }, [crawingRoom.shouldHostReady]);
 
   // Check cards
   useEffect(() => {
@@ -191,11 +184,11 @@ export function useSetupCrawHost(bot: LoginParams) {
   }, [initialRoom.cardDesk, crawingRoom.cardDesk]);
 
   useEffect(() => {
-    if (crawingRoom.isFinish && !state.foundAt) {
+    if (crawingRoom.isPrefinish && !state.foundAt) {
       tobeRecreateRoom();
       handleLeaveRoom();
     }
-  }, [crawingRoom.isFinish]);
+  }, [crawingRoom.isPrefinish]);
 
   const handleLeaveRoom = () => {
     if (crawingRoom?.id) {
@@ -222,12 +215,17 @@ export function useSetupCrawHost(bot: LoginParams) {
       state.foundAt &&
       crawingRoom.isFinish &&
       crawingRoom.shouldHostReady &&
-      initialRoom.shouldHostReady &&
+      initialRoom.isGuessReady &&
       initialRoom.isHostReady
     ) {
       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":698}]`);
     }
-  }, [crawingRoom.isFinish, crawingRoom.shouldHostReady]);
+  }, [
+    crawingRoom.isFinish,
+    crawingRoom.shouldHostReady,
+    initialRoom.isGuessReady,
+    initialRoom.isHostReady,
+  ]);
 
   return {
     user,

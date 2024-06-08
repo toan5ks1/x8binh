@@ -1,1 +1,2 @@
-hoangtudepgiai|plkb52xxl|true|undefined|undefined|undefined|undefined|
+vipclass1|vipclass1|true|244b8022f9343a50c4f65c8136373938
+vipprox1|vipprox1|true|a41bb6d220eea519351d9928065e6cf8
