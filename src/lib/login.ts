@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { BotStatus } from '../renderer/providers/app';
+import { loginTokenB52, loginUrlB52 } from './config';
 
 export interface LoginResponseDto {
   avatar: string;
@@ -38,11 +39,19 @@ export interface LoginParams {
   token: string;
 }
 
-const login = async (botInfo: LoginParams): Promise<LoginResponse | null> => {
-  const loginUrl = 'https://bfivegwlog.gwtenkges.com/gwms/v1/verifytoken.aspx';
+export const defaultLoginParams = {
+  app_id: 'b52.club',
+  os: 'OS X',
+  device: 'Computer',
+  browser: 'chrome',
+  fg: '94c4b7799e307a8ad4b6a666bd26bd11',
+};
 
+export const login = async (
+  botInfo: LoginParams
+): Promise<LoginResponse | null> => {
   try {
-    const response = await axios.get<LoginResponse>(loginUrl, {
+    const response = await axios.get<LoginResponse>(loginTokenB52, {
       params: { fg: botInfo.fg, token: botInfo.token },
     });
     return response.data;
@@ -53,18 +62,24 @@ const login = async (botInfo: LoginParams): Promise<LoginResponse | null> => {
     );
     return null;
   }
+};
 
-  // try {
-  //   axios.defaults.headers.common['User-Agent'] = agent;
-  //   const response = await axios.post<LoginResponse>(loginUrlB52, credentials);
-  //   return response.data;
-  // } catch (error) {
-  //   console.error(
-  //     'Login failed:',
-  //     axios.isAxiosError(error) ? error.response?.data : error
-  //   );
-  //   return null;
-  // }
+const loginPup = async (
+  botInfo: LoginParams
+): Promise<LoginResponse | null> => {
+  try {
+    const response = await axios.post<LoginResponse>(loginUrlB52, {
+      ...defaultLoginParams,
+      botInfo,
+    });
+    return response.data;
+  } catch (error) {
+    console.error(
+      'Login failed:',
+      axios.isAxiosError(error) ? error.response?.data : error
+    );
+    return null;
+  }
 };
 
 interface ConnectTokenResponse {
@@ -86,8 +101,6 @@ const getConnectToken = async (
     return null;
   }
 };
-
-export { getConnectToken, login };
 
 export async function setupBot(
   bot: LoginParams,
@@ -131,4 +144,65 @@ export function joinRoom(account: any, room?: number): void {
       `__require('GamePlayManager').default.getInstance().joinRoom(${room},0,'',true);`
     );
   }
+}
+
+export function fillLoginParam(account: any) {
+  //.showPopupDangNhap()
+  window.backend.sendMessage(
+    'execute-script',
+    account,
+    `
+      if(!btnDangnhap){
+        var btnDangnhap = cc.find("Canvas/MainUIParent/NewLobby/Footder/footerBar/PublicLobby/layout/dangNhap");
+      }
+
+      if (btnDangnhap) {
+        let touchStart = new cc.Touch(0, 0);
+        let touchEnd = new cc.Touch(0, 0);
+        let touchEventStart = new cc.Event.EventTouch([touchStart], false);
+        let touchEventEnd = new cc.Event.EventTouch([touchEnd], false);
+        
+        touchEventStart.type = cc.Node.EventType.TOUCH_START;
+        btnDangnhap.dispatchEvent(touchEventStart);
+
+        touchEventEnd.type = cc.Node.EventType.TOUCH_END;
+        btnDangnhap.dispatchEvent(touchEventEnd);
+      }
+      
+      setTimeout(() => {
+          let pathUserName = "CommonPrefabs/PopupDangNhap/popup/TenDangNhap/Username";
+          let editBoxNodeUserName = cc.find(pathUserName);
+          console.log('editBoxNodeUserName', editBoxNodeUserName)
+          let editBoxUserName = editBoxNodeUserName.getComponent(cc.EditBox);
+          if (editBoxUserName) {
+              editBoxUserName.string = "${account.username}";
+          } else {
+              console.log("Không tìm thấy component cc.EditBox trong node");
+          }
+
+          let pathPass = "CommonPrefabs/PopupDangNhap/popup/Matkhau/Password";
+          let editBoxNodePass = cc.find(pathPass);
+          let editBoxPass = editBoxNodePass.getComponent(cc.EditBox);
+          if (editBoxPass) {
+              editBoxPass.string = "${account.password}";
+          } else {
+              console.log("Không tìm thấy component cc.EditBox trong node");
+          }
+          setTimeout(() => {
+            let nodeXacNhan = cc.find("CommonPrefabs/PopupDangNhap/popup/BtnOk").getComponent(cc.Button);
+            if (nodeXacNhan) {
+                let touchStart = new cc.Touch(0, 0);
+                let touchEnd = new cc.Touch(0, 0);
+                let touchEventStart = new cc.Event.EventTouch([touchStart], false);
+                touchEventStart.type = cc.Node.EventType.TOUCH_START;
+                nodeXacNhan.node.dispatchEvent(touchEventStart);
+
+                let touchEventEnd = new cc.Event.EventTouch([touchEnd], false);
+                touchEventEnd.type = cc.Node.EventType.TOUCH_END;
+                nodeXacNhan.node.dispatchEvent(touchEventEnd);
+            }
+          }, 500)
+      }, 500);
+      `
+  );
 }

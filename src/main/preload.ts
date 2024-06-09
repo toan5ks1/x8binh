@@ -14,6 +14,7 @@ const validChannels: string[] = [
   'get-hardware-info',
   'arrange-card',
   'websocket-data-sent',
+  'http-response-data-sent',
   'check-room',
   'check-position',
   'check-display-name',

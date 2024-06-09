@@ -1,12 +1,5 @@
 import { toast } from '../components/toast/use-toast';
-
-const defaultLoginParams = {
-  app_id: 'b52.club',
-  os: 'OS X',
-  device: 'Computer',
-  browser: 'chrome',
-  fg: '94c4b7799e307a8ad4b6a666bd26bd11',
-};
+import { defaultLoginParams } from './login';
 
 const readValidAccount = (input: string): any => {
   return input

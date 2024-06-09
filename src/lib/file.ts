@@ -12,7 +12,7 @@ const updateFile = async (accountsUpdate: any, accountType: string) => {
         password: any;
         token: any;
       }) =>
-        `${account.username}|${account.password}|${account.isSelected}|${account.token}`
+        `${account.username}|${account.password}|${account.token}|${account.isSelected}`
     )
     .join('\n');
   if (accountsText) {

@@ -21,8 +21,10 @@ export function handleMessageSubHost({
   setInitialRoom,
   sendMessage,
   state,
+  user,
 }: HandleCRMessageProps) {
   let returnMsg;
+  const { fullname } = user;
 
   switch (message[0]) {
     case 1:
@@ -31,23 +33,27 @@ export function handleMessageSubHost({
       }
       break;
     case 5:
-      if (message[1]?.b === 100 && message[1]?.re === false) {
+      if (message[1]?.cmd === 5 && message[1]?.dn === fullname) {
         setInitialRoom((pre) => ({
           ...pre,
           isHostReady: true,
         }));
-      } else if (message[1].ri && message[1].cmd === 308) {
+      } else if (message[1].cmd === 308) {
         // Create room response
-        const roomId = message[1]?.ri?.rid;
+        if (message[1].ri) {
+          const roomId = message[1]?.ri?.rid;
 
-        setInitialRoom({
-          ...defaultRoom,
-          id: roomId as number,
-        });
-        returnMsg = `Created room ${roomId}`;
+          setInitialRoom({
+            ...defaultRoom,
+            id: roomId as number,
+          });
+          // Host join
+          sendMessage(`[3,"Simms",${roomId},""]`);
 
-        // Host join
-        sendMessage(`[3,"Simms",${roomId},""]`);
+          returnMsg = `Created room ${roomId}`;
+        } else if (message[1].mgs) {
+          returnMsg = message[1].mgs;
+        }
       } else if (message[1]?.cs?.length > 0) {
         setInitialRoom((pre) => ({
           ...pre,
@@ -62,7 +68,8 @@ export function handleMessageSubHost({
         );
 
         returnMsg = `Card received: ${message[1].cs}`;
-      } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
+        // } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
+      } else if (message[1]?.cmd === 603 && message[1]?.iar === true) {
         setInitialRoom((pre) => ({ ...pre, isPrefinish: true }));
       } else if (message[1]?.cmd === 204 && initialRoom.isPrefinish) {
         setInitialRoom((pre) => ({
@@ -81,6 +88,8 @@ export function handleMessageSubHost({
           return {
             ...pre,
             isSubmitCard: true,
+            isGuessReady: false,
+            isHostReady: false,
             cardGame: [...initialRoom.cardGame, newCards],
           };
         });

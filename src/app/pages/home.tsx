@@ -16,7 +16,7 @@ import { getRandomCards } from '../../lib/card';
 import { AppContext } from '../../renderer/providers/app';
 import useAccountStore from '../../store/accountStore';
 
-export const HomePage: React.FC<any> = (cardDeck) => {
+export const HomePage = (cardDeck: any) => {
   const [cards, setCards] = useState<number[][]>([]);
   const { state, crawingRoom } = useContext(AppContext);
 
@@ -105,18 +105,18 @@ export const HomePage: React.FC<any> = (cardDeck) => {
             </CardFooter>
           )}
         </Card>
-        {/* <Sticky scrollElement=".scrollarea"> */}
         <div>
-          <div className=" sticky top-[90px]">
-            <Card className="w-full flex flex-col gap-4 border-0 ">
+          <div className="sticky top-[90px]">
+            <Card className="w-full flex flex-col gap-4 border-0">
               {accounts['MAIN'].map(
                 (main: any, index: any) =>
-                  main.isSelected && <TerminalBoard key={index} main={main} />
+                  main.isSelected && (
+                    <TerminalBoard key={`main ` + index} main={main} />
+                  )
               )}
             </Card>
           </div>
         </div>
-        {/* </Sticky> */}
       </main>
     </div>
   );

@@ -40,8 +40,8 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogTitle,
-  DialogTrigger,
 } from '../ui/dialog';
 import {
   DropdownMenu,
@@ -68,7 +68,10 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [dataTable, setDataTable] = useState<any>([]);
+  const [rowData, setRowData] = useState<any>();
   const [isDialogAddAccountOpen, setDialogAddAccountOpen] = useState(false);
+  const [isDialogUpdateAccountOpen, setDialogUpdateAccountOpen] =
+    useState(false);
   const [isDialogProxyOpen, setDialogProxyOpen] = useState(false);
   const [rowSelected, setRowSelected] = useState<any>();
   const [errorAddProxy, setErrorAddProxy] = useState<any>();
@@ -97,27 +100,18 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
       setDialogAddAccountOpen(false);
     }
   };
-  // const handleAddProxy = (row: any) => {
-  //   if (!proxyRef.current?.value) {
-  //     setErrorAddProxy('Please input proxy');
-  //     return;
-  //   }
-  //   if (!portRef.current?.value) {
-  //     setErrorAddProxy('Please input port');
-  //     return;
-  //   }
+  const handleUpdateAccount = () => {
+    if (usernameRef.current && passwordRef.current && tokenRef.current) {
+      const newAccount = {
+        username: usernameRef.current.value,
+        password: passwordRef.current.value,
+        token: tokenRef.current.value,
+      };
+      updateAccount(accountType, newAccount.username, newAccount);
+      setDialogUpdateAccountOpen(false);
+    }
+  };
 
-  //   if (proxyRef.current && portRef.current && row) {
-  //     const newProxy = {
-  //       proxy: proxyRef.current.value,
-  //       port: portRef.current.value,
-  //       userProxy: useAuthForProxy ? authUsernameRef.current?.value : '',
-  //       passProxy: useAuthForProxy ? authPasswordRef.current?.value : '',
-  //     };
-  //     updateAccount(accountType, row.username, newProxy);
-  //     setDialogProxyOpen(false);
-  //   }
-  // };
   const handleFileChange = (event: any) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -175,6 +169,26 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
   const handleDeleteRow = (rowData: any) => {
     removeAccount(accountType, rowData.username);
   };
+
+  const handleUpdateRow = (rowData: any) => {
+    setRowData(rowData);
+    setDialogUpdateAccountOpen(true);
+  };
+
+  useEffect(() => {
+    if (isDialogUpdateAccountOpen) {
+      const timer = setTimeout(() => {
+        if (usernameRef.current && passwordRef.current && tokenRef.current) {
+          usernameRef.current.value = rowData.username ?? 'xxx';
+          passwordRef.current.value = rowData.password;
+          tokenRef.current.value = rowData.token;
+        }
+      }, 0); // Set timeout to 0 to let the render complete
+
+      // Clean up the timer if the modal closes before timeout
+      return () => clearTimeout(timer);
+    }
+  }, [isDialogUpdateAccountOpen]);
 
   const checkBalance = async (rowData: any) => {
     var mainBalance = rowData.main_balance;
@@ -384,8 +398,9 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
               <DropdownMenuItem onClick={() => handleDeleteRow(rowData)}>
                 Delete account
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => checkBalance(rowData)}>
-                Check balance
+
+              <DropdownMenuItem onClick={() => handleUpdateRow(rowData)}>
+                Update account
               </DropdownMenuItem>
               {accountType == 'MAIN' && (
                 <DropdownMenuItem
@@ -472,21 +487,17 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
                 <Paperclip className="size-4" />
               </Button>
             </TooltipTrigger>
-            <Dialog
-              open={isDialogAddAccountOpen}
-              onOpenChange={setDialogAddAccountOpen}
-            >
-              <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setDialogAddAccountOpen(true)}
-                >
-                  <Plus className="size-4" />
-                  <span className="sr-only">Add account</span>
-                </Button>
-              </DialogTrigger>
-            </Dialog>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                onClick={() => setDialogAddAccountOpen(true)}
+              >
+                <Plus className="size-4" />
+                <span className="sr-only">Add account</span>
+              </Button>
+            </TooltipTrigger>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
@@ -672,15 +683,37 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
             className="mb-4"
           />
           <Input ref={tokenRef} placeholder="Token" className="mb-4" />
-          <div className="flex justify-end space-x-2">
-            <Button
-              variant="secondary"
-              onClick={() => setDialogAddAccountOpen(false)}
-            >
-              Cancel
+
+          <DialogFooter>
+            <Button size="sm" onClick={handleAddAccount}>
+              Add Account
             </Button>
-            <Button onClick={handleAddAccount}>Add Account</Button>
-          </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={isDialogUpdateAccountOpen}
+        onOpenChange={setDialogUpdateAccountOpen}
+      >
+        <DialogContent>
+          <DialogTitle>Update account</DialogTitle>
+          <DialogDescription>
+            Enter the details of the account.
+          </DialogDescription>
+          <Input ref={usernameRef} placeholder="Username" className="mb-4" />
+          <Input
+            ref={passwordRef}
+            type="password"
+            placeholder="Password"
+            className="mb-4"
+          />
+          <Input ref={tokenRef} placeholder="Token" className="mb-4" />
+
+          <DialogFooter>
+            <Button size="sm" onClick={handleUpdateAccount}>
+              Update Account
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

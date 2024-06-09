@@ -1,2 +1,2 @@
-vipmot113|vipmot113|true|5e821c4f6548363b07ad34913e162200
-vipcute1|vipcute1|true|51cba9a3e6795ce33f76585f6098dd2f
+vipmot113|vipmot113|true|true
+vipcute1|vipcute1|true|true

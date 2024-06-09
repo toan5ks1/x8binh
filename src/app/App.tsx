@@ -13,13 +13,12 @@ import {
   SquareMousePointer,
 } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AccountSection } from '../components/account/accountSection';
 import { CoupleCrawStatus } from '../components/bots/coupleCraw';
 import { CoupleSubStatus } from '../components/bots/coupleSub';
 import BotSetting from '../components/menu/botSheet';
 import MainSetting from '../components/menu/mainSetting';
-import { useToast } from '../components/toast/use-toast';
+import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import {
   DropdownMenu,
@@ -38,17 +37,15 @@ import {
   TooltipTrigger,
 } from '../components/ui/tooltip';
 import { roomTypes } from '../lib/config';
-import { validateLicense } from '../lib/supabase';
+
 import { AppContext, defaultState } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
 import { HomePage } from './pages/home';
 
 export function App() {
-  const navigate = useNavigate();
   const { state, setState, initialRoom, crawingRoom, recreateTime } =
     useContext(AppContext);
   const { accounts } = useAccountStore();
-  const { toast } = useToast();
 
   const bots = accounts['SUB'].filter((item: any) => item.isSelected === true);
   const craws = accounts['BOT'].filter((item: any) => item.isSelected === true);
@@ -71,9 +68,6 @@ export function App() {
   const onLogin = () => {
     setShouldLogin(true);
     setIsLoging(true);
-
-    // tests
-    setState((pre) => ({ ...pre, isLoggedIn: true }));
   };
 
   const onScrollToBoardCard = () => {
@@ -97,7 +91,9 @@ export function App() {
 
   const onStopCrawing = () => {
     setState((pre) => ({ ...pre, shouldStopCrawing: true }));
-    setIsQuiting(true);
+  };
+  const onContinueCrawing = () => {
+    setState((pre) => ({ ...pre, shouldStopCrawing: false }));
   };
 
   const onRefreshBot = () => {
@@ -107,23 +103,9 @@ export function App() {
     setIsLoging(false);
     setState((pre) => ({
       ...defaultState,
-      isLoggedIn: pre.isLoggedIn,
       roomType: pre.roomType,
-      shouldDisconnect: true,
     }));
   };
-
-  useEffect(() => {
-    if (state.isLoggedIn) {
-      setIsLoging(false);
-    }
-  }, [state.isLoggedIn]);
-
-  useEffect(() => {
-    if (state.foundAt) {
-      setIsFinding(false);
-    }
-  }, [state.foundAt]);
 
   useEffect(() => {
     if (
@@ -148,18 +130,19 @@ export function App() {
         ...defaultState,
         foundAt: pre.foundAt,
         roomType: pre.roomType,
+        isLoggedIn: pre.isLoggedIn,
       }));
     }
   }, [recreateTime]);
 
-  useEffect(() => {
-    if (
-      process.env.NODE_ENV != 'development' &&
-      !localStorage.getItem('license-key')
-    ) {
-      validateLicense(setLoading, toast, navigate);
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (
+  //     process.env.NODE_ENV != 'development' &&
+  //     !localStorage.getItem('license-key')
+  //   ) {
+  //     validateLicense(setLoading, toast, navigate);
+  //   }
+  // }, []);
 
   const handleRoomTypeChange = (money: number) => {
     setState((pre) => ({
@@ -226,11 +209,6 @@ export function App() {
                   </div>
 
                   <div className="flex gap-2 items-center">
-                    <div className="h-8 gap-1 flex flex-row justify-center items-center">
-                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        {state.targetAt && `Room: ${state.targetAt}`}
-                      </span>
-                    </div>
                     <RadioGroup
                       defaultValue={cardDeck}
                       onValueChange={(value) => {
@@ -294,45 +272,69 @@ export function App() {
                   </div>
 
                   <div className="flex gap-2 items-center">
-                    <Button
-                      onClick={onLogin}
-                      size="sm"
-                      className="h-8 gap-1 cursor-pointer hover:opacity-70"
-                      disabled={isLoging}
-                    >
-                      {isLoging ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <LogIn className="h-3.5 w-3.5" />
-                      )}
-                      Login
-                    </Button>
-                    <Button
-                      onClick={onCreateRoom}
-                      size="sm"
-                      className="h-8 gap-1"
-                      disabled={isFinding}
-                    >
-                      {isFinding ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin cursor-pointer hover:opacity-70" />
-                      ) : (
-                        <SearchCheck className="h-3.5 w-3.5" />
-                      )}
-                      Find room
-                    </Button>
-                    <Button
-                      onClick={onStopCrawing}
-                      size="sm"
-                      className="h-8 gap-1 bg-yellow-500 cursor-pointer hover:opacity-70"
-                      disabled={!Boolean(state.foundAt) || isQuiting}
-                    >
-                      {isQuiting ? (
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <LogOut className="h-3.5 w-3.5" />
-                      )}
-                      Stop crawing
-                    </Button>
+                    {!state.isLoggedIn ? (
+                      <Button
+                        onClick={onLogin}
+                        size="sm"
+                        className="h-8 gap-1 cursor-pointer hover:opacity-70"
+                        disabled={isLoging}
+                      >
+                        {isLoging ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <LogIn className="h-3.5 w-3.5" />
+                        )}
+                        Login
+                      </Button>
+                    ) : (
+                      <Badge>Logged</Badge>
+                    )}
+                    {!state.targetAt ? (
+                      <Button
+                        onClick={onCreateRoom}
+                        size="sm"
+                        className="h-8 gap-1"
+                        disabled={isFinding}
+                      >
+                        {isFinding ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin cursor-pointer hover:opacity-70" />
+                        ) : (
+                          <SearchCheck className="h-3.5 w-3.5" />
+                        )}
+                        Find room
+                      </Button>
+                    ) : (
+                      <Badge>Room: {state.targetAt}</Badge>
+                    )}
+                    {!state.shouldStopCrawing ? (
+                      <Button
+                        onClick={onStopCrawing}
+                        size="sm"
+                        className="h-8 gap-1 bg-yellow-500 cursor-pointer hover:opacity-70"
+                        disabled={!Boolean(state.foundAt) || isQuiting}
+                      >
+                        {isQuiting ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <LogOut className="h-3.5 w-3.5" />
+                        )}
+                        Stop crawing
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={onContinueCrawing}
+                        size="sm"
+                        className="h-8 gap-1 bg-yellow-500 cursor-pointer hover:opacity-70"
+                        disabled={!Boolean(state.foundAt) || isQuiting}
+                      >
+                        {isQuiting ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <LogOut className="h-3.5 w-3.5" />
+                        )}
+                        Continue craw
+                      </Button>
+                    )}
                     <Button
                       onClick={onRefreshBot}
                       size="sm"
@@ -378,7 +380,6 @@ export function App() {
           </div>
         )}
       </div>
-      {/* </Tabs> */}
     </div>
   );
 }

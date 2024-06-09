@@ -73,12 +73,14 @@ export interface StateProps {
   shouldDisconnect?: boolean;
   shouldRefresh?: boolean;
   roomType: number;
+  loggedAccount: string[];
 }
 
 export const defaultState = {
   currentGame: { number: 0, sheet: {} },
   recreateTime: 0,
   roomType: roomTypes[0],
+  loggedAccount: [] as string[],
 };
 
 interface AppContextProps {
@@ -88,8 +90,6 @@ interface AppContextProps {
   setInitialRoom: Dispatch<SetStateAction<Room>>;
   crawingRoom: Room;
   setCrawingRoom: Dispatch<SetStateAction<Room>>;
-  waiterRoom: Room;
-  setWaiterRoom: Dispatch<SetStateAction<Room>>;
   recreateTime: number;
   tobeRecreateRoom: () => void;
 }
@@ -98,12 +98,10 @@ export const AppContext = createContext<AppContextProps>({
   state: defaultState,
   initialRoom: defaultRoom,
   crawingRoom: defaultRoom,
-  waiterRoom: defaultRoom,
   recreateTime: 0,
   setState: () => {},
   setInitialRoom: () => {},
   setCrawingRoom: () => {},
-  setWaiterRoom: () => {},
   tobeRecreateRoom: () => {},
 });
 
@@ -112,7 +110,6 @@ const AppProvider = ({ children }: AppProviderProps) => {
 
   const [initialRoom, setInitialRoom] = useState(defaultRoom);
   const [crawingRoom, setCrawingRoom] = useState(defaultRoom);
-  const [waiterRoom, setWaiterRoom] = useState(defaultRoom);
   const [recreateTime, setRecreateTime] = useState(0);
   const tobeRecreateRoom = () => setRecreateTime((pre) => pre + 1);
 
@@ -125,8 +122,6 @@ const AppProvider = ({ children }: AppProviderProps) => {
         setInitialRoom,
         crawingRoom,
         setCrawingRoom,
-        waiterRoom,
-        setWaiterRoom,
         recreateTime,
         tobeRecreateRoom,
       }}

@@ -19,8 +19,11 @@ export function handleMessageSubGuess({
   setInitialRoom,
   sendMessage,
   state,
+  user,
 }: HandleCRMessageProps) {
   let returnMsg;
+  const { fullname } = user;
+
   switch (message[0]) {
     case 1:
       if (message[1] === true) {
@@ -28,7 +31,7 @@ export function handleMessageSubGuess({
       }
       break;
     case 5:
-      if (message[1]?.b === 100 && message[1]?.re === false) {
+      if (message[1]?.cmd === 5 && message[1]?.dn === fullname) {
         setInitialRoom((pre) => ({
           ...pre,
           isGuessReady: true,

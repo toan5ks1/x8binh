@@ -81,6 +81,7 @@ export function useSetupCrawHost(bot: LoginParams) {
     if (shouldPingMaubinh) {
       const maubinhPingMessage = `[6,"Simms","channelPlugin",{"cmd":300,"aid":"1","gid":4}]`;
       const pingPongMessage = `["7", "Simms", "1",${iTimeRef.current}]`;
+      setState((pre) => ({ ...pre, isLoggedIn: true }));
 
       const intervalId1 = setInterval(() => {
         sendMessage(pingPongMessage);
@@ -102,11 +103,15 @@ export function useSetupCrawHost(bot: LoginParams) {
   const handleLoginClick = async () => {
     login(bot)
       .then((data: LoginResponse | null) => {
-        const user = data?.data[0];
-        if (user) {
-          setState((pre) => ({ ...pre, isLoggedIn: true }));
+        if (data?.code === 200 && data?.data[0]) {
+          const user = data?.data[0];
           setUser(user);
           connectMainGame(user);
+        } else {
+          setMessageHistory((msgs) => [
+            ...msgs,
+            data?.message ?? 'Login failed',
+          ]);
         }
       })
       .catch((err: Error) =>
@@ -212,9 +217,10 @@ export function useSetupCrawHost(bot: LoginParams) {
 
   useEffect(() => {
     if (
+      !state.shouldStopCrawing &&
       state.foundAt &&
       crawingRoom.isFinish &&
-      crawingRoom.shouldHostReady &&
+      crawingRoom.isGuessReady &&
       initialRoom.isGuessReady &&
       initialRoom.isHostReady
     ) {
@@ -222,10 +228,23 @@ export function useSetupCrawHost(bot: LoginParams) {
     }
   }, [
     crawingRoom.isFinish,
-    crawingRoom.shouldHostReady,
+    crawingRoom.isGuessReady,
     initialRoom.isGuessReady,
     initialRoom.isHostReady,
   ]);
+
+  // Continue crawing
+  useEffect(() => {
+    if (!state.shouldStopCrawing) {
+      if (state.foundAt && crawingRoom.isHostOut) {
+        sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+      }
+
+      if (state.foundAt && crawingRoom.isHostOut && crawingRoom.isHostJoin) {
+        sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
+      }
+    }
+  }, [state.shouldStopCrawing]);
 
   return {
     user,

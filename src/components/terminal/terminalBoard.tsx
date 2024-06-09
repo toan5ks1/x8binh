@@ -13,6 +13,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Button } from '../../components/ui/button';
 import { Label } from '../../components/ui/label';
 import { ScrollArea } from '../../components/ui/scroll-area';
+import { fillLoginParam, openAccounts } from '../../lib/login';
 import { addMoney } from '../../lib/supabase';
 import { highlightSyntax } from '../../lib/terminal';
 import { AppContext } from '../../renderer/providers/app';
@@ -29,8 +30,8 @@ import {
 export const TerminalBoard: React.FC<any> = ({ main }) => {
   const { toast } = useToast();
   const [data, setData] = useState<unknown[]>([]);
-  const { state, setState } = useContext(AppContext);
-  const [isLogin, setIsLogin] = useState(false);
+  const { state, setState, setInitialRoom, initialRoom } =
+    useContext(AppContext);
   const [isInLobby, setIsInLobby] = useState(false);
   const [currentSit, setCurrentSit] = useState('');
   const [autoInvite, setAutoInvite] = useState(false);
@@ -65,18 +66,22 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
     );
   };
   const outRoom = (account: any): void => {
-    window.backend.sendMessage(
-      'execute-script',
-      account,
-      `__require('GameController').default.prototype.sendLeaveRoom();`
-    );
+    if (initialRoom.isSubJoin) {
+      window.backend.sendMessage(
+        'execute-script',
+        account,
+        `__require('GameController').default.prototype.sendLeaveRoom();`
+      );
+    }
   };
   function joinRoom(account: any): void {
-    window.backend.sendMessage(
-      'execute-script',
-      account,
-      `__require('GamePlayManager').default.getInstance().joinRoom(${state.targetAt},0,'',true);`
-    );
+    if (state.targetAt) {
+      window.backend.sendMessage(
+        'execute-script',
+        account,
+        `__require('GamePlayManager').default.getInstance().joinRoom(${state.targetAt},0,'',true);`
+      );
+    }
   }
 
   function checkPosition(account: any): void {
@@ -111,9 +116,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   async function invitePlayer(account: any): Promise<void> {
     await window.backend.sendMessage('execute-script', account, inviteCommand);
   }
-  async function openAccounts(account: any) {
-    await window.backend.sendMessage('open-accounts', account);
-  }
+
   async function arrangeCards(account: any) {
     await window.backend.sendMessage(
       'execute-script',
@@ -124,7 +127,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
 
   const handleData = ({ data, username, displayName }: any) => {
     if (username === main.username) {
-      setIsLogin(true);
       if (!data.includes('[6,1') && !data.includes('["7","Simms",')) {
         const parsedData = parseData(data);
         // if (parsedData[1]?.ri?.rid) {
@@ -149,13 +151,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
           // setCurrentSit('');
         }
         if (parsedData[0] == 3 && parsedData[1] === true) {
-          setState((pre) => ({
-            ...pre,
-            initialRoom: {
-              ...pre.initialRoom,
-              isSubJoin: true,
-            },
-          }));
+          setInitialRoom((pre) => ({ ...pre, isSubJoin: true }));
         }
         if (parsedData[0] == 5) {
           checkPosition(main);
@@ -292,6 +288,19 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
     };
   }, [autoInvite, main]);
 
+  const setTagName = (main: any) => {
+    window.backend.sendMessage(
+      'execute-script',
+      main,
+      getAddNameTagCommand(main)
+    );
+  };
+
+  const onLogin = () => {
+    fillLoginParam(main);
+    setTagName(main);
+  };
+
   useEffect(() => {
     window.backend.on('websocket-data', handleData);
     window.backend.on('websocket-data-sent', handleDataSent);
@@ -303,14 +312,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
       window.backend.removeListener('check-position', handleCheckPosition);
     };
   }, []);
-
-  useEffect(() => {
-    window.backend.sendMessage(
-      'execute-script',
-      main,
-      getAddNameTagCommand(main)
-    );
-  }, [isLogin]);
 
   const clearData = () => {
     setData([]);
@@ -359,6 +360,20 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
             <Tooltip>
               <TooltipTrigger>
                 <div
+                  onClick={onLogin}
+                  style={{ fontFamily: 'monospace' }}
+                  className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
+                >
+                  <PlusCircle className="h-3.5 w-3.5 text-black" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Login</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
                   onClick={() => joinLobby(main)}
                   style={{ fontFamily: 'monospace' }}
                   className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
@@ -368,20 +383,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
               </TooltipTrigger>
               <TooltipContent>
                 <p>Join Lobby</p>
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger>
-                <div
-                  onClick={() => createRoom(main)}
-                  style={{ fontFamily: 'monospace' }}
-                  className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
-                >
-                  <PlusCircle className="h-3.5 w-3.5 text-black" />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Create Room</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
