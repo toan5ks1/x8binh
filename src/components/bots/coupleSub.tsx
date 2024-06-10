@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
-import { useSetupBot } from '../../hooks/useSetupBot';
+import { useSetupSubGuess } from '../../hooks/useSetupSubGuess';
+import { useSetupSubHost } from '../../hooks/useSetupSubHost';
 import { BotCmp } from './botCmp';
 import { BotStatusProps } from './coupleCraw';
 
-export const MainPlayerStatus = ({
+export const CoupleSubStatus = ({
   craw1,
   craw2,
-  index,
   shouldLogin,
   shouldCreatRoom,
   shouldLeave,
@@ -21,7 +21,7 @@ export const MainPlayerStatus = ({
     handleLoginClick: loginBot1,
     handleCreateRoom: handleCreateRoomBot1,
     disconnectGame: disconnectBot1,
-  } = useSetupBot(craw1, true);
+  } = useSetupSubHost(craw1);
 
   const {
     user: user2,
@@ -31,7 +31,7 @@ export const MainPlayerStatus = ({
     connectionStatus: connectionStatusBot2,
     handleLoginClick: loginBot2,
     disconnectGame: disconnectBot2,
-  } = useSetupBot(craw2, false);
+  } = useSetupSubGuess(craw2);
 
   useEffect(() => {
     if (shouldLogin) {
@@ -63,14 +63,14 @@ export const MainPlayerStatus = ({
   return (
     <div className="space-y-4 w-full">
       <BotCmp
-        name={`Sub ${index + 1}`}
+        name={`Sub 1`}
         userId={user1?.username}
         connectionStatus={connectionStatusBot1}
         messageHistory={messageHistoryBot1}
         setMessageHistory={setMessageHistoryBot1}
       />
       <BotCmp
-        name={`Sub ${index + 2}`}
+        name={`Sub 2`}
         userId={user2?.username}
         connectionStatus={connectionStatusBot2}
         messageHistory={messageHistoryBot2}

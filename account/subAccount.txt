@@ -1,3 +1,2 @@
-ngauvayhabar|dungcodai|false|undefined|undefined|undefined|undefined|
-Phatraxanh|khongphaidau|true|undefined|undefined|undefined|undefined|
-maumau149|zxcv123123|true|undefined|undefined|undefined|undefined|
+vipclass1|vipclass1|sub|sub|true
+vipprox1|vipprox1|sub|sub|true

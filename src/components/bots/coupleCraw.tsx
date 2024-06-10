@@ -1,14 +1,13 @@
 import { useEffect } from 'react';
-import { useCrawing } from '../../hooks/useCrawing';
+import { useSetupCrawGuess } from '../../hooks/useSetupCrawGuess';
+import { useSetupCrawHost } from '../../hooks/useSetupCrawHost';
 import { LoginParams } from '../../lib/login';
 import { BotCmp } from './botCmp';
 
 export interface BotStatusProps {
   craw1: LoginParams;
   craw2: LoginParams;
-  index: number;
   shouldLogin: boolean;
-  // shouldJoinMB: boolean;
   shouldCreatRoom: boolean;
   shouldLeave: boolean;
   shouldDisconnect: boolean;
@@ -17,82 +16,74 @@ export interface BotStatusProps {
 export const CoupleCrawStatus = ({
   craw1,
   craw2,
-  index,
   shouldLogin,
-  // shouldJoinMB,
   shouldCreatRoom,
   shouldLeave,
   shouldDisconnect,
 }: BotStatusProps) => {
   const {
-    host,
-    guess,
-    // connectMbHost,
-    // connectMbGuess,
-    loginHost,
-    loginGuess,
-    msgHost,
-    msgGuess,
-    setMsgHost,
-    setMsgGuess,
-    connectionStatusHost,
-    connectionStatusGuess,
-    hostCreateRoom,
-    hostLeaveRoom,
-    guessLeaveRoom,
-    hostDisconnect,
-    guessDisconnect,
-  } = useCrawing(craw1, craw2);
+    user: user1,
+    messageHistory: messageHistoryBot1,
+    setMessageHistory: setMessageHistoryBot1,
+    handleLeaveRoom: handleLeaveRoomBot1,
+    connectionStatus: connectionStatusBot1,
+    handleLoginClick: loginBot1,
+    handleCreateRoom: handleCreateRoomBot1,
+    disconnectGame: disconnectBot1,
+  } = useSetupCrawHost(craw1);
+
+  const {
+    user: user2,
+    messageHistory: messageHistoryBot2,
+    setMessageHistory: setMessageHistoryBot2,
+    handleLeaveRoom: handleLeaveRoomBot2,
+    connectionStatus: connectionStatusBot2,
+    handleLoginClick: loginBot2,
+    disconnectGame: disconnectBot2,
+  } = useSetupCrawGuess(craw2);
 
   useEffect(() => {
     if (shouldLogin) {
-      loginHost();
-      loginGuess();
+      loginBot1();
+      loginBot2();
     }
   }, [shouldLogin]);
 
-  // useEffect(() => {
-  //   if (shouldJoinMB) {
-  //     connectMbHost();
-  //     connectMbGuess();
-  //   }
-  // }, [shouldJoinMB]);
-
   useEffect(() => {
     if (shouldCreatRoom) {
-      hostCreateRoom();
+      handleCreateRoomBot1();
     }
   }, [shouldCreatRoom]);
 
   useEffect(() => {
     if (shouldLeave) {
-      hostLeaveRoom();
-      guessLeaveRoom();
+      handleLeaveRoomBot1();
+      handleLeaveRoomBot2();
     }
   }, [shouldLeave]);
 
   useEffect(() => {
     if (shouldDisconnect) {
-      hostDisconnect();
-      guessDisconnect();
+      disconnectBot1();
+      disconnectBot2();
     }
   }, [shouldDisconnect]);
 
   return (
     <div className="space-y-4 w-full">
       <BotCmp
-        name={`Bot ${index + 1}`}
-        userId={host?.username}
-        connectionStatus={connectionStatusHost}
-        messageHistory={msgHost}
-        setMessageHistory={setMsgHost}
+        name={`Bot 1`}
+        userId={user1?.username}
+        connectionStatus={connectionStatusBot1}
+        messageHistory={messageHistoryBot1}
+        setMessageHistory={setMessageHistoryBot1}
       />
       <BotCmp
-        name={`Bot ${index + 2}`}
-        userId={guess?.username}
-        connectionStatus={connectionStatusGuess}
-        messageHistory={msgGuess}
-        setMessageHistory={setMsgGuess}
+        name={`Bot 2`}
+        userId={user2?.username}
+        connectionStatus={connectionStatusBot2}
+        messageHistory={messageHistoryBot2}
+        setMessageHistory={setMessageHistoryBot2}
       />
     </div>
   );

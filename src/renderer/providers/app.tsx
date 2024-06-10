@@ -6,6 +6,7 @@ import {
   useState,
 } from 'react';
 import { roomTypes } from '../../lib/config';
+import { defaultRoom } from '../../lib/utils';
 
 interface AppProviderProps {
   children: ReactNode;
@@ -19,6 +20,7 @@ export enum BotStatus {
   Ready = 'READY',
   Received = 'RECEIVED',
   Submitted = 'SUBMITTED',
+  Saved = 'SAVED',
   PreFinished = 'PREFINISHED',
   Finished = 'FINISHED',
   Left = 'LEFT',
@@ -40,103 +42,90 @@ export interface GameCard {
 export interface Room {
   id?: number;
   owner?: string;
-  players: string[];
   cardGame: GameCard[][];
-  cardDesk: number[][];
-  shouldOutVote: number;
-  isFinish: boolean;
-  isHostReady: boolean;
+  cardDesk: GameCard[];
+  isFinish?: boolean;
+  isPrefinish?: boolean;
   isSubJoin?: boolean;
-  roomType: number;
   targetCard?: number[];
-  isChecked?: boolean;
+  isNotFound?: boolean;
+  isHostOut?: boolean;
+  isGuessOut?: boolean;
+  isHostReady?: boolean;
+  isGuessReady?: boolean;
+  isGuessJoin?: boolean;
+  isHostJoin?: boolean;
+  shouldGuessJoin?: boolean;
+  shouldHostReady?: boolean;
+  isSubmitCard?: boolean;
+  findRoomDone?: boolean;
 }
 
 export interface StateProps {
-  initialRoom: Room;
-  crawingRoom: {
-    [key: string]: Room;
-  };
-  crawingBots: {
-    [key: string]: {
-      status: BotStatus;
-    };
-  };
-  mainBots: {
-    [key: string]: {
-      status: BotStatus;
-    };
-  };
-  waiterBots: {
-    [key: string]: {
-      status: BotStatus;
-    };
-  };
   foundAt?: number;
   targetAt?: number;
-  foundBy?: string;
-  shouldRecreateRoom: boolean;
+  recreateTime: number;
   currentGame: GameState;
   isLoggedIn?: boolean;
   isQuited?: boolean;
   activeMain?: string;
+  shouldStopCrawing?: boolean;
   shouldDisconnect?: boolean;
-  shouldReconnect?: boolean;
-  isNotFound?: boolean;
-  readyHost: number;
+  shouldRefresh?: boolean;
+  roomType: number;
+  loggedAccount: string[];
 }
 
 export const defaultState = {
-  initialRoom: {
-    players: [],
-    cardGame: [],
-    cardDesk: [],
-    shouldOutVote: 0,
-    isFinish: false,
-    isHostReady: false,
-    roomType: roomTypes[0],
-  },
-  mainBots: {},
-  crawingRoom: {},
-  crawingBots: {},
-  waiterBots: {},
   currentGame: { number: 0, sheet: {} },
-  shouldRecreateRoom: false,
-  readyHost: 0,
+  recreateTime: 0,
+  roomType: roomTypes[0],
+  loggedAccount: [] as string[],
 };
 
 interface AppContextProps {
   state: StateProps;
   setState: Dispatch<SetStateAction<StateProps>>;
+  initialRoom: Room;
+  setInitialRoom: Dispatch<SetStateAction<Room>>;
+  crawingRoom: Room;
+  setCrawingRoom: Dispatch<SetStateAction<Room>>;
+  recreateTime: number;
+  tobeRecreateRoom: () => void;
 }
 
 export const AppContext = createContext<AppContextProps>({
   state: defaultState,
+  initialRoom: defaultRoom,
+  crawingRoom: defaultRoom,
+  recreateTime: 0,
   setState: () => {},
+  setInitialRoom: () => {},
+  setCrawingRoom: () => {},
+  tobeRecreateRoom: () => {},
 });
 
 const AppProvider = ({ children }: AppProviderProps) => {
-  const [state, setState] = useState({
-    initialRoom: {
-      players: [] as string[],
-      cardGame: [] as GameCard[][],
-      cardDesk: [] as number[][],
-      shouldOutVote: 0,
-      isFinish: false,
-      isHostReady: false,
-      roomType: roomTypes[0],
-    },
-    mainBots: {},
-    crawingRoom: {},
-    crawingBots: {},
-    waiterBots: {},
-    currentGame: { number: 0, sheet: {} },
-    shouldRecreateRoom: false,
-    readyHost: 0,
-  });
+  const [state, setState] = useState(defaultState);
+
+  const [initialRoom, setInitialRoom] = useState(defaultRoom);
+  const [crawingRoom, setCrawingRoom] = useState(defaultRoom);
+  const [recreateTime, setRecreateTime] = useState(0);
+  const tobeRecreateRoom = () => setRecreateTime((pre) => pre + 1);
 
   return (
-    <AppContext.Provider value={{ state, setState }}>
+    <AppContext.Provider
+      value={{
+        state,
+        setState,
+        initialRoom,
+        setInitialRoom,
+        crawingRoom,
+        setCrawingRoom,
+        recreateTime,
+        tobeRecreateRoom,
+      }}
+    >
       {children}
     </AppContext.Provider>
   );

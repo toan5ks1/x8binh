@@ -1,21 +1,18 @@
 import { toast } from '../components/toast/use-toast';
 
 const updateFile = async (accountsUpdate: any, accountType: string) => {
-  // const accountsUpdate = accounts[accountType];
-  // console.log('accountsUpdate', accountsUpdate);
-
   const accountsText = accountsUpdate
     .map(
       (account: {
-        proxy: any;
-        port: any;
-        isSelected: any;
-        username: any;
-        password: any;
-        passProxy: any;
-        userProxy: any;
+        username: string;
+        password: string;
+        token: string;
+        accountType: 'main' | 'sub' | 'bot';
+        isSelected: boolean;
       }) =>
-        `${account.username}|${account.password}|${account.isSelected}|${account.proxy}|${account.port}|${account.userProxy}|${account.passProxy}|`
+        `${account.username}|${account.password}|${
+          account.token
+        }|${accountType.toLowerCase()}|${account.isSelected}`
     )
     .join('\n');
   if (accountsText) {

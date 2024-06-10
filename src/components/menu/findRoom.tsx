@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useContext } from 'react';
+import { AppContext } from '../../renderer/providers/app';
 import { CoupleCrawStatus } from '../bots/coupleCraw';
-import { CoupleWaiterStatus } from '../bots/coupleWaiter';
-import { MainPlayerStatus } from '../bots/mainPlayer';
+import { CoupleSubStatus } from '../bots/coupleSub';
 import { ScrollArea } from '../ui/scroll-area';
 import BotSetting from './botSheet';
 
@@ -26,9 +26,7 @@ export function FindRoomSheet({
   isOpen,
   setIsOpen,
 }: FindRoomSheetProps) {
-  useEffect(() => {
-    console.log('Đa refresh');
-  }, []);
+  const { state } = useContext(AppContext);
   return (
     <BotSetting isOpen={isOpen} setIsOpen={setIsOpen}>
       <ScrollArea className="h-full rounded-md flex flex-col">
@@ -37,7 +35,7 @@ export function FindRoomSheet({
             (bot: any, index: any) =>
               index % 2 === 0 &&
               index < bots.length - 1 && (
-                <MainPlayerStatus
+                <CoupleSubStatus
                   key={index}
                   index={index}
                   craw1={bot}
@@ -67,16 +65,17 @@ export function FindRoomSheet({
                 );
               } else {
                 return (
-                  <CoupleWaiterStatus
-                    key={index}
-                    index={index}
-                    craw1={bot}
-                    craw2={craws[index + 1]}
-                    shouldLogin={shouldLogin}
-                    shouldCreatRoom={shouldCreatRoom}
-                    shouldLeave={shouldLeave}
-                    shouldDisconnect={shouldDisconnect}
-                  />
+                  // <CoupleWaiterStatus
+                  //   key={index}
+                  //   index={index}
+                  //   craw1={bot}
+                  //   craw2={craws[index + 1]}
+                  //   shouldLogin={shouldLogin}
+                  //   shouldCreatRoom={shouldCreatRoom}
+                  //   shouldLeave={shouldLeave}
+                  //   shouldDisconnect={shouldDisconnect}
+                  // />
+                  <></>
                 );
               }
             }

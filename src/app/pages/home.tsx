@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import BoardCard from '../../components/card/boardCard';
 import { TerminalBoard } from '../../components/terminal/terminalBoard';
 import { Button } from '../../components/ui/button';
@@ -16,31 +16,40 @@ import { getRandomCards } from '../../lib/card';
 import { AppContext } from '../../renderer/providers/app';
 import useAccountStore from '../../store/accountStore';
 
-export const HomePage: React.FC<any> = (cardDeck, setNumberOfCards) => {
+export const HomePage = (cardDeck: any) => {
   const [cards, setCards] = useState<number[][]>([]);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const { state } = useContext(AppContext);
+  const { state, crawingRoom } = useContext(AppContext);
 
   useEffect(() => {
-    if (state.foundBy) {
-      const desk = state.crawingRoom[state.foundBy].cardGame;
+    if (state.foundAt) {
+      const desk = crawingRoom.cardGame;
       const lastIndex = desk.length - 1;
       const lastGame = desk[lastIndex];
 
       if (lastIndex > 0 && cards.length === lastIndex - 1) {
         const mappedCard = lastGame.map((gameCard) => gameCard.cs);
+        console.log(mappedCard);
 
         const boBai: number[] = [];
-        for (let i = 0; i < 13; i++) {
-          boBai.push(mappedCard[0][i]);
-          boBai.push(mappedCard[1][i]);
-          boBai.push(mappedCard[2][i]);
-          boBai.push(mappedCard[3][i]);
+
+        if (mappedCard.length === 4) {
+          for (let i = 0; i < 13; i++) {
+            boBai.push(mappedCard[0][i]);
+            boBai.push(mappedCard[1][i]);
+            boBai.push(mappedCard[2][i]);
+            boBai.push(mappedCard[3][i]);
+          }
+          setCards((pre) => [...pre, boBai]);
         }
-        setCards((pre) => [...pre, boBai]);
       }
     }
-  }, [state.foundAt, state.crawingRoom]);
+  }, [state.foundAt, crawingRoom.cardGame]);
+
+  useEffect(() => {
+    if (state.shouldDisconnect) {
+      setCards([]);
+    }
+  }, [state.shouldDisconnect]);
 
   const addRandomCards = () => {
     setCards((prevCards) => [...prevCards, getRandomCards()]);
@@ -96,18 +105,18 @@ export const HomePage: React.FC<any> = (cardDeck, setNumberOfCards) => {
             </CardFooter>
           )}
         </Card>
-        {/* <Sticky scrollElement=".scrollarea"> */}
         <div>
-          <div className=" sticky top-[90px]">
-            <Card className="w-full flex flex-col gap-4 border-0 ">
+          <div className="sticky top-[90px]">
+            <Card className="w-full flex flex-col gap-4 border-0">
               {accounts['MAIN'].map(
                 (main: any, index: any) =>
-                  main.isSelected && <TerminalBoard key={index} main={main} />
+                  main.isSelected && (
+                    <TerminalBoard key={`main ` + index} main={main} />
+                  )
               )}
             </Card>
           </div>
         </div>
-        {/* </Sticky> */}
       </main>
     </div>
   );

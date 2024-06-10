@@ -5,8 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-import { GameCard, StateProps } from '../renderer/providers/app';
-import { roomTypes } from './config';
+import { GameCard } from '../renderer/providers/app';
 
 export enum ServerMessageType {
   JoinGame = 'joinGame',
@@ -77,21 +76,16 @@ export function handleStartActionTimer(message: any) {
 }
 
 export const defaultRoom = {
-  players: [],
-  cardDesk: [],
-  cardGame: [],
-  shouldOutVote: 0,
-  isFinish: false,
-  isHostReady: false,
-  roomType: roomTypes[0],
+  cardGame: [] as GameCard[][],
+  cardDesk: [] as GameCard[],
 };
 
-export const isAllCrawLeft = (rooms: StateProps['crawingRoom']) => {
-  const isNotLeft = Object.values(rooms).find(
-    (room) => room.players.length > 0
-  );
-  return !isNotLeft;
-};
+// export const isAllCrawLeft = (rooms: StateProps['crawingRoom']) => {
+//   const isNotLeft = Object.values(rooms).find(
+//     (room) => room.players.length > 0
+//   );
+//   return !isNotLeft;
+// };
 
 export const getCardsArray = (ps: any) => {
   return ps.map((item: any) => ({ cs: item.cs, dn: item.dn }));
@@ -101,7 +95,7 @@ export const isFoundCards = (
   cardPlayer1: GameCard[],
   cardPlayer2: GameCard[]
 ) => {
-  if (cardPlayer1.length < 2 || cardPlayer2.length < 2) {
+  if (cardPlayer1?.length < 2 || cardPlayer2?.length < 2) {
     return false;
   }
 
@@ -151,16 +145,16 @@ export const isFoundCardsV3 = (
   return isFound1 && isFound2;
 };
 
-export const isAllHostReady = (state: StateProps) => {
-  let isAllHostReady = state.initialRoom.isHostReady;
-  Object.values(state.crawingRoom).forEach((room) => {
-    if (!room.isHostReady) {
-      isAllHostReady = false;
-    }
-  });
+// export const isAllHostReady = (state: StateProps) => {
+//   let isAllHostReady = state.initialRoom.isHostReady;
+//   Object.values(state.crawingRoom).forEach((room) => {
+//     if (!room.isHostReady) {
+//       isAllHostReady = false;
+//     }
+//   });
 
-  return isAllHostReady;
-};
+//   return isAllHostReady;
+// };
 
 export const amIPlaying = (ps: any[], username: string) => {
   const isPlaying = ps.find((obj) => obj.dn === username);

@@ -13,11 +13,12 @@ import {
   SquareMousePointer,
 } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AccountSection } from '../components/account/accountSection';
-import { FindRoomSheet } from '../components/menu/findRoom';
+import { CoupleCrawStatus } from '../components/bots/coupleCraw';
+import { CoupleSubStatus } from '../components/bots/coupleSub';
+import BotSetting from '../components/menu/botSheet';
 import MainSetting from '../components/menu/mainSetting';
-import { useToast } from '../components/toast/use-toast';
+import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import {
   DropdownMenu,
@@ -29,31 +30,30 @@ import {
 } from '../components/ui/dropdown-menu';
 import { Label } from '../components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio';
+import { ScrollArea } from '../components/ui/scroll-area';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '../components/ui/tooltip';
 import { roomTypes } from '../lib/config';
-import { validateLicense } from '../lib/supabase';
-import { defaultRoom } from '../lib/utils';
-import { AppContext } from '../renderer/providers/app';
+
+import { AppContext, defaultState } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
 import { HomePage } from './pages/home';
 
 export function App() {
-  // const [tab, setActiveTab] = useState('all');
-  const { state, setState } = useContext(AppContext);
+  const { state, setState, initialRoom, crawingRoom, recreateTime } =
+    useContext(AppContext);
   const { accounts } = useAccountStore();
+
   const bots = accounts['SUB'].filter((item: any) => item.isSelected === true);
   const craws = accounts['BOT'].filter((item: any) => item.isSelected === true);
+
   const [cardDeck, setCardDeck] = useState('4');
   const [loading, setLoading] = useState(false);
   const [isOpenSheet, setIsOpenSheet] = useState(false);
   const [isOpenBotSheet, setIsOpenBotSheet] = useState(false);
-  const [numberOfCards, setNumberOfCards] = useState(0);
-  const navigate = useNavigate();
-  const { toast } = useToast();
 
   const [shouldLogin, setShouldLogin] = useState(false);
   const [shouldCreatRoom, setShouldCreateRoom] = useState(false);
@@ -87,68 +87,67 @@ export function App() {
   const onCreateRoom = () => {
     setShouldCreateRoom(true);
     setIsFinding(true);
-    state.foundBy &&
-      setState((pre) => ({
-        ...pre,
-        crawingRoom: {
-          ...pre.crawingRoom,
-          [state.foundBy!]: defaultRoom,
-        },
-      }));
   };
 
-  const onLeaveRoom = () => {
-    setState((pre) => ({ ...pre, shouldLeaveAll: true }));
-    setShouldCreateRoom(false);
-    state.isQuited === false && setIsQuiting(true);
-    setIsFinding(false);
+  const onStopCrawing = () => {
+    setState((pre) => ({ ...pre, shouldStopCrawing: true }));
+  };
+  const onContinueCrawing = () => {
+    setState((pre) => ({ ...pre, shouldStopCrawing: false }));
   };
 
   const onRefreshBot = () => {
     setRefreshKey((prevKey) => prevKey + 1);
-    setShouldLeave(true);
-    setShouldLogin(false);
-    setIsLoging(false);
-    setIsFinding(false);
-    setIsQuiting(false);
     setShouldCreateRoom(false);
+    setIsFinding(false);
+    setIsLoging(false);
     setState((pre) => ({
-      ...pre,
-      isLoggedIn: false,
+      ...defaultState,
+      roomType: pre.roomType,
     }));
   };
 
   useEffect(() => {
-    if (state.isLoggedIn) {
-      setIsLoging(false);
-    }
-  }, [state.isLoggedIn]);
-
-  useEffect(() => {
-    if (state.foundAt) {
-      setIsFinding(false);
-    }
-  }, [state.foundAt]);
-
-  useEffect(() => {
-    if (state.isQuited) {
-      setIsQuiting(false);
-    }
-  }, [state.isQuited]);
-
-  useEffect(() => {
     if (
-      process.env.NODE_ENV != 'development' &&
-      !localStorage.getItem('license-key')
+      initialRoom.isGuessOut &&
+      initialRoom.isHostOut &&
+      crawingRoom.isHostOut &&
+      crawingRoom.isGuessOut
     ) {
-      validateLicense(setLoading, toast, navigate);
+      setShouldCreateRoom(true);
     }
-  }, []);
+  }, [
+    initialRoom.isGuessOut,
+    initialRoom.isHostOut,
+    crawingRoom.isHostOut,
+    crawingRoom.isGuessOut,
+  ]);
+
+  useEffect(() => {
+    if (recreateTime) {
+      setShouldCreateRoom(false);
+      setState((pre) => ({
+        ...defaultState,
+        foundAt: pre.foundAt,
+        roomType: pre.roomType,
+        isLoggedIn: pre.isLoggedIn,
+      }));
+    }
+  }, [recreateTime]);
+
+  // useEffect(() => {
+  //   if (
+  //     process.env.NODE_ENV != 'development' &&
+  //     !localStorage.getItem('license-key')
+  //   ) {
+  //     validateLicense(setLoading, toast, navigate);
+  //   }
+  // }, []);
 
   const handleRoomTypeChange = (money: number) => {
     setState((pre) => ({
       ...pre,
-      initialRoom: { ...pre.initialRoom, roomType: money },
+      roomType: money,
     }));
   };
 
@@ -182,24 +181,34 @@ export function App() {
                     <Bot />
                   </Button>
                   <div key={refreshKey}>
-                    <FindRoomSheet
-                      bots={bots}
-                      craws={craws}
-                      shouldLogin={shouldLogin}
-                      shouldCreatRoom={shouldCreatRoom}
-                      shouldLeave={shouldLeave}
-                      shouldDisconnect={shouldDisconnect}
-                      setIsOpen={setIsOpenBotSheet}
+                    <BotSetting
                       isOpen={isOpenBotSheet}
-                    />
+                      setIsOpen={setIsOpenBotSheet}
+                    >
+                      <ScrollArea className="h-full rounded-md flex flex-col">
+                        <div className="flex flex-col  text-white space-y-4 flex-1 w-full">
+                          <CoupleSubStatus
+                            craw1={bots[0]}
+                            craw2={bots[1]}
+                            shouldLogin={shouldLogin}
+                            shouldCreatRoom={shouldCreatRoom}
+                            shouldLeave={shouldLeave}
+                            shouldDisconnect={shouldDisconnect}
+                          />
+                          <CoupleCrawStatus
+                            craw1={craws[0]}
+                            craw2={craws[1]}
+                            shouldLogin={shouldLogin}
+                            shouldCreatRoom={shouldCreatRoom}
+                            shouldLeave={shouldLeave}
+                            shouldDisconnect={shouldDisconnect}
+                          />
+                        </div>
+                      </ScrollArea>
+                    </BotSetting>
                   </div>
 
                   <div className="flex gap-2 items-center">
-                    <div className="h-8 gap-1 flex flex-row justify-center items-center">
-                      <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                        {state.targetAt && `Room: ${state.targetAt}`}
-                      </span>
-                    </div>
                     <RadioGroup
                       defaultValue={cardDeck}
                       onValueChange={(value) => {
@@ -239,7 +248,7 @@ export function App() {
                           className="h-8 gap-1 !border-[#fff]"
                         >
                           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                            {formatCurrency(state.initialRoom.roomType)}
+                            {formatCurrency(state.roomType)}
                           </span>
                           <DollarSign className="h-3.5 w-3.5" />
                           <ChevronDown />
@@ -252,7 +261,7 @@ export function App() {
                         {roomTypes.map((rType) => (
                           <DropdownMenuCheckboxItem
                             key={rType}
-                            checked={state.initialRoom.roomType === rType}
+                            checked={state.roomType === rType}
                             onSelect={() => handleRoomTypeChange(rType)}
                           >
                             {formatCurrency(rType)}
@@ -263,37 +272,7 @@ export function App() {
                   </div>
 
                   <div className="flex gap-2 items-center">
-                    {state.isLoggedIn ? (
-                      <>
-                        <Button
-                          onClick={onCreateRoom}
-                          size="sm"
-                          className="h-8 gap-1"
-                          disabled={isFinding}
-                        >
-                          {isFinding ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin cursor-pointer hover:opacity-70" />
-                          ) : (
-                            <SearchCheck className="h-3.5 w-3.5" />
-                          )}
-                          Find room
-                        </Button>
-
-                        <Button
-                          onClick={onLeaveRoom}
-                          size="sm"
-                          className="h-8 gap-1 bg-yellow-500 cursor-pointer hover:opacity-70"
-                          disabled={isQuiting}
-                        >
-                          {isQuiting ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <LogOut className="h-3.5 w-3.5" />
-                          )}
-                          Cancel
-                        </Button>
-                      </>
-                    ) : (
+                    {!state.isLoggedIn ? (
                       <Button
                         onClick={onLogin}
                         size="sm"
@@ -307,6 +286,54 @@ export function App() {
                         )}
                         Login
                       </Button>
+                    ) : (
+                      <Badge>Logged</Badge>
+                    )}
+                    {!state.targetAt ? (
+                      <Button
+                        onClick={onCreateRoom}
+                        size="sm"
+                        className="h-8 gap-1"
+                        disabled={isFinding}
+                      >
+                        {isFinding ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin cursor-pointer hover:opacity-70" />
+                        ) : (
+                          <SearchCheck className="h-3.5 w-3.5" />
+                        )}
+                        Find room
+                      </Button>
+                    ) : (
+                      <Badge>Room: {state.targetAt}</Badge>
+                    )}
+                    {!state.shouldStopCrawing ? (
+                      <Button
+                        onClick={onStopCrawing}
+                        size="sm"
+                        className="h-8 gap-1 bg-yellow-500 cursor-pointer hover:opacity-70"
+                        disabled={!Boolean(state.foundAt) || isQuiting}
+                      >
+                        {isQuiting ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <LogOut className="h-3.5 w-3.5" />
+                        )}
+                        Stop crawing
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={onContinueCrawing}
+                        size="sm"
+                        className="h-8 gap-1 bg-yellow-500 cursor-pointer hover:opacity-70"
+                        disabled={!Boolean(state.foundAt) || isQuiting}
+                      >
+                        {isQuiting ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <LogOut className="h-3.5 w-3.5" />
+                        )}
+                        Continue craw
+                      </Button>
                     )}
                     <Button
                       onClick={onRefreshBot}
@@ -319,20 +346,6 @@ export function App() {
                         Refresh
                       </span>
                     </Button>
-
-                    {/* <Tooltip>
-                      <TooltipTrigger>
-                        <div
-                          style={{ fontFamily: 'monospace' }}
-                          className="h-8 text-[19px] flex justify-center items-center px-[10px] rounded-sm bg-green-600"
-                        >
-                          <HandCardIcon /> {numberOfCards}
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Number of cards crawled</p>
-                      </TooltipContent>
-                    </Tooltip> */}
                     <Tooltip>
                       <TooltipTrigger>
                         <div
@@ -367,7 +380,6 @@ export function App() {
           </div>
         )}
       </div>
-      {/* </Tabs> */}
     </div>
   );
 }

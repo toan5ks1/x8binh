@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { BotStatus } from '../renderer/providers/app';
-import { loginUrl } from './config';
+import { loginTokenB52, loginUrlB52 } from './config';
 
 export interface LoginResponseDto {
   avatar: string;
@@ -36,15 +36,33 @@ export interface LoginParams {
   fg: string;
   time: number;
   aff_id: string;
+  token: string;
+  accountType: string;
 }
 
-const login = async (botInfo: LoginParams): Promise<LoginResponse | null> => {
-  const credentials = {
-    ...botInfo,
-  };
+export const defaultLoginParams = {
+  app_id: 'b52.club',
+  os: 'OS X',
+  device: 'Computer',
+  browser: 'chrome',
+  fg: '94c4b7799e307a8ad4b6a666bd26bd11',
+};
 
+export const getAddNameTagCommand = (main: any) => {
+  return `
+  var myDiv = document.createElement("div");
+  myDiv.id = 'div_id';
+  myDiv.innerHTML = '<h3 style="color:#fff;position:fixed;top:0;right:0;z-index:99999;background:#020817;padding:10px;border: solid 1px #1E293B; border-radius: 5px">${main.username} </h3>';
+  document.body.appendChild(myDiv);`;
+};
+
+export const login = async (
+  botInfo: LoginParams
+): Promise<LoginResponse | null> => {
   try {
-    const response = await axios.post<LoginResponse>(loginUrl, credentials);
+    const response = await axios.get<LoginResponse>(loginTokenB52, {
+      params: { fg: botInfo.fg, token: botInfo.token },
+    });
     return response.data;
   } catch (error) {
     console.error(
@@ -55,47 +73,23 @@ const login = async (botInfo: LoginParams): Promise<LoginResponse | null> => {
   }
 };
 
-interface ConnectTokenResponse {
-  connectionToken: string;
-}
-
-const getConnectToken = async (
-  token?: string
-): Promise<ConnectTokenResponse | null> => {
+const loginPup = async (
+  botInfo: LoginParams
+): Promise<LoginResponse | null> => {
   try {
-    const url = `https://maubinh.twith.club/signalr/negotiate?access_token=${token}`;
-    const response = await axios.get<ConnectTokenResponse>(url);
+    const response = await axios.post<LoginResponse>(loginUrlB52, {
+      ...defaultLoginParams,
+      botInfo,
+    });
     return response.data;
   } catch (error) {
     console.error(
-      'Error fetching the token:',
+      'Login failed:',
       axios.isAxiosError(error) ? error.response?.data : error
     );
     return null;
   }
 };
-
-export { getConnectToken, login };
-
-export async function setupBot(
-  bot: LoginParams,
-  setToken: any,
-  setConnectionToken: any,
-  setUser: any
-) {
-  try {
-    const res = await login(bot);
-    const token = res?.data[0].token;
-
-    const connectionToken = await getConnectToken(token);
-
-    setToken(token);
-    setConnectionToken(connectionToken?.connectionToken);
-    setUser(bot.username);
-  } catch (err) {
-    console.error('Error when calling setup bot:', err);
-  }
-}
 
 export async function accountLogin(account: any) {
   try {
@@ -119,4 +113,70 @@ export function joinRoom(account: any, room?: number): void {
       `__require('GamePlayManager').default.getInstance().joinRoom(${room},0,'',true);`
     );
   }
+}
+
+export function fillLoginParam(account: any) {
+  window.backend.sendMessage(
+    'execute-script',
+    account,
+    getAddNameTagCommand(account)
+  );
+
+  window.backend.sendMessage(
+    'execute-script',
+    account,
+    `
+      if(!btnDangnhap){
+        var btnDangnhap = cc.find("Canvas/MainUIParent/NewLobby/Footder/footerBar/PublicLobby/layout/dangNhap");
+      }
+
+      if (btnDangnhap) {
+        let touchStart = new cc.Touch(0, 0);
+        let touchEnd = new cc.Touch(0, 0);
+        let touchEventStart = new cc.Event.EventTouch([touchStart], false);
+        let touchEventEnd = new cc.Event.EventTouch([touchEnd], false);
+        
+        touchEventStart.type = cc.Node.EventType.TOUCH_START;
+        btnDangnhap.dispatchEvent(touchEventStart);
+
+        touchEventEnd.type = cc.Node.EventType.TOUCH_END;
+        btnDangnhap.dispatchEvent(touchEventEnd);
+      }
+      
+      setTimeout(() => {
+          let pathUserName = "CommonPrefabs/PopupDangNhap/popup/TenDangNhap/Username";
+          let editBoxNodeUserName = cc.find(pathUserName);
+          console.log('editBoxNodeUserName', editBoxNodeUserName)
+          let editBoxUserName = editBoxNodeUserName.getComponent(cc.EditBox);
+          if (editBoxUserName) {
+              editBoxUserName.string = "${account.username}";
+          } else {
+              console.log("Không tìm thấy component cc.EditBox trong node");
+          }
+
+          let pathPass = "CommonPrefabs/PopupDangNhap/popup/Matkhau/Password";
+          let editBoxNodePass = cc.find(pathPass);
+          let editBoxPass = editBoxNodePass.getComponent(cc.EditBox);
+          if (editBoxPass) {
+              editBoxPass.string = "${account.password}";
+          } else {
+              console.log("Không tìm thấy component cc.EditBox trong node");
+          }
+          setTimeout(() => {
+            let nodeXacNhan = cc.find("CommonPrefabs/PopupDangNhap/popup/BtnOk").getComponent(cc.Button);
+            if (nodeXacNhan) {
+                let touchStart = new cc.Touch(0, 0);
+                let touchEnd = new cc.Touch(0, 0);
+                let touchEventStart = new cc.Event.EventTouch([touchStart], false);
+                touchEventStart.type = cc.Node.EventType.TOUCH_START;
+                nodeXacNhan.node.dispatchEvent(touchEventStart);
+
+                let touchEventEnd = new cc.Event.EventTouch([touchEnd], false);
+                touchEventEnd.type = cc.Node.EventType.TOUCH_END;
+                nodeXacNhan.node.dispatchEvent(touchEventEnd);
+            }
+          }, 500)
+      }, 500);
+      `
+  );
 }

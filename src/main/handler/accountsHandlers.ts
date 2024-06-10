@@ -1,9 +1,13 @@
 const { ipcMain } = require('electron');
-const os = require('os');
 const puppeteer = require('puppeteer');
-// const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-// puppeteer.use(StealthPlugin());
-import path from 'path';
+import {
+  connectURLB52,
+  infoB52,
+  loginTokenB52,
+  webB52,
+} from '../../lib/config';
+import { updateFile } from '../../lib/file';
+import { fillLoginParam } from '../../lib/login';
 
 interface WebSocketCreatedData {
   requestId: string;
@@ -24,40 +28,18 @@ export const setupAccountHandlers = (
   async function startPuppeteerForAccount(account: {
     username: string;
     password: string;
-    proxy: string;
-    port: string;
-    userProxy: string;
-    passProxy: string;
+    token: string;
+    accountType: string;
+    isSelect: string;
+    proxy?: string;
+    port?: string;
+    userProxy?: string;
+    passProxy?: string;
   }) {
     try {
-      let userProfilePath;
-      const usernamePc = os.userInfo().username;
-      if (os.platform() === 'win32') {
-        userProfilePath = path.join(
-          'C:/Users',
-          usernamePc,
-          'puppeteerProfile',
-          account.username
-        );
-      } else if (os.platform() === 'darwin') {
-        userProfilePath = path.join(
-          '/Users',
-          usernamePc,
-          'puppeteerProfile',
-          account.username
-        );
-      } else {
-        userProfilePath = path.join(
-          '/home',
-          usernamePc,
-          'puppeteerProfile',
-          account.username
-        );
-      }
       const browser = await puppeteer.launch({
         headless: false,
         defaultViewport: null,
-        userDataDir: userProfilePath,
         ignoreHTTPSErrors: true,
         acceptInsecureCerts: true,
         args: [
@@ -71,6 +53,7 @@ export const setupAccountHandlers = (
           // '--proxy-server=socks5://hndc35.proxyno1.com:42796',
           `${
             account.proxy &&
+            account.port &&
             account.proxy.trim().toLowerCase() != 'undefined' &&
             `--proxy-server=${account.proxy.trim()}:${account.port.trim()}`
           }`,
@@ -78,28 +61,7 @@ export const setupAccountHandlers = (
         ],
       });
       const pages = await browser.pages();
-
       const page = pages[0];
-      if (
-        account.userProxy &&
-        account.userProxy.trim().toLowerCase() !== 'undefined'
-      ) {
-        console.log('userProxy', account.userProxy.trim());
-        console.log('passProxy', account.passProxy.trim());
-        await page.authenticate({
-          username: account.userProxy.trim(),
-          password: account.passProxy.trim(),
-        });
-      }
-      // await page.evaluateOnNewDocument(() => {
-      //   const coresOptions = [1, 2, 4, 8, 16, 32];
-      //   const randomIndex = Math.floor(Math.random() * coresOptions.length);
-      //   const randomCores = coresOptions[randomIndex];
-
-      //   Object.defineProperty(navigator, 'hardwareConcurrency', {
-      //     get: () => randomCores,
-      //   });
-      // });
 
       const client = await page.target().createCDPSession();
       await client.send('Network.enable');
@@ -118,7 +80,7 @@ export const setupAccountHandlers = (
       client.on(
         'Network.webSocketCreated',
         ({ requestId, url }: WebSocketCreatedData) => {
-          if (url.includes('wss://cardskgw.ryksockesg.net/websocket')) {
+          if (url.includes(connectURLB52)) {
             specificWebSocketRequestId = requestId;
           }
         }
@@ -152,58 +114,31 @@ export const setupAccountHandlers = (
         }
       );
 
-      await page.goto('https://play.rik.vip/', { waitUntil: 'networkidle2' });
+      page.on('response', async (response: any) => {
+        const url = response.url();
 
-      await page.evaluate(`
-      let node2 = cc.find("Canvas/MainUIParent/NewLobby/Footder/bottmBar@3x/Public/Layout/dnButtonSmartObjectGroup1@3x").getComponent(cc.Button);
-      if (node2) {
-          let touchStart = new cc.Touch(0, 0);
-          let touchEnd = new cc.Touch(0, 0);
-          let touchEventStart = new cc.Event.EventTouch([touchStart], false);
-          touchEventStart.type = cc.Node.EventType.TOUCH_START;
-          node2.node.dispatchEvent(touchEventStart);
+        if (url === infoB52) {
+          fillLoginParam(account);
+        }
 
-          let touchEventEnd = new cc.Event.EventTouch([touchEnd], false);
-          touchEventEnd.type = cc.Node.EventType.TOUCH_END;
-          node2.node.dispatchEvent(touchEventEnd);
-      }
+        if (url === loginTokenB52) {
+          if (account.accountType !== 'main') {
+            const responseBody = await response.json();
+            console.log(responseBody);
 
-
-      setTimeout(() => {
-          let pathUserName = "CommonPrefabs/PopupDangNhap/popup/TenDangNhap/Username";
-          let editBoxNodeUserName = cc.find(pathUserName);
-          let editBoxUserName = editBoxNodeUserName.getComponent(cc.EditBox);
-          if (editBoxUserName) {
-              editBoxUserName.string = "${account.username}";
+            updateFile(
+              { ...account, token: responseBody.data.token },
+              account.accountType
+            );
           } else {
-              console.log("Không tìm thấy component cc.EditBox trong node");
+            window.close();
           }
+        }
+      });
 
-          let pathPass = "CommonPrefabs/PopupDangNhap/popup/Matkhau/Password";
-          let editBoxNodePass = cc.find(pathPass);
-          let editBoxPass = editBoxNodePass.getComponent(cc.EditBox);
-          if (editBoxPass) {
-              editBoxPass.string = "${account.password}";
-          } else {
-              console.log("Không tìm thấy component cc.EditBox trong node");
-          }
-          let nodeXacNhan = cc.find("CommonPrefabs/PopupDangNhap/popup/BtnOk").getComponent(cc.Button);
-          if (nodeXacNhan) {
-              let touchStart = new cc.Touch(0, 0);
-              let touchEnd = new cc.Touch(0, 0);
-              let touchEventStart = new cc.Event.EventTouch([touchStart], false);
-              touchEventStart.type = cc.Node.EventType.TOUCH_START;
-              nodeXacNhan.node.dispatchEvent(touchEventStart);
+      await page.goto(webB52);
 
-              let touchEventEnd = new cc.Event.EventTouch([touchEnd], false);
-              touchEventEnd.type = cc.Node.EventType.TOUCH_END;
-              nodeXacNhan.node.dispatchEvent(touchEventEnd);
-          }
-      }, 500);
-      setTimeout(() => {
-        __require('LobbyViewController').default.Instance.onClickIConGame(null,"vgcg_4");
-      }, 3500);
-      `);
+      await page.waitForNavigation({ waitUntil: 'networkidle2' });
 
       await page.evaluate(() => {
         const audios = document.querySelectorAll('audio') as any;
@@ -216,13 +151,6 @@ export const setupAccountHandlers = (
       return true;
     }
   }
-  // const accountArrange = {
-  //   username: 'giuchansapbai',
-  //   password: 'zxcv123123',
-  //   proxy: '',
-  //   port: '',
-  // };
-  // startPuppeteerForAccount(accountArrange);
 
   ipcMain.on('open-accounts', async (event, account) => {
     await startPuppeteerForAccount(account);
@@ -245,7 +173,8 @@ export const setupAccountHandlers = (
     }
   });
   ipcMain.on('execute-script', async (event, { username }, script) => {
-    const instance = puppeteerInstances.find(
+    const reversedInstances = [...puppeteerInstances].reverse();
+    const instance = reversedInstances.find(
       (instance) => instance.username === username
     );
     if (instance) {
@@ -257,6 +186,7 @@ export const setupAccountHandlers = (
           `Script executed for account ${username}.`
         );
       } catch (error) {
+        console.log(error);
         event.reply(
           'execute-script-reply',
           `Failed to execute script for account ${username}.`
