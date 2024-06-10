@@ -23,7 +23,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import {
   arrangeCardCommand,
   checkPositionCommand,
-  getAddNameTagCommand,
   inviteCommand,
 } from './commandTerminal';
 
@@ -288,17 +287,8 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
     };
   }, [autoInvite, main]);
 
-  const setTagName = (main: any) => {
-    window.backend.sendMessage(
-      'execute-script',
-      main,
-      getAddNameTagCommand(main)
-    );
-  };
-
   const onLogin = () => {
     fillLoginParam(main);
-    setTagName(main);
   };
 
   useEffect(() => {

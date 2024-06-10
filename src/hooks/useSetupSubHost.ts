@@ -102,7 +102,7 @@ export function useSetupSubHost(bot: LoginParams) {
           const user = data?.data[0];
           setUser(user);
           connectMainGame(user);
-        } else {
+        } else if (data?.code === 404) {
           setMessageHistory((msgs) => [
             ...msgs,
             data?.message ?? 'Login failed',

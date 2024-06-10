@@ -1,2 +1,2 @@
-telanmd573|zxcv123123|true|true
-vipmot113|vipmot113|true|true
+telanmd573|zxcv123123|main|main|true
+vipmot113|vipmot113|main|main|true

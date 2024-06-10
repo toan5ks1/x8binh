@@ -7,6 +7,7 @@ import {
   LoginResponse,
   LoginResponseDto,
   login,
+  openAccounts,
 } from '../lib/login';
 import { AppContext } from '../renderer/providers/app';
 
@@ -96,11 +97,12 @@ export function useSetupSubGuess(bot: LoginParams) {
           const user = data?.data[0];
           setUser(user);
           connectMainGame(user);
-        } else {
+        } else if (data?.code === 404) {
           setMessageHistory((msgs) => [
             ...msgs,
             data?.message ?? 'Login failed',
           ]);
+          openAccounts(bot);
         }
       })
       .catch((err: Error) =>

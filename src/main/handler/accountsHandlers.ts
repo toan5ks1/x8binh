@@ -1,8 +1,13 @@
 const { ipcMain } = require('electron');
 const puppeteer = require('puppeteer');
-import { connectURLB52, infoB52, loginUrlB52, webB52 } from '../../lib/config';
-// const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-// puppeteer.use(StealthPlugin());
+import {
+  connectURLB52,
+  infoB52,
+  loginTokenB52,
+  webB52,
+} from '../../lib/config';
+import { updateFile } from '../../lib/file';
+import { fillLoginParam } from '../../lib/login';
 
 interface WebSocketCreatedData {
   requestId: string;
@@ -23,6 +28,9 @@ export const setupAccountHandlers = (
   async function startPuppeteerForAccount(account: {
     username: string;
     password: string;
+    token: string;
+    accountType: string;
+    isSelect: string;
     proxy?: string;
     port?: string;
     userProxy?: string;
@@ -52,7 +60,8 @@ export const setupAccountHandlers = (
           // `--host-resolver-rules=${hostResolverRules}`,
         ],
       });
-      const page = await browser.newPage();
+      const pages = await browser.pages();
+      const page = pages[0];
 
       const client = await page.target().createCDPSession();
       await client.send('Network.enable');
@@ -105,19 +114,25 @@ export const setupAccountHandlers = (
         }
       );
 
-      const targetURLs = [loginUrlB52, infoB52];
-
       page.on('response', async (response: any) => {
         const url = response.url();
-        if (targetURLs.some((targetURL) => url.includes(targetURL))) {
-          const status = response.status();
-          const headers = response.headers();
-          const responseBody = await response.json(); // Or response.json() for JSON responses
 
-          mainWindow.webContents.send('http-response-data-sent', {
-            data: { url, status, headers, responseBody },
-            username: account.username,
-          });
+        if (url === infoB52) {
+          fillLoginParam(account);
+        }
+
+        if (url === loginTokenB52) {
+          if (account.accountType !== 'main') {
+            const responseBody = await response.json();
+            console.log(responseBody);
+
+            updateFile(
+              { ...account, token: responseBody.data.token },
+              account.accountType
+            );
+          } else {
+            window.close();
+          }
         }
       });
 

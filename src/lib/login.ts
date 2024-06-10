@@ -37,6 +37,7 @@ export interface LoginParams {
   time: number;
   aff_id: string;
   token: string;
+  accountType: string;
 }
 
 export const defaultLoginParams = {
@@ -45,6 +46,14 @@ export const defaultLoginParams = {
   device: 'Computer',
   browser: 'chrome',
   fg: '94c4b7799e307a8ad4b6a666bd26bd11',
+};
+
+export const getAddNameTagCommand = (main: any) => {
+  return `
+  var myDiv = document.createElement("div");
+  myDiv.id = 'div_id';
+  myDiv.innerHTML = '<h3 style="color:#fff;position:fixed;top:0;right:0;z-index:99999;background:#020817;padding:10px;border: solid 1px #1E293B; border-radius: 5px">${main.username} </h3>';
+  document.body.appendChild(myDiv);`;
 };
 
 export const login = async (
@@ -82,46 +91,6 @@ const loginPup = async (
   }
 };
 
-interface ConnectTokenResponse {
-  connectionToken: string;
-}
-
-const getConnectToken = async (
-  token?: string
-): Promise<ConnectTokenResponse | null> => {
-  try {
-    const url = `https://maubinh.twith.club/signalr/negotiate?access_token=${token}`;
-    const response = await axios.get<ConnectTokenResponse>(url);
-    return response.data;
-  } catch (error) {
-    console.error(
-      'Error fetching the token:',
-      axios.isAxiosError(error) ? error.response?.data : error
-    );
-    return null;
-  }
-};
-
-export async function setupBot(
-  bot: LoginParams,
-  setToken: any,
-  setConnectionToken: any,
-  setUser: any
-) {
-  try {
-    const res = await login(bot);
-    const token = res?.data[0].token;
-
-    const connectionToken = await getConnectToken(token);
-
-    setToken(token);
-    setConnectionToken(connectionToken?.connectionToken);
-    setUser(bot.username);
-  } catch (err) {
-    console.error('Error when calling setup bot:', err);
-  }
-}
-
 export async function accountLogin(account: any) {
   try {
     const res = await login(account);
@@ -147,7 +116,12 @@ export function joinRoom(account: any, room?: number): void {
 }
 
 export function fillLoginParam(account: any) {
-  //.showPopupDangNhap()
+  window.backend.sendMessage(
+    'execute-script',
+    account,
+    getAddNameTagCommand(account)
+  );
+
   window.backend.sendMessage(
     'execute-script',
     account,

@@ -140,11 +140,3 @@ export const checkDisplayNameCommand = `
   __require('GamePlayManager').default.Instance.displayName
 
 `;
-
-export const getAddNameTagCommand = (main: any) => {
-  return `
-  var myDiv = document.createElement("div");
-  myDiv.id = 'div_id';
-  myDiv.innerHTML = '<h3 style="color:#fff;position:fixed;top:0;right:0;z-index:99999;background:#020817;padding:10px;border: solid 1px #1E293B; border-radius: 5px">${main.username} </h3>';
-  document.body.appendChild(myDiv);`;
-};

@@ -1,2 +1,2 @@
-vipclass1|vipclass1|true|true
-vipprox1|vipprox1|true|true
+vipclass1|vipclass1|sub|sub|true
+vipprox1|vipprox1|sub|sub|true

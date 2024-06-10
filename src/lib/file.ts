@@ -1,18 +1,18 @@
 import { toast } from '../components/toast/use-toast';
 
 const updateFile = async (accountsUpdate: any, accountType: string) => {
-  // const accountsUpdate = accounts[accountType];
-  // console.log('accountsUpdate', accountsUpdate);
-
   const accountsText = accountsUpdate
     .map(
       (account: {
-        isSelected: any;
-        username: any;
-        password: any;
-        token: any;
+        username: string;
+        password: string;
+        token: string;
+        accountType: 'main' | 'sub' | 'bot';
+        isSelected: boolean;
       }) =>
-        `${account.username}|${account.password}|${account.token}|${account.isSelected}`
+        `${account.username}|${account.password}|${
+          account.token
+        }|${accountType.toLowerCase()}|${account.isSelected}`
     )
     .join('\n');
   if (accountsText) {
