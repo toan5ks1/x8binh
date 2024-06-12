@@ -1,11 +1,6 @@
 const { ipcMain } = require('electron');
 const puppeteer = require('puppeteer');
-import {
-  connectURLB52,
-  infoB52,
-  loginTokenB52,
-  webB52,
-} from '../../lib/config';
+import { connectURLB52, infoB52, loginUrlB52, webB52 } from '../../lib/config';
 import { updateFile } from '../../lib/file';
 import { fillLoginParam } from '../../lib/login';
 
@@ -121,7 +116,7 @@ export const setupAccountHandlers = (
           fillLoginParam(account);
         }
 
-        if (url === loginTokenB52) {
+        if (url === loginUrlB52) {
           if (account.accountType !== 'main') {
             const responseBody = await response.json();
             console.log(responseBody);
@@ -130,7 +125,6 @@ export const setupAccountHandlers = (
               { ...account, token: responseBody.data.token },
               account.accountType
             );
-          } else {
             window.close();
           }
         }

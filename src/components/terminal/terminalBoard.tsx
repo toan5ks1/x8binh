@@ -57,13 +57,13 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
       return [];
     }
   };
-  const createRoom = (account: any): void => {
-    window.backend.sendMessage(
-      'execute-script',
-      account,
-      `__require('GamePlayManager').default.getInstance().requestcreateRoom(4,100,4,)`
-    );
-  };
+  // const createRoom = (account: any): void => {
+  //   window.backend.sendMessage(
+  //     'execute-script',
+  //     account,
+  //     `__require('GamePlayManager').default.getInstance().requestcreateRoom(4,100,4,)`
+  //   );
+  // };
   const outRoom = (account: any): void => {
     if (initialRoom.isSubJoin) {
       window.backend.sendMessage(
@@ -303,10 +303,6 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
     };
   }, []);
 
-  const clearData = () => {
-    setData([]);
-  };
-
   return (
     <fieldset className=" rounded-lg border p-4">
       <legend className="-ml-1 px-1 text-sm font-medium">
@@ -427,7 +423,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
         <div className="flex flex-col terminal relative rounded-md border ">
           <div className="absolute top-4 right-4 z-50">
             <Button
-              onClick={clearData}
+              onClick={() => setData([])}
               className="  hover:bg-slate-400 rounded-[5px] p-0 border-[2px] flex justify-center items-center cursor-pointer  gap-[2px] px-[7px] h-[30px]"
             >
               <TrashIcon className="h-3.5 w-3.5" />

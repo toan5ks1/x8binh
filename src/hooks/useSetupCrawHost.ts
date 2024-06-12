@@ -9,7 +9,6 @@ import {
   LoginResponse,
   LoginResponseDto,
   login,
-  openAccounts,
 } from '../lib/login';
 import { isFoundCards } from '../lib/utils';
 import { AppContext } from '../renderer/providers/app';
@@ -113,7 +112,7 @@ export function useSetupCrawHost(bot: LoginParams) {
             ...msgs,
             data?.message ?? 'Login failed',
           ]);
-          openAccounts(bot);
+          setState((pre) => ({ ...pre, isLoggedIn: false }));
         }
       })
       .catch((err: Error) =>

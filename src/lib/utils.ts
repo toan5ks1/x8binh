@@ -86,8 +86,12 @@ export const defaultRoom = {
 //   );
 //   return !isNotLeft;
 // };
+export function formatCurrency(value: number) {
+  const cash = value / 1000;
+  return cash < 1 ? value : `${value} (${cash}k)`;
+}
 
-export const getCardsArray = (ps: any) => {
+const getCardsArray = (ps: any) => {
   return ps.map((item: any) => ({ cs: item.cs, dn: item.dn }));
 };
 

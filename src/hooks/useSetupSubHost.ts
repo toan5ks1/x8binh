@@ -8,7 +8,6 @@ import {
   LoginResponseDto,
   joinRoom,
   login,
-  openAccounts,
 } from '../lib/login';
 import { AppContext } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
@@ -107,7 +106,6 @@ export function useSetupSubHost(bot: LoginParams) {
             ...msgs,
             data?.message ?? 'Login failed',
           ]);
-          openAccounts(bot);
         }
       })
       .catch((err: Error) =>

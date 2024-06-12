@@ -38,6 +38,7 @@ import {
 } from '../components/ui/tooltip';
 import { roomTypes } from '../lib/config';
 
+import { formatCurrency } from '../lib/utils';
 import { AppContext, defaultState } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
 import { HomePage } from './pages/home';
@@ -144,17 +145,18 @@ export function App() {
   //   }
   // }, []);
 
+  useEffect(() => {
+    if (state.isLoggedIn === false) {
+      setIsLoging(false);
+    }
+  }, [state.isLoggedIn]);
+
   const handleRoomTypeChange = (money: number) => {
     setState((pre) => ({
       ...pre,
       roomType: money,
     }));
   };
-
-  function formatCurrency(value: number) {
-    const cash = value / 1000;
-    return cash < 1 ? value : `${value} (${cash}k)`;
-  }
 
   return (
     <div className="h-screen">

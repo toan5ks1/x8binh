@@ -31,7 +31,7 @@ import {
   readValidAccount,
 } from '../../lib/account';
 import { readFile, updateFile } from '../../lib/file';
-import { accountLogin } from '../../lib/login';
+import { accountLogin, openAccounts } from '../../lib/login';
 import useAccountStore from '../../store/accountStore';
 import { useToast } from '../toast/use-toast';
 import { Button } from '../ui/button';
@@ -192,15 +192,18 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
 
   const checkBalance = async (rowData: any) => {
     var mainBalance = rowData.main_balance;
-
     const data = (await accountLogin(rowData)) as any;
-    console.log('acc data', data);
-    const cash = Array.isArray(data?.data) ? data?.data[0].main_balance : 0;
-    mainBalance = cash;
 
-    updateAccount(accountType, rowData.username, {
-      main_balance: data.code === 200 ? mainBalance : data.message,
-    });
+    if (data?.code === 404) {
+      openAccounts(rowData);
+    } else {
+      const cash = Array.isArray(data?.data) ? data?.data[0].main_balance : 0;
+      mainBalance = cash;
+
+      updateAccount(accountType, rowData.username, {
+        main_balance: data.code === 200 ? mainBalance : data.message,
+      });
+    }
   };
 
   const handleDeleteSelectedRows = () => {
@@ -244,31 +247,7 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
       });
     }
   };
-  const onCheckAll = async (value: any) => {
-    const selectedAccounts = accounts[accountType];
 
-    const checkBalances = selectedAccounts.map((account: any) => {
-      updateAccount(accountType, account.username, {
-        isSelected: value,
-      });
-      if (value) {
-        checkBalance(account);
-      }
-    });
-
-    try {
-      await Promise.all(checkBalances);
-      toast({
-        title: 'Updated',
-        description: `Table was update`,
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: `Failed to this action`,
-      });
-    }
-  };
   const columns: ColumnDef<unknown, any>[] = [
     {
       id: 'select',
@@ -280,7 +259,6 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
             (table.getIsSomePageRowsSelected() && 'indeterminate')
           }
           onCheckedChange={(value) => {
-            onCheckAll(value);
             table.toggleAllPageRowsSelected(!!value);
           }}
           aria-label="Select all"

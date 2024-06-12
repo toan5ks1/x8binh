@@ -7,7 +7,6 @@ import {
   LoginResponse,
   LoginResponseDto,
   login,
-  openAccounts,
 } from '../lib/login';
 import { AppContext } from '../renderer/providers/app';
 
@@ -101,7 +100,6 @@ export function useSetupCrawGuess(bot: LoginParams) {
             ...msgs,
             data?.message ?? 'Login failed',
           ]);
-          openAccounts(bot);
         }
       })
       .catch((err: Error) =>
