@@ -18,6 +18,7 @@ const validChannels: string[] = [
   'check-room',
   'check-position',
   'check-display-name',
+  'update-account-success',
 ];
 
 contextBridge.exposeInMainWorld('backend', {

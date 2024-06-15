@@ -163,29 +163,24 @@ export function useSetupSubGuess(bot: LoginParams) {
 
   // Ready to crawing (Craw found)
   useEffect(() => {
-    if (
-      !state.shouldStopCrawing &&
-      state.foundAt &&
-      crawingRoom.isFinish &&
-      initialRoom.isGuessOut &&
-      initialRoom.isGuessJoin
-    ) {
+    console.log('sub g', state.isCrawing, crawingRoom.isFinish);
+    if (state.isCrawing && state.foundAt && crawingRoom.isFinish) {
       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
     }
-  }, [crawingRoom.isFinish, initialRoom.isGuessJoin]);
+  }, [crawingRoom.isFinish]);
 
   // Continue crawing
-  useEffect(() => {
-    if (!state.shouldStopCrawing) {
-      if (state.foundAt && initialRoom.isGuessOut) {
-        sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
-      }
+  // useEffect(() => {
+  //   if (!state.shouldStopCrawing) {
+  //     if (state.foundAt && initialRoom.isGuessOut) {
+  //       sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+  //     }
 
-      if (state.foundAt && initialRoom.isGuessOut && initialRoom.isGuessJoin) {
-        sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
-      }
-    }
-  }, [state.shouldStopCrawing]);
+  //     if (state.foundAt && initialRoom.isGuessOut && initialRoom.isGuessJoin) {
+  //       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
+  //     }
+  //   }
+  // }, [state.shouldStopCrawing]);
 
   // // Call sub join
   // useEffect(() => {

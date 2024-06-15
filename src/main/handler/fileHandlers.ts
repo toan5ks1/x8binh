@@ -33,7 +33,7 @@ export const setupFileHandlers = () => {
     } else {
       userProfilePath = filePath[0];
     }
-    console.log('userProfilePath', userProfilePath);
+    // console.log('userProfilePath', userProfilePath);
     fs.readFile(userProfilePath, { encoding: 'utf-8' }, (err, data) => {
       if (err) {
         console.log('Error reading file:', err);

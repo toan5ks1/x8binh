@@ -36,6 +36,7 @@ export function handleMessageCrawHost({
       if (message[1]?.cmd === 5 && message[1]?.dn === fullname) {
         setCrawingRoom((pre) => ({
           ...pre,
+          isHostJoin: false,
           isHostReady: true,
         }));
       } else if (message[1].ri && message[1].cmd === 308) {
@@ -58,12 +59,13 @@ export function handleMessageCrawHost({
         }));
 
         // Submit cards
-        state.foundAt &&
+        if (state.foundAt && state.isCrawing) {
           sendMessage(
             `[5,"Simms",${
-              state?.foundAt ?? crawingRoom.id
+              state.foundAt ?? crawingRoom.id
             },{"cmd":603,"cs":[${binhlung(message[1].cs)}]}]`
           );
+        }
 
         returnMsg = `Card received: ${message[1].cs}`;
         // } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
@@ -115,7 +117,6 @@ export function handleMessageCrawHost({
         setCrawingRoom((pre) => ({
           ...pre,
           isHostOut: true,
-          isHostJoin: false,
         }));
 
         returnMsg = message[5] || 'Left room successfully!';

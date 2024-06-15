@@ -213,12 +213,13 @@ export function useSetupCrawHost(bot: LoginParams) {
       sendMessage(
         `[5,"Simms",${state.foundAt},{"cmd":603,"cs":[${binhlung(card.cs)}]}]`
       );
+      setState((pre) => ({ ...pre, isCrawing: true }));
     }
   }, [initialRoom.isGuessJoin, initialRoom.isHostJoin]);
 
   useEffect(() => {
     if (
-      !state.shouldStopCrawing &&
+      state.isCrawing &&
       state.foundAt &&
       crawingRoom.isFinish &&
       crawingRoom.isGuessReady &&
@@ -235,17 +236,17 @@ export function useSetupCrawHost(bot: LoginParams) {
   ]);
 
   // Continue crawing
-  useEffect(() => {
-    if (!state.shouldStopCrawing) {
-      if (state.foundAt && crawingRoom.isHostOut) {
-        sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
-      }
+  // useEffect(() => {
+  //   if (state.isCrawing && state.foundAt) {
+  //     if (crawingRoom.isHostOut) {
+  //       sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+  //     }
 
-      if (state.foundAt && crawingRoom.isHostOut && crawingRoom.isHostJoin) {
-        sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
-      }
-    }
-  }, [state.shouldStopCrawing]);
+  //     if (crawingRoom.isHostOut && crawingRoom.isHostJoin) {
+  //       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
+  //     }
+  //   }
+  // }, [state.isCrawing, crawingRoom.isHostJoin]);
 
   return {
     user,

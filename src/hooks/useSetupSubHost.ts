@@ -174,29 +174,25 @@ export function useSetupSubHost(bot: LoginParams) {
 
   // Ready to crawing (Craw found)
   useEffect(() => {
-    if (
-      !state.shouldStopCrawing &&
-      state.foundAt &&
-      crawingRoom.isFinish &&
-      initialRoom.isHostOut &&
-      initialRoom.isHostJoin
-    ) {
+    console.log('sub h', state.isCrawing, crawingRoom.isFinish);
+
+    if (state.isCrawing && state.foundAt && crawingRoom.isFinish) {
       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
     }
-  }, [crawingRoom.isFinish, initialRoom.isHostJoin]);
+  }, [crawingRoom.isFinish]);
 
   // Continue crawing
-  useEffect(() => {
-    if (!state.shouldStopCrawing) {
-      if (state.foundAt && initialRoom.isHostOut) {
-        sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
-      }
+  // useEffect(() => {
+  //   if (!state.shouldStopCrawing) {
+  //     if (state.foundAt && initialRoom.isHostOut) {
+  //       sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+  //     }
 
-      if (state.foundAt && initialRoom.isHostOut && initialRoom.isHostJoin) {
-        sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
-      }
-    }
-  }, [state.shouldStopCrawing]);
+  //     if (state.foundAt && initialRoom.isHostOut && initialRoom.isHostJoin) {
+  //       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
+  //     }
+  //   }
+  // }, [state.shouldStopCrawing]);
 
   // // Call sub join
   useEffect(() => {

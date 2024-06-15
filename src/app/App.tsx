@@ -91,10 +91,10 @@ export function App() {
   };
 
   const onStopCrawing = () => {
-    setState((pre) => ({ ...pre, shouldStopCrawing: true }));
+    setState((pre) => ({ ...pre, isCrawing: false }));
   };
   const onContinueCrawing = () => {
-    setState((pre) => ({ ...pre, shouldStopCrawing: false }));
+    setState((pre) => ({ ...pre, isCrawing: true }));
   };
 
   const onRefreshBot = () => {

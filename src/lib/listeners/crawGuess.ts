@@ -34,6 +34,7 @@ export function handleMessageCrawGuess({
       if (message[1]?.cmd === 5 && message[1]?.dn === fullname) {
         setCrawingRoom((pre) => ({
           ...pre,
+          isGuessJoin: false,
           isGuessReady: true,
           shouldHostReady: true,
         }));
@@ -74,7 +75,6 @@ export function handleMessageCrawGuess({
         setCrawingRoom((pre) => ({
           ...pre,
           isGuessOut: true,
-          isGuessJoin: false,
         }));
 
         returnMsg = message[5] || 'Left room successfully!';

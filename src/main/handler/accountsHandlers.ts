@@ -1,8 +1,7 @@
 const { ipcMain } = require('electron');
 const puppeteer = require('puppeteer');
 import { connectURLB52, infoB52, loginUrlB52, webB52 } from '../../lib/config';
-import { updateFile } from '../../lib/file';
-import { fillLoginParam } from '../../lib/login';
+import { loginScript } from '../util';
 
 interface WebSocketCreatedData {
   requestId: string;
@@ -20,17 +19,7 @@ export const setupAccountHandlers = (
 ) => {
   let puppeteerInstances: any[] = [];
 
-  async function startPuppeteerForAccount(account: {
-    username: string;
-    password: string;
-    token: string;
-    accountType: string;
-    isSelect: string;
-    proxy?: string;
-    port?: string;
-    userProxy?: string;
-    passProxy?: string;
-  }) {
+  async function startPuppeteerForAccount(account: any) {
     try {
       const browser = await puppeteer.launch({
         headless: false,
@@ -113,19 +102,24 @@ export const setupAccountHandlers = (
         const url = response.url();
 
         if (url === infoB52) {
-          fillLoginParam(account);
+          await page.evaluate(loginScript(account));
         }
 
         if (url === loginUrlB52) {
           if (account.accountType !== 'main') {
             const responseBody = await response.json();
-            console.log(responseBody);
+            if (responseBody.data?.length) {
+              const updatedAccount = {
+                ...account,
+                token: responseBody.data[0].session_id,
+              };
 
-            updateFile(
-              { ...account, token: responseBody.data.token },
-              account.accountType
-            );
-            window.close();
+              mainWindow.webContents.send('update-account-success', {
+                data: updatedAccount,
+                username: account.username,
+              });
+            }
+            browser.close();
           }
         }
       });
@@ -133,11 +127,6 @@ export const setupAccountHandlers = (
       await page.goto(webB52);
 
       await page.waitForNavigation({ waitUntil: 'networkidle2' });
-
-      await page.evaluate(() => {
-        const audios = document.querySelectorAll('audio') as any;
-        [...audios].forEach((media) => (media.muted = true));
-      });
 
       return { browser, page };
     } catch (error) {

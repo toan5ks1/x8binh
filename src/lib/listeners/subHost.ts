@@ -36,6 +36,7 @@ export function handleMessageSubHost({
       if (message[1]?.cmd === 5 && message[1]?.dn === fullname) {
         setInitialRoom((pre) => ({
           ...pre,
+          isHostJoin: false,
           isHostReady: true,
         }));
       } else if (message[1].cmd === 308) {
@@ -117,7 +118,6 @@ export function handleMessageSubHost({
         setInitialRoom((pre) => ({
           ...pre,
           isHostOut: true,
-          isHostJoin: false,
         }));
 
         returnMsg = message[5] || 'Left room successfully!';

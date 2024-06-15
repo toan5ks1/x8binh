@@ -91,7 +91,7 @@ export function formatCurrency(value: number) {
   return cash < 1 ? value : `${value} (${cash}k)`;
 }
 
-const getCardsArray = (ps: any) => {
+export const getCardsArray = (ps: any) => {
   return ps.map((item: any) => ({ cs: item.cs, dn: item.dn }));
 };
 

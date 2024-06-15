@@ -155,23 +155,23 @@ export function useSetupCrawGuess(bot: LoginParams) {
 
   // Ready to crawing (Craw found)
   useEffect(() => {
-    if (!state.shouldStopCrawing && state.foundAt && crawingRoom.isFinish) {
+    if (state.isCrawing && state.foundAt && crawingRoom.isFinish) {
       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
     }
   }, [crawingRoom.isFinish]);
 
   // Continue crawing
-  useEffect(() => {
-    if (!state.shouldStopCrawing) {
-      if (state.foundAt && crawingRoom.isGuessOut) {
-        sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
-      }
+  // useEffect(() => {
+  //   if (!state.shouldStopCrawing) {
+  //     if (state.foundAt && crawingRoom.isGuessOut) {
+  //       sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+  //     }
 
-      if (state.foundAt && crawingRoom.isGuessOut && crawingRoom.isGuessJoin) {
-        sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
-      }
-    }
-  }, [state.shouldStopCrawing]);
+  //     if (state.foundAt && crawingRoom.isGuessOut && crawingRoom.isGuessJoin) {
+  //       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
+  //     }
+  //   }
+  // }, [state.shouldStopCrawing]);
 
   return {
     user,

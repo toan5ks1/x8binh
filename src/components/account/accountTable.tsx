@@ -95,6 +95,7 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
         username: usernameRef.current.value,
         password: passwordRef.current.value,
         token: tokenRef.current.value,
+        accountType,
       };
       addAccount(accountType, generateAccount(newAccount));
       setDialogAddAccountOpen(false);
@@ -106,6 +107,7 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
         username: usernameRef.current.value,
         password: passwordRef.current.value,
         token: tokenRef.current.value,
+        accountType,
       };
       updateAccount(accountType, newAccount.username, newAccount);
       setDialogUpdateAccountOpen(false);
@@ -152,6 +154,21 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
 
     return () => {
       window.backend.removeListener('read-file', handleReadFile);
+    };
+  }, []);
+
+  const handleUpdateSuccess = ({ data }: any) => {
+    updateAccount(accountType, data.username, data);
+  };
+
+  useEffect(() => {
+    window.backend.on('update-account-success', handleUpdateSuccess);
+
+    return () => {
+      window.backend.removeListener(
+        'update-account-success',
+        handleUpdateSuccess
+      );
     };
   }, []);
 
