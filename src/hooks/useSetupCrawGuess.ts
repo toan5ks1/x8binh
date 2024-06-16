@@ -143,13 +143,14 @@ export function useSetupCrawGuess(bot: LoginParams) {
 
   useEffect(() => {
     if (crawingRoom.isPrefinish && !state.foundAt) {
-      handleLeaveRoom();
+      console.log('leave', crawingRoom.isPrefinish, state.foundAt);
+      handleLeaveRoom(crawingRoom?.id);
     }
   }, [crawingRoom.isPrefinish]);
 
-  const handleLeaveRoom = () => {
-    if (crawingRoom?.id) {
-      return sendMessage(`[4,"Simms",${crawingRoom.id}]`);
+  const handleLeaveRoom = (roomId?: number) => {
+    if (roomId) {
+      return sendMessage(`[4,"Simms",${roomId}]`);
     }
   };
 
@@ -158,20 +159,17 @@ export function useSetupCrawGuess(bot: LoginParams) {
     if (state.isCrawing && state.foundAt && crawingRoom.isFinish) {
       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
     }
-  }, [crawingRoom.isFinish]);
+  }, [crawingRoom.isFinish, crawingRoom.isGuessJoin]);
 
   // Continue crawing
-  // useEffect(() => {
-  //   if (!state.shouldStopCrawing) {
-  //     if (state.foundAt && crawingRoom.isGuessOut) {
-  //       sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
-  //     }
-
-  //     if (state.foundAt && crawingRoom.isGuessOut && crawingRoom.isGuessJoin) {
-  //       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
-  //     }
-  //   }
-  // }, [state.shouldStopCrawing]);
+  useEffect(() => {
+    if (state.isCrawing && crawingRoom.isGuessOut && state.foundAt) {
+      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+    }
+    if (state.foundAt && !state.isCrawing) {
+      handleLeaveRoom(state.foundAt);
+    }
+  }, [state.isCrawing]);
 
   return {
     user,

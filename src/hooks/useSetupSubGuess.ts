@@ -143,14 +143,14 @@ export function useSetupSubGuess(bot: LoginParams) {
   }, [initialRoom.shouldGuessJoin]);
 
   useEffect(() => {
-    if (initialRoom.isPrefinish && !state.foundAt) {
-      handleLeaveRoom();
+    if (initialRoom.isPrefinish && !state.isCrawing) {
+      handleLeaveRoom(initialRoom?.id);
     }
   }, [initialRoom.isPrefinish]);
 
-  const handleLeaveRoom = () => {
-    if (initialRoom?.id) {
-      return sendMessage(`[4,"Simms",${initialRoom.id}]`);
+  const handleLeaveRoom = (roomId?: number) => {
+    if (roomId) {
+      return sendMessage(`[4,"Simms",${roomId}]`);
     }
   };
 
@@ -163,38 +163,20 @@ export function useSetupSubGuess(bot: LoginParams) {
 
   // Ready to crawing (Craw found)
   useEffect(() => {
-    console.log('sub g', state.isCrawing, crawingRoom.isFinish);
     if (state.isCrawing && state.foundAt && crawingRoom.isFinish) {
       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
     }
-  }, [crawingRoom.isFinish]);
+  }, [crawingRoom.isFinish, initialRoom.isGuessJoin]);
 
   // Continue crawing
-  // useEffect(() => {
-  //   if (!state.shouldStopCrawing) {
-  //     if (state.foundAt && initialRoom.isGuessOut) {
-  //       sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
-  //     }
-
-  //     if (state.foundAt && initialRoom.isGuessOut && initialRoom.isGuessJoin) {
-  //       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
-  //     }
-  //   }
-  // }, [state.shouldStopCrawing]);
-
-  // // Call sub join
-  // useEffect(() => {
-  //   if (state.targetAt && subMain && isHost) {
-  //     subJoin();
-  //   }
-  // }, [state.targetAt]);
-
-  // sub leave
-  // useEffect(() => {
-  //   if (user?.status === BotStatus.Finished && room.isSubJoin) {
-  //     sendMessage(`[4,"Simms",${room.id}]`);
-  //   }
-  // }, [room]);
+  useEffect(() => {
+    if (state.isCrawing && initialRoom.isGuessOut && state.foundAt) {
+      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+    }
+    if (state.foundAt && !state.isCrawing) {
+      handleLeaveRoom(state.foundAt);
+    }
+  }, [state.isCrawing]);
 
   return {
     user,

@@ -101,8 +101,8 @@ export async function accountLogin(account: any) {
   }
 }
 
-export async function openAccounts(account: any) {
-  await window.backend.sendMessage('open-accounts', account);
+export async function openAccounts(account: any, autoClose: boolean = true) {
+  await window.backend.sendMessage('open-accounts', account, autoClose);
 }
 
 export function joinRoom(account: any, room?: number): void {

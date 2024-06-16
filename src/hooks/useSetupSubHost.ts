@@ -149,19 +149,20 @@ export function useSetupSubHost(bot: LoginParams) {
 
   useEffect(() => {
     if (!state.foundAt && initialRoom.isPrefinish) {
-      handleLeaveRoom();
+      handleLeaveRoom(initialRoom?.id);
     }
   }, [initialRoom.isPrefinish]);
 
   useEffect(() => {
     if (state.foundAt && initialRoom.isSubJoin) {
-      handleLeaveRoom();
+      console.log('out');
+      handleLeaveRoom(initialRoom?.id);
     }
   }, [initialRoom.isSubJoin]);
 
-  const handleLeaveRoom = () => {
-    if (initialRoom?.id) {
-      return sendMessage(`[4,"Simms",${initialRoom.id}]`);
+  const handleLeaveRoom = (roomId?: number) => {
+    if (roomId) {
+      return sendMessage(`[4,"Simms",${roomId}]`);
     }
   };
 
@@ -174,25 +175,20 @@ export function useSetupSubHost(bot: LoginParams) {
 
   // Ready to crawing (Craw found)
   useEffect(() => {
-    console.log('sub h', state.isCrawing, crawingRoom.isFinish);
-
     if (state.isCrawing && state.foundAt && crawingRoom.isFinish) {
       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
     }
-  }, [crawingRoom.isFinish]);
+  }, [crawingRoom.isFinish, initialRoom.isHostJoin]);
 
   // Continue crawing
-  // useEffect(() => {
-  //   if (!state.shouldStopCrawing) {
-  //     if (state.foundAt && initialRoom.isHostOut) {
-  //       sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
-  //     }
-
-  //     if (state.foundAt && initialRoom.isHostOut && initialRoom.isHostJoin) {
-  //       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
-  //     }
-  //   }
-  // }, [state.shouldStopCrawing]);
+  useEffect(() => {
+    if (state.isCrawing && initialRoom.isHostOut && state.foundAt) {
+      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+    }
+    if (state.foundAt && !state.isCrawing) {
+      handleLeaveRoom(state.foundAt);
+    }
+  }, [state.isCrawing]);
 
   // // Call sub join
   useEffect(() => {
@@ -200,13 +196,6 @@ export function useSetupSubHost(bot: LoginParams) {
       joinRoom(subMain, state.targetAt);
     }
   }, [state.targetAt]);
-
-  // // sub leave
-  // useEffect(() => {
-  //   if (user?.status === BotStatus.Finished && room.isSubJoin) {
-  //     sendMessage(`[4,"Simms",${room.id}]`);
-  //   }
-  // }, [room]);
 
   return {
     user,

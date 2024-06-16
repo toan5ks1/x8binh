@@ -1,7 +1,7 @@
 const { ipcMain } = require('electron');
 const puppeteer = require('puppeteer');
 import { connectURLB52, infoB52, loginUrlB52, webB52 } from '../../lib/config';
-import { loginScript } from '../util';
+import { joinLobbyScript, loginScript } from '../util';
 
 interface WebSocketCreatedData {
   requestId: string;
@@ -19,7 +19,7 @@ export const setupAccountHandlers = (
 ) => {
   let puppeteerInstances: any[] = [];
 
-  async function startPuppeteerForAccount(account: any) {
+  async function startPuppeteerForAccount(account: any, autoClose: boolean) {
     try {
       const browser = await puppeteer.launch({
         headless: false,
@@ -103,6 +103,9 @@ export const setupAccountHandlers = (
 
         if (url === infoB52) {
           await page.evaluate(loginScript(account));
+          if (account.accountType === 'main') {
+            await page.evaluate(joinLobbyScript);
+          }
         }
 
         if (url === loginUrlB52) {
@@ -119,7 +122,7 @@ export const setupAccountHandlers = (
                 username: account.username,
               });
             }
-            browser.close();
+            autoClose && browser.close();
           }
         }
       });
@@ -135,8 +138,8 @@ export const setupAccountHandlers = (
     }
   }
 
-  ipcMain.on('open-accounts', async (event, account) => {
-    await startPuppeteerForAccount(account);
+  ipcMain.on('open-accounts', async (event, account, autoClose) => {
+    await startPuppeteerForAccount(account, autoClose);
     event.reply('open-accounts-reply', 'All accounts have been opened.');
   });
   ipcMain.on('close-account', async (event, username) => {

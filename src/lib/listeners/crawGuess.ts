@@ -58,6 +58,7 @@ export function handleMessageCrawGuess({
         // Guess join room response
         setCrawingRoom((pre) => ({
           ...pre,
+          isGuessOut: false,
           isGuessJoin: true,
         }));
 

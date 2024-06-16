@@ -192,13 +192,13 @@ export function useSetupCrawHost(bot: LoginParams) {
   useEffect(() => {
     if (crawingRoom.isPrefinish && !state.foundAt) {
       tobeRecreateRoom();
-      handleLeaveRoom();
+      handleLeaveRoom(crawingRoom?.id);
     }
   }, [crawingRoom.isPrefinish]);
 
-  const handleLeaveRoom = () => {
-    if (crawingRoom?.id) {
-      return sendMessage(`[4,"Simms",${crawingRoom.id}]`);
+  const handleLeaveRoom = (roomId?: number) => {
+    if (roomId) {
+      return sendMessage(`[4,"Simms",${roomId}]`);
     }
   };
 

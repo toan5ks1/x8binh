@@ -58,6 +58,7 @@ export function handleMessageSubGuess({
         // Guess join room response
         setInitialRoom((pre) => ({
           ...pre,
+          isGuessOut: false,
           isGuessJoin: true,
         }));
 

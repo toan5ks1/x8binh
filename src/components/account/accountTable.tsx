@@ -23,7 +23,6 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
-import { Label } from '@radix-ui/react-label';
 import { useEffect, useRef, useState } from 'react';
 import {
   addUniqueAccounts,
@@ -48,7 +47,6 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
@@ -72,10 +70,10 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
   const [isDialogAddAccountOpen, setDialogAddAccountOpen] = useState(false);
   const [isDialogUpdateAccountOpen, setDialogUpdateAccountOpen] =
     useState(false);
-  const [isDialogProxyOpen, setDialogProxyOpen] = useState(false);
-  const [rowSelected, setRowSelected] = useState<any>();
-  const [errorAddProxy, setErrorAddProxy] = useState<any>();
-  const [useAuthForProxy, setUseAuthForProxy] = useState(false);
+  // const [isDialogProxyOpen, setDialogProxyOpen] = useState(false);
+  // const [rowSelected, setRowSelected] = useState<any>();
+  // const [errorAddProxy, setErrorAddProxy] = useState<any>();
+  // const [useAuthForProxy, setUseAuthForProxy] = useState(false);
 
   const { accounts, updateAccount, addAccount, removeAccount } =
     useAccountStore();
@@ -84,10 +82,10 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
   const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const tokenRef = useRef<HTMLInputElement>(null);
-  const proxyRef = useRef<HTMLInputElement>(null);
-  const portRef = useRef<HTMLInputElement>(null);
-  const authUsernameRef = useRef<HTMLInputElement>(null);
-  const authPasswordRef = useRef<HTMLInputElement>(null);
+  // const proxyRef = useRef<HTMLInputElement>(null);
+  // const portRef = useRef<HTMLInputElement>(null);
+  // const authUsernameRef = useRef<HTMLInputElement>(null);
+  // const authPasswordRef = useRef<HTMLInputElement>(null);
 
   const handleAddAccount = () => {
     if (usernameRef.current && passwordRef.current && tokenRef.current) {
@@ -283,8 +281,6 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
       ),
       cell: ({ row }: any) => (
         <Checkbox
-          className="!border-[#fff] !border"
-          style={{ background: '#fff' }}
           checked={row?.original.isSelected || row.getIsSelected()}
           onCheckedChange={async (value) => {
             row.toggleSelected(!!value);
@@ -310,32 +306,17 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
     },
     {
       accessorKey: 'username',
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            className="px-0"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          >
-            Username
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
+      header: () => <div className="text-start">Username</div>,
       cell: ({ row }) => (
-        <div className="lowercase">{row.getValue('username')}</div>
+        <div className="px-4 text-start">{row.getValue('username')}</div>
       ),
     },
     {
       accessorKey: 'password',
-      header: () => <div className="text-center">Password</div>,
-      cell: ({ row }) => {
-        return (
-          <div className="text-center font-medium px-0">
-            {row.getValue('password')}
-          </div>
-        );
-      },
+      header: () => <div className="text-start">Password</div>,
+      cell: ({ row }) => (
+        <div className="px-4 text-start">{row.getValue('password')}</div>
+      ),
     },
     {
       accessorKey: 'main_balance',
@@ -343,8 +324,9 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
         return (
           <Button
             type="button"
+            size="sm"
             variant="ghost"
-            className="px-0"
+            className="px-2"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
             <DollarSign className="h-4 w-4" />
@@ -357,7 +339,7 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
       cell: ({ row }) => {
         const rowData = row.original;
         return (
-          <div className="lowercase flex flex-row justify-center items-center">
+          <div className="px-4 flex flex-row justify-end items-center">
             {row.getValue('main_balance')}
 
             <Button
@@ -372,7 +354,6 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
         );
       },
     },
-
     {
       id: 'actions',
       enableHiding: false,
@@ -388,25 +369,19 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="z-[1000]">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
+              {/* <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator /> */}
               <DropdownMenuItem onClick={() => handleDeleteRow(rowData)}>
                 Delete account
               </DropdownMenuItem>
-
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleUpdateRow(rowData)}>
                 Update account
               </DropdownMenuItem>
-              {accountType == 'MAIN' && (
-                <DropdownMenuItem
-                  onClick={() => {
-                    setDialogProxyOpen(true);
-                    setRowSelected(rowData);
-                  }}
-                >
-                  Set proxy
-                </DropdownMenuItem>
-              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => openAccounts(rowData, false)}>
+                Open account
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -414,28 +389,28 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
     },
   ];
 
-  const cashIndex = columns.findIndex(
-    (col: any) => col.accessorKey === 'main_balance'
-  );
+  // const cashIndex = columns.findIndex(
+  //   (col: any) => col.accessorKey === 'main_balance'
+  // );
 
-  if (accountType === 'MAIN') {
-    columns.splice(cashIndex + 1, 0, {
-      accessorKey: 'proxy',
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          className="px-0 truncate"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Proxy
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        return <div className="text-center">{row.getValue('proxy')}</div>;
-      },
-    });
-  }
+  // if (accountType === 'MAIN') {
+  //   columns.splice(cashIndex + 1, 0, {
+  //     accessorKey: 'proxy',
+  //     header: ({ column }) => (
+  //       <Button
+  //         variant="ghost"
+  //         className="px-0 truncate"
+  //         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+  //       >
+  //         Proxy
+  //         <ArrowUpDown className="ml-2 h-4 w-4" />
+  //       </Button>
+  //     ),
+  //     cell: ({ row }) => {
+  //       return <div className="text-center">{row.getValue('proxy')}</div>;
+  //     },
+  //   });
+  // }
 
   const table = useReactTable({
     data: dataTable,
@@ -609,7 +584,7 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
       </div>
-      <Dialog open={isDialogProxyOpen} onOpenChange={setDialogProxyOpen}>
+      {/* <Dialog open={isDialogProxyOpen} onOpenChange={setDialogProxyOpen}>
         <DialogContent>
           <DialogTitle>Add proxy</DialogTitle>
           <DialogDescription className={`${errorAddProxy && 'text-red-500'}`}>
@@ -647,7 +622,7 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
                 className="mb-4"
               />
             </>
-          )}
+          )} 
           <div className="flex justify-end space-x-2">
             <Button
               variant="secondary"
@@ -655,12 +630,12 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
             >
               Cancel
             </Button>
-            {/* <Button onClick={() => handleAddProxy(rowSelected)}>
+            <Button onClick={() => handleAddProxy(rowSelected)}>
               Set proxy
-            </Button> */}
+            </Button>
           </div>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
       <Dialog
         open={isDialogAddAccountOpen}
         onOpenChange={setDialogAddAccountOpen}

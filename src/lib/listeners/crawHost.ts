@@ -103,6 +103,7 @@ export function handleMessageCrawHost({
         setCrawingRoom((pre) => ({
           ...pre,
           shouldGuessJoin: true,
+          isHostOut: false,
           isHostJoin: true,
         }));
 

@@ -81,6 +81,8 @@ export const loginScript = (account: any) => {
       `;
 };
 
+export const joinLobbyScript = `__require('LobbyViewController').default.Instance.onClickIConGame(null,"vgcg_4");`;
+
 export const updateAccount = (account: any) => {
   const filePath = `account/${account.accountType}Account.txt`;
   const newData = `${account.username}|${account.password}|${account.token}|${account.accountType}|${account.isSelected}`;

@@ -104,6 +104,7 @@ export function handleMessageSubHost({
         setInitialRoom((pre) => ({
           ...pre,
           shouldGuessJoin: true,
+          isHostOut: false,
           isHostJoin: true,
         }));
 
