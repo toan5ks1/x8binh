@@ -75,6 +75,7 @@ export interface StateProps {
   roomType: number;
   loggedAccount: string[];
   isCrawing?: boolean;
+  isCheckDone?: boolean;
 }
 
 export const defaultState = {

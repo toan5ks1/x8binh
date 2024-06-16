@@ -142,10 +142,10 @@ export function useSetupCrawGuess(bot: LoginParams) {
   }, [crawingRoom.shouldGuessJoin]);
 
   useEffect(() => {
-    if (crawingRoom.isPrefinish && !state.foundAt) {
+    if (crawingRoom.isPrefinish && !state.foundAt && state.isCheckDone) {
       handleLeaveRoom(crawingRoom?.id);
     }
-  }, [crawingRoom.isPrefinish]);
+  }, [crawingRoom.isPrefinish, state.isCheckDone]);
 
   const handleLeaveRoom = (roomId?: number) => {
     if (roomId) {

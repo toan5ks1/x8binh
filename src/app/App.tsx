@@ -91,7 +91,7 @@ export function App() {
   };
 
   const onToggleCrawing = () => {
-    setState((pre) => ({ ...pre, isCrawing: !pre.isCrawing }));
+    setState((pre) => ({ ...pre, isCrawing: false }));
   };
 
   const onRefreshBot = () => {

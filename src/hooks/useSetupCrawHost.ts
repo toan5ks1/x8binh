@@ -166,6 +166,7 @@ export function useSetupCrawHost(bot: LoginParams) {
           ...pre,
           foundAt: crawingRoom.id,
           targetAt: initialRoom.id,
+          isCheckDone: true,
         }));
 
         toast({
@@ -185,16 +186,21 @@ export function useSetupCrawHost(bot: LoginParams) {
               card.cs
             )}]}]`
           );
+
+        setState((pre) => ({
+          ...pre,
+          isCheckDone: true,
+        }));
       }
     }
   }, [initialRoom.cardDesk, crawingRoom.cardDesk]);
 
   useEffect(() => {
-    if (crawingRoom.isPrefinish && !state.foundAt) {
+    if (crawingRoom.isPrefinish && !state.foundAt && state.isCheckDone) {
       tobeRecreateRoom();
       handleLeaveRoom(crawingRoom?.id);
     }
-  }, [crawingRoom.isPrefinish]);
+  }, [crawingRoom.isPrefinish, state.isCheckDone]);
 
   const handleLeaveRoom = (roomId?: number) => {
     if (roomId) {
