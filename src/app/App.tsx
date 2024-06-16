@@ -90,11 +90,8 @@ export function App() {
     setIsFinding(true);
   };
 
-  const onStopCrawing = () => {
-    setState((pre) => ({ ...pre, isCrawing: false }));
-  };
-  const onContinueCrawing = () => {
-    setState((pre) => ({ ...pre, isCrawing: true }));
+  const onToggleCrawing = () => {
+    setState((pre) => ({ ...pre, isCrawing: !pre.isCrawing }));
   };
 
   const onRefreshBot = () => {
@@ -308,35 +305,20 @@ export function App() {
                     ) : (
                       <Badge>Room: {state.targetAt}</Badge>
                     )}
-                    {!state.shouldStopCrawing ? (
-                      <Button
-                        onClick={onStopCrawing}
-                        size="sm"
-                        className="h-8 gap-1 bg-yellow-500 cursor-pointer hover:opacity-70"
-                        disabled={!Boolean(state.foundAt) || isQuiting}
-                      >
-                        {isQuiting ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <LogOut className="h-3.5 w-3.5" />
-                        )}
-                        Stop crawing
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={onContinueCrawing}
-                        size="sm"
-                        className="h-8 gap-1 bg-yellow-500 cursor-pointer hover:opacity-70"
-                        disabled={!Boolean(state.foundAt) || isQuiting}
-                      >
-                        {isQuiting ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <LogOut className="h-3.5 w-3.5" />
-                        )}
-                        Continue craw
-                      </Button>
-                    )}
+                    <Button
+                      onClick={onToggleCrawing}
+                      size="sm"
+                      className="h-8 gap-1 bg-yellow-500 cursor-pointer hover:opacity-70"
+                      disabled={!Boolean(state.foundAt) || isQuiting}
+                    >
+                      {isQuiting ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <LogOut className="h-3.5 w-3.5" />
+                      )}
+                      {state.isCrawing ? 'Stop craw' : 'Continue craw'}
+                    </Button>
+
                     <Button
                       onClick={onRefreshBot}
                       size="sm"

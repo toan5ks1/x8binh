@@ -1,2 +1,2 @@
-vipclass1|vipclass1|d41eb4418c6df3109416609af879c751|sub|true
-vipprox1|vipprox1|46b5c4c5c1a37216f648469ce807e96f|sub|true
+vipclass1|vipclass1|1d15c45d6a3715235b157ec819dfc55c|sub|true
+vipprox1|vipprox1|ca78e7f511c0beff001df25acb22e392|sub|true

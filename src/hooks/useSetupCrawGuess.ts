@@ -143,7 +143,6 @@ export function useSetupCrawGuess(bot: LoginParams) {
 
   useEffect(() => {
     if (crawingRoom.isPrefinish && !state.foundAt) {
-      console.log('leave', crawingRoom.isPrefinish, state.foundAt);
       handleLeaveRoom(crawingRoom?.id);
     }
   }, [crawingRoom.isPrefinish]);
