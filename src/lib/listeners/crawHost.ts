@@ -3,7 +3,7 @@ import { SendMessage } from 'react-use-websocket';
 import { GameStatus, Room, StateProps } from '../../renderer/providers/app';
 import { binhlung } from '../binhlung';
 import { LoginResponseDto } from '../login';
-import { defaultRoom, getCardsArray } from '../utils';
+import { defaultRoom, updateCardGame } from '../utils';
 
 interface HandleCRMessageProps {
   message: any;
@@ -57,7 +57,10 @@ export function handleMessageCrawHost({
         setCrawingRoom((pre) => ({
           ...pre,
           isFinish: false,
-          cardDesk: [...pre.cardDesk, { cs: message[1].cs, dn: 'host' }],
+          cardGame: updateCardGame(pre.cardGame, {
+            cs: message[1].cs,
+            dn: 'host',
+          }),
         }));
 
         // Submit cards
@@ -85,14 +88,14 @@ export function handleMessageCrawHost({
         message[1].ps?.length >= 2 &&
         message[1].cmd === 602
       ) {
-        const newCards = getCardsArray(message[1].ps);
+        // const newCards = getCardsArray(message[1].ps);
         setCrawingRoom((pre) => {
           return {
             ...pre,
             isSubmitCard: true,
             isGuessReady: false,
             isHostReady: false,
-            cardGame: [...crawingRoom.cardGame, newCards],
+            // cardGame: [...crawingRoom.cardGame, newCards],
           };
         });
 

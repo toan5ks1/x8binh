@@ -11,8 +11,14 @@ import {
 import { AppContext } from '../renderer/providers/app';
 
 export function useSetupSubGuess(bot: LoginParams) {
-  const { state, gameStatus, initialRoom, setInitialRoom, crawingRoom } =
-    useContext(AppContext);
+  const {
+    state,
+    gameStatus,
+    initialRoom,
+    setInitialRoom,
+    setCrawingRoom,
+    crawingRoom,
+  } = useContext(AppContext);
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
   const [shouldPingMaubinh, setShouldPingMaubinh] = useState(false);
@@ -57,6 +63,7 @@ export function useSetupSubGuess(bot: LoginParams) {
         message,
         initialRoom,
         setInitialRoom,
+        setCrawingRoom,
         sendMessage,
         user,
         state,

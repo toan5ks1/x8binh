@@ -560,5 +560,5 @@ function mBaiSapXep(t: any) {
 }
 
 export const arrangCard = (cards: any) => {
-  return mBaiSapXep(cards);
+  return mBaiSapXep(cards) as any;
 };

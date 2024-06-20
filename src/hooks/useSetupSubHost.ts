@@ -13,8 +13,14 @@ import { AppContext } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
 
 export function useSetupSubHost(bot: LoginParams) {
-  const { state, gameStatus, initialRoom, setInitialRoom, crawingRoom } =
-    useContext(AppContext);
+  const {
+    state,
+    gameStatus,
+    initialRoom,
+    setInitialRoom,
+    setCrawingRoom,
+    crawingRoom,
+  } = useContext(AppContext);
   const { accounts } = useAccountStore();
   const subMain = accounts['MAIN'].filter((item: any) => item.isSelected)[0];
 
@@ -61,6 +67,7 @@ export function useSetupSubHost(bot: LoginParams) {
         message,
         initialRoom,
         setInitialRoom,
+        setCrawingRoom,
         sendMessage,
         crawingRoom,
         user,

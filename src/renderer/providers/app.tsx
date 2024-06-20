@@ -28,7 +28,6 @@ export interface Room {
   id?: number;
   owner?: string;
   cardGame: GameCard[][];
-  cardDesk: GameCard[];
   isFinish?: boolean;
   isPrefinish?: boolean;
   isSubJoin?: boolean;

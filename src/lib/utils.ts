@@ -77,7 +77,6 @@ export function handleStartActionTimer(message: any) {
 
 export const defaultRoom = {
   cardGame: [] as GameCard[][],
-  cardDesk: [] as GameCard[],
 };
 
 // export const isAllCrawLeft = (rooms: StateProps['crawingRoom']) => {
@@ -184,3 +183,15 @@ export function areArraysEqual(arr1: number[], arr2: number[]) {
 
   return true;
 }
+
+export const updateCardGame = (cg: GameCard[][], newCard: GameCard) => {
+  const lgIndex = cg.length - 1;
+  const lastGame = cg[lgIndex];
+  const cgExc = cg.slice(0, -1);
+
+  if (lastGame?.length < 4) {
+    return [...cgExc, [...lastGame, newCard]];
+  } else {
+    return [...cg, [newCard]];
+  }
+};

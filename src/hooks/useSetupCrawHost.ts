@@ -161,10 +161,10 @@ export function useSetupCrawHost(bot: LoginParams) {
   useEffect(() => {
     if (
       !state.foundAt &&
-      initialRoom.cardDesk.length === 2 &&
-      crawingRoom.cardDesk.length === 2
+      initialRoom.cardGame[0]?.length === 2 &&
+      crawingRoom.cardGame[0]?.length === 2
     ) {
-      if (isFoundCards(initialRoom.cardDesk, crawingRoom.cardDesk)) {
+      if (isFoundCards(initialRoom.cardGame[0], crawingRoom.cardGame[0])) {
         setState((pre) => ({
           ...pre,
           foundAt: crawingRoom.id,
@@ -178,7 +178,9 @@ export function useSetupCrawHost(bot: LoginParams) {
         });
         console.log('Craw found at: ', crawingRoom.id);
       } else {
-        const card = crawingRoom?.cardDesk.find((item) => item.dn === 'host');
+        const card = crawingRoom?.cardGame[0].find(
+          (item) => item.dn === 'host'
+        );
         toast({
           title: 'Not match',
           description: `Finding again...`,
@@ -196,7 +198,7 @@ export function useSetupCrawHost(bot: LoginParams) {
         }));
       }
     }
-  }, [initialRoom.cardDesk, crawingRoom.cardDesk]);
+  }, [initialRoom.cardGame, crawingRoom.cardGame]);
 
   useEffect(() => {
     if (crawingRoom.isPrefinish && !state.foundAt && state.isCheckDone) {
@@ -212,17 +214,15 @@ export function useSetupCrawHost(bot: LoginParams) {
   };
 
   useEffect(() => {
-    const card = crawingRoom?.cardDesk.find((item) => item.dn === 'host');
-    if (
-      state.foundAt &&
-      initialRoom.isGuessJoin &&
-      initialRoom.isHostJoin &&
-      card?.cs.length
-    ) {
-      sendMessage(
-        `[5,"Simms",${state.foundAt},{"cmd":603,"cs":[${binhlung(card.cs)}]}]`
-      );
-      setGameStatus((pre) => ({ ...pre, isCrawing: true }));
+    if (state.foundAt && initialRoom.isGuessJoin && initialRoom.isHostJoin) {
+      const card = crawingRoom?.cardGame[0].find((item) => item.dn === 'host');
+      if (card?.cs.length) {
+        sendMessage(
+          `[5,"Simms",${state.foundAt},{"cmd":603,"cs":[${binhlung(card.cs)}]}]`
+        );
+        setGameStatus((pre) => ({ ...pre, isCrawing: true }));
+        setCrawingRoom((pre) => ({ ...pre, cardGame: [] }));
+      }
     }
   }, [initialRoom.isGuessJoin, initialRoom.isHostJoin]);
 

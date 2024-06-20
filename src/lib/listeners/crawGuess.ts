@@ -3,6 +3,7 @@ import { SendMessage } from 'react-use-websocket';
 import { Room, StateProps } from '../../renderer/providers/app';
 import { binhlung } from '../binhlung';
 import { LoginResponseDto } from '../login';
+import { updateCardGame } from '../utils';
 
 interface HandleCRMessageProps {
   message: any;
@@ -41,7 +42,10 @@ export function handleMessageCrawGuess({
       } else if (message[1]?.cs?.length > 0) {
         setCrawingRoom((pre) => ({
           ...pre,
-          cardDesk: [...pre.cardDesk, { cs: message[1].cs, dn: 'guess' }],
+          cardGame: updateCardGame(pre.cardGame, {
+            cs: message[1].cs,
+            dn: 'guess',
+          }),
         }));
         // Submit cards
         sendMessage(
