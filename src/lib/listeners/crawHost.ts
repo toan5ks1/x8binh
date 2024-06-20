@@ -1,9 +1,9 @@
 import { Dispatch, SetStateAction } from 'react';
 import { SendMessage } from 'react-use-websocket';
-import { Room, StateProps } from '../../renderer/providers/app';
+import { GameStatus, Room, StateProps } from '../../renderer/providers/app';
 import { binhlung } from '../binhlung';
 import { LoginResponseDto } from '../login';
-import { defaultRoom, getCardsArray } from '../utils';
+import { defaultRoom, updateCardGame } from '../utils';
 
 interface HandleCRMessageProps {
   message: any;
@@ -13,6 +13,7 @@ interface HandleCRMessageProps {
   sendMessage: SendMessage;
   user: LoginResponseDto;
   state: StateProps;
+  gameStatus: GameStatus;
 }
 
 export function handleMessageCrawHost({
@@ -21,6 +22,7 @@ export function handleMessageCrawHost({
   setCrawingRoom,
   sendMessage,
   state,
+  gameStatus,
   user,
 }: HandleCRMessageProps) {
   let returnMsg;
@@ -36,6 +38,7 @@ export function handleMessageCrawHost({
       if (message[1]?.cmd === 5 && message[1]?.dn === fullname) {
         setCrawingRoom((pre) => ({
           ...pre,
+          isHostJoin: false,
           isHostReady: true,
         }));
       } else if (message[1].ri && message[1].cmd === 308) {
@@ -54,16 +57,20 @@ export function handleMessageCrawHost({
         setCrawingRoom((pre) => ({
           ...pre,
           isFinish: false,
-          cardDesk: [...pre.cardDesk, { cs: message[1].cs, dn: 'host' }],
+          cardGame: updateCardGame(pre.cardGame, {
+            cs: message[1].cs,
+            dn: 'host',
+          }),
         }));
 
         // Submit cards
-        state.foundAt &&
+        if (state.foundAt && gameStatus.isCrawing) {
           sendMessage(
             `[5,"Simms",${
-              state?.foundAt ?? crawingRoom.id
+              state.foundAt ?? crawingRoom.id
             },{"cmd":603,"cs":[${binhlung(message[1].cs)}]}]`
           );
+        }
 
         returnMsg = `Card received: ${message[1].cs}`;
         // } else if (message[1]?.ps?.length >= 2 && message[1]?.cmd === 205) {
@@ -81,14 +88,14 @@ export function handleMessageCrawHost({
         message[1].ps?.length >= 2 &&
         message[1].cmd === 602
       ) {
-        const newCards = getCardsArray(message[1].ps);
+        // const newCards = getCardsArray(message[1].ps);
         setCrawingRoom((pre) => {
           return {
             ...pre,
             isSubmitCard: true,
             isGuessReady: false,
             isHostReady: false,
-            cardGame: [...crawingRoom.cardGame, newCards],
+            // cardGame: [...crawingRoom.cardGame, newCards],
           };
         });
 
@@ -101,6 +108,7 @@ export function handleMessageCrawHost({
         setCrawingRoom((pre) => ({
           ...pre,
           shouldGuessJoin: true,
+          isHostOut: false,
           isHostJoin: true,
         }));
 
@@ -115,7 +123,6 @@ export function handleMessageCrawHost({
         setCrawingRoom((pre) => ({
           ...pre,
           isHostOut: true,
-          isHostJoin: false,
         }));
 
         returnMsg = message[5] || 'Left room successfully!';

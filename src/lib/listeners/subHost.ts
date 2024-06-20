@@ -3,13 +3,14 @@ import { SendMessage } from 'react-use-websocket';
 import { Room, StateProps } from '../../renderer/providers/app';
 import { binhlung } from '../binhlung';
 import { LoginResponseDto } from '../login';
-import { defaultRoom, getCardsArray } from '../utils';
+import { defaultRoom, updateCardGame } from '../utils';
 
 interface HandleCRMessageProps {
   message: any;
   initialRoom: Room;
   crawingRoom: Room;
   setInitialRoom: Dispatch<SetStateAction<Room>>;
+  setCrawingRoom: Dispatch<SetStateAction<Room>>;
   sendMessage: SendMessage;
   user: LoginResponseDto;
   state: StateProps;
@@ -19,6 +20,7 @@ export function handleMessageSubHost({
   message,
   initialRoom,
   setInitialRoom,
+  setCrawingRoom,
   sendMessage,
   state,
   user,
@@ -36,6 +38,7 @@ export function handleMessageSubHost({
       if (message[1]?.cmd === 5 && message[1]?.dn === fullname) {
         setInitialRoom((pre) => ({
           ...pre,
+          isHostJoin: false,
           isHostReady: true,
         }));
       } else if (message[1].cmd === 308) {
@@ -55,11 +58,22 @@ export function handleMessageSubHost({
           returnMsg = message[1].mgs;
         }
       } else if (message[1]?.cs?.length > 0) {
-        setInitialRoom((pre) => ({
-          ...pre,
-          isFinish: false,
-          cardDesk: [...pre.cardDesk, { cs: message[1].cs, dn: 'host' }],
-        }));
+        !state.foundAt
+          ? setInitialRoom((pre) => ({
+              ...pre,
+              isFinish: false,
+              cardGame: updateCardGame(pre.cardGame, {
+                cs: message[1].cs,
+                dn: 'host',
+              }),
+            }))
+          : setCrawingRoom((pre) => ({
+              ...pre,
+              cardGame: updateCardGame(pre.cardGame, {
+                cs: message[1].cs,
+                dn: 'guess',
+              }),
+            }));
         // Submit cards
         sendMessage(
           `[5,"Simms",${
@@ -83,14 +97,12 @@ export function handleMessageSubHost({
         message[1].ps?.length >= 2 &&
         message[1].cmd === 602
       ) {
-        const newCards = getCardsArray(message[1].ps);
         setInitialRoom((pre) => {
           return {
             ...pre,
             isSubmitCard: true,
             isGuessReady: false,
             isHostReady: false,
-            cardGame: [...initialRoom.cardGame, newCards],
           };
         });
 
@@ -103,6 +115,7 @@ export function handleMessageSubHost({
         setInitialRoom((pre) => ({
           ...pre,
           shouldGuessJoin: true,
+          isHostOut: false,
           isHostJoin: true,
         }));
 
@@ -117,7 +130,6 @@ export function handleMessageSubHost({
         setInitialRoom((pre) => ({
           ...pre,
           isHostOut: true,
-          isHostJoin: false,
         }));
 
         returnMsg = message[5] || 'Left room successfully!';

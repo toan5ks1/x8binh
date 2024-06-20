@@ -9,7 +9,6 @@ import {
   LoginResponse,
   LoginResponseDto,
   login,
-  openAccounts,
 } from '../lib/login';
 import { isFoundCards } from '../lib/utils';
 import { AppContext } from '../renderer/providers/app';
@@ -18,6 +17,8 @@ export function useSetupCrawHost(bot: LoginParams) {
   const {
     state,
     setState,
+    gameStatus,
+    setGameStatus,
     crawingRoom,
     setCrawingRoom,
     initialRoom,
@@ -71,6 +72,7 @@ export function useSetupCrawHost(bot: LoginParams) {
         sendMessage,
         user,
         state,
+        gameStatus,
       });
 
       newMsg && setMessageHistory((msgs) => [...msgs, newMsg]);
@@ -113,7 +115,7 @@ export function useSetupCrawHost(bot: LoginParams) {
             ...msgs,
             data?.message ?? 'Login failed',
           ]);
-          openAccounts(bot);
+          setState((pre) => ({ ...pre, isLoggedIn: false }));
         }
       })
       .catch((err: Error) =>
@@ -159,14 +161,15 @@ export function useSetupCrawHost(bot: LoginParams) {
   useEffect(() => {
     if (
       !state.foundAt &&
-      initialRoom.cardDesk.length === 2 &&
-      crawingRoom.cardDesk.length === 2
+      initialRoom.cardGame[0]?.length === 2 &&
+      crawingRoom.cardGame[0]?.length === 2
     ) {
-      if (isFoundCards(initialRoom.cardDesk, crawingRoom.cardDesk)) {
+      if (isFoundCards(initialRoom.cardGame[0], crawingRoom.cardGame[0])) {
         setState((pre) => ({
           ...pre,
           foundAt: crawingRoom.id,
           targetAt: initialRoom.id,
+          isCheckDone: true,
         }));
 
         toast({
@@ -175,7 +178,9 @@ export function useSetupCrawHost(bot: LoginParams) {
         });
         console.log('Craw found at: ', crawingRoom.id);
       } else {
-        const card = crawingRoom?.cardDesk.find((item) => item.dn === 'host');
+        const card = crawingRoom?.cardGame[0].find(
+          (item) => item.dn === 'host'
+        );
         toast({
           title: 'Not match',
           description: `Finding again...`,
@@ -186,41 +191,45 @@ export function useSetupCrawHost(bot: LoginParams) {
               card.cs
             )}]}]`
           );
+
+        setState((pre) => ({
+          ...pre,
+          isCheckDone: true,
+        }));
       }
     }
-  }, [initialRoom.cardDesk, crawingRoom.cardDesk]);
+  }, [initialRoom.cardGame, crawingRoom.cardGame]);
 
   useEffect(() => {
-    if (crawingRoom.isPrefinish && !state.foundAt) {
+    if (crawingRoom.isPrefinish && !state.foundAt && state.isCheckDone) {
       tobeRecreateRoom();
-      handleLeaveRoom();
+      handleLeaveRoom(crawingRoom?.id);
     }
-  }, [crawingRoom.isPrefinish]);
+  }, [crawingRoom.isPrefinish, state.isCheckDone]);
 
-  const handleLeaveRoom = () => {
-    if (crawingRoom?.id) {
-      return sendMessage(`[4,"Simms",${crawingRoom.id}]`);
+  const handleLeaveRoom = (roomId?: number) => {
+    if (roomId) {
+      return sendMessage(`[4,"Simms",${roomId}]`);
     }
   };
 
   useEffect(() => {
-    const card = crawingRoom?.cardDesk.find((item) => item.dn === 'host');
-    if (
-      state.foundAt &&
-      initialRoom.isGuessJoin &&
-      initialRoom.isHostJoin &&
-      card?.cs.length
-    ) {
-      sendMessage(
-        `[5,"Simms",${state.foundAt},{"cmd":603,"cs":[${binhlung(card.cs)}]}]`
-      );
+    if (state.foundAt && initialRoom.isGuessJoin && initialRoom.isHostJoin) {
+      const card = crawingRoom?.cardGame[0].find((item) => item.dn === 'host');
+      if (card?.cs.length) {
+        sendMessage(
+          `[5,"Simms",${state.foundAt},{"cmd":603,"cs":[${binhlung(card.cs)}]}]`
+        );
+        setGameStatus((pre) => ({ ...pre, isCrawing: true }));
+        setCrawingRoom((pre) => ({ ...pre, cardGame: [] }));
+      }
     }
   }, [initialRoom.isGuessJoin, initialRoom.isHostJoin]);
 
   useEffect(() => {
     if (
-      !state.shouldStopCrawing &&
       state.foundAt &&
+      gameStatus.isCrawing &&
       crawingRoom.isFinish &&
       crawingRoom.isGuessReady &&
       initialRoom.isGuessReady &&
@@ -235,18 +244,16 @@ export function useSetupCrawHost(bot: LoginParams) {
     initialRoom.isHostReady,
   ]);
 
-  // Continue crawing
+  // Pause/Continue crawing
   useEffect(() => {
-    if (!state.shouldStopCrawing) {
-      if (state.foundAt && crawingRoom.isHostOut) {
-        sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
-      }
-
-      if (state.foundAt && crawingRoom.isHostOut && crawingRoom.isHostJoin) {
-        sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
-      }
+    if (
+      gameStatus.isPaused === false &&
+      crawingRoom.isHostOut &&
+      state.foundAt
+    ) {
+      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
     }
-  }, [state.shouldStopCrawing]);
+  }, [gameStatus.isPaused]);
 
   return {
     user,

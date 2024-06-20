@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { BotStatus } from '../renderer/providers/app';
 import { loginTokenB52, loginUrlB52 } from './config';
 
 export interface LoginResponseDto {
@@ -13,7 +12,6 @@ export interface LoginResponseDto {
   session_id: string;
   token: string;
   username: string;
-  status?: BotStatus;
   currentCard?: number[];
   isReconnected?: boolean;
   uid: string[];
@@ -101,8 +99,8 @@ export async function accountLogin(account: any) {
   }
 }
 
-export async function openAccounts(account: any) {
-  await window.backend.sendMessage('open-accounts', account);
+export async function openAccounts(account: any, autoClose: boolean = true) {
+  await window.backend.sendMessage('open-accounts', account, autoClose);
 }
 
 export function joinRoom(account: any, room?: number): void {

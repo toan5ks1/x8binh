@@ -3,6 +3,7 @@ import { SendMessage } from 'react-use-websocket';
 import { Room, StateProps } from '../../renderer/providers/app';
 import { binhlung } from '../binhlung';
 import { LoginResponseDto } from '../login';
+import { updateCardGame } from '../utils';
 
 interface HandleCRMessageProps {
   message: any;
@@ -34,13 +35,17 @@ export function handleMessageCrawGuess({
       if (message[1]?.cmd === 5 && message[1]?.dn === fullname) {
         setCrawingRoom((pre) => ({
           ...pre,
+          isGuessJoin: false,
           isGuessReady: true,
           shouldHostReady: true,
         }));
       } else if (message[1]?.cs?.length > 0) {
         setCrawingRoom((pre) => ({
           ...pre,
-          cardDesk: [...pre.cardDesk, { cs: message[1].cs, dn: 'guess' }],
+          cardGame: updateCardGame(pre.cardGame, {
+            cs: message[1].cs,
+            dn: 'guess',
+          }),
         }));
         // Submit cards
         sendMessage(
@@ -57,6 +62,7 @@ export function handleMessageCrawGuess({
         // Guess join room response
         setCrawingRoom((pre) => ({
           ...pre,
+          isGuessOut: false,
           isGuessJoin: true,
         }));
 
@@ -74,7 +80,6 @@ export function handleMessageCrawGuess({
         setCrawingRoom((pre) => ({
           ...pre,
           isGuessOut: true,
-          isGuessJoin: false,
         }));
 
         returnMsg = message[5] || 'Left room successfully!';

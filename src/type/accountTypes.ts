@@ -8,6 +8,7 @@ export interface AccountInfo {
   device: string;
   browser: string;
   fg: string;
+  accountType?: string;
   time: number;
   aff_id: string;
   isSelected?: boolean;

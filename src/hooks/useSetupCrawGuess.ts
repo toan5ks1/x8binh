@@ -7,12 +7,12 @@ import {
   LoginResponse,
   LoginResponseDto,
   login,
-  openAccounts,
 } from '../lib/login';
 import { AppContext } from '../renderer/providers/app';
 
 export function useSetupCrawGuess(bot: LoginParams) {
-  const { state, crawingRoom, setCrawingRoom } = useContext(AppContext);
+  const { state, gameStatus, crawingRoom, setCrawingRoom } =
+    useContext(AppContext);
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
   const [shouldPingMaubinh, setShouldPingMaubinh] = useState(false);
@@ -101,7 +101,6 @@ export function useSetupCrawGuess(bot: LoginParams) {
             ...msgs,
             data?.message ?? 'Login failed',
           ]);
-          openAccounts(bot);
         }
       })
       .catch((err: Error) =>
@@ -138,42 +137,43 @@ export function useSetupCrawGuess(bot: LoginParams) {
 
   // Guess join initial room
   useEffect(() => {
-    if (!state.foundAt && crawingRoom.shouldGuessJoin) {
+    if (!state.foundAt && crawingRoom.shouldGuessJoin && !gameStatus.isPaused) {
       sendMessage(`[3,"Simms",${crawingRoom.id},"",true]`);
     }
   }, [crawingRoom.shouldGuessJoin]);
 
   useEffect(() => {
-    if (crawingRoom.isPrefinish && !state.foundAt) {
-      handleLeaveRoom();
+    if (crawingRoom.isPrefinish && !state.foundAt && state.isCheckDone) {
+      handleLeaveRoom(crawingRoom?.id);
     }
-  }, [crawingRoom.isPrefinish]);
+  }, [crawingRoom.isPrefinish, state.isCheckDone]);
 
-  const handleLeaveRoom = () => {
-    if (crawingRoom?.id) {
-      return sendMessage(`[4,"Simms",${crawingRoom.id}]`);
+  const handleLeaveRoom = (roomId?: number) => {
+    if (roomId) {
+      return sendMessage(`[4,"Simms",${roomId}]`);
     }
   };
 
   // Ready to crawing (Craw found)
   useEffect(() => {
-    if (!state.shouldStopCrawing && state.foundAt && crawingRoom.isFinish) {
+    if (gameStatus.isCrawing && state.foundAt && crawingRoom.isFinish) {
       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
     }
-  }, [crawingRoom.isFinish]);
+  }, [crawingRoom.isFinish, crawingRoom.isGuessJoin]);
 
-  // Continue crawing
+  // Pause/Continue crawing
   useEffect(() => {
-    if (!state.shouldStopCrawing) {
-      if (state.foundAt && crawingRoom.isGuessOut) {
-        sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
-      }
-
-      if (state.foundAt && crawingRoom.isGuessOut && crawingRoom.isGuessJoin) {
-        sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
-      }
+    if (
+      gameStatus.isPaused === false &&
+      crawingRoom.isGuessOut &&
+      state.foundAt
+    ) {
+      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
     }
-  }, [state.shouldStopCrawing]);
+    if (state.foundAt && gameStatus.isPaused && crawingRoom.isFinish) {
+      handleLeaveRoom(state.foundAt);
+    }
+  }, [gameStatus.isPaused, crawingRoom.isFinish]);
 
   return {
     user,

@@ -8,14 +8,19 @@ import {
   LoginResponseDto,
   joinRoom,
   login,
-  openAccounts,
 } from '../lib/login';
 import { AppContext } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
 
 export function useSetupSubHost(bot: LoginParams) {
-  const { state, initialRoom, setInitialRoom, crawingRoom } =
-    useContext(AppContext);
+  const {
+    state,
+    gameStatus,
+    initialRoom,
+    setInitialRoom,
+    setCrawingRoom,
+    crawingRoom,
+  } = useContext(AppContext);
   const { accounts } = useAccountStore();
   const subMain = accounts['MAIN'].filter((item: any) => item.isSelected)[0];
 
@@ -62,6 +67,7 @@ export function useSetupSubHost(bot: LoginParams) {
         message,
         initialRoom,
         setInitialRoom,
+        setCrawingRoom,
         sendMessage,
         crawingRoom,
         user,
@@ -107,7 +113,6 @@ export function useSetupSubHost(bot: LoginParams) {
             ...msgs,
             data?.message ?? 'Login failed',
           ]);
-          openAccounts(bot);
         }
       })
       .catch((err: Error) =>
@@ -151,54 +156,50 @@ export function useSetupSubHost(bot: LoginParams) {
 
   useEffect(() => {
     if (!state.foundAt && initialRoom.isPrefinish) {
-      handleLeaveRoom();
+      handleLeaveRoom(initialRoom?.id);
     }
   }, [initialRoom.isPrefinish]);
 
   useEffect(() => {
     if (state.foundAt && initialRoom.isSubJoin) {
-      handleLeaveRoom();
+      console.log('out');
+      handleLeaveRoom(initialRoom?.id);
     }
   }, [initialRoom.isSubJoin]);
 
-  const handleLeaveRoom = () => {
-    if (initialRoom?.id) {
-      return sendMessage(`[4,"Simms",${initialRoom.id}]`);
+  const handleLeaveRoom = (roomId?: number) => {
+    if (roomId) {
+      return sendMessage(`[4,"Simms",${roomId}]`);
     }
   };
 
   // Join found room
   useEffect(() => {
-    if (state.foundAt && initialRoom.isHostOut) {
+    if (state.foundAt && initialRoom.isHostOut && !gameStatus.isPaused) {
       sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
     }
   }, [state.foundAt, initialRoom.isHostOut]);
 
   // Ready to crawing (Craw found)
   useEffect(() => {
-    if (
-      !state.shouldStopCrawing &&
-      state.foundAt &&
-      crawingRoom.isFinish &&
-      initialRoom.isHostOut &&
-      initialRoom.isHostJoin
-    ) {
+    if (gameStatus.isCrawing && state.foundAt && crawingRoom.isFinish) {
       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
     }
   }, [crawingRoom.isFinish, initialRoom.isHostJoin]);
 
   // Continue crawing
   useEffect(() => {
-    if (!state.shouldStopCrawing) {
-      if (state.foundAt && initialRoom.isHostOut) {
-        sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
-      }
-
-      if (state.foundAt && initialRoom.isHostOut && initialRoom.isHostJoin) {
-        sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
-      }
+    if (
+      gameStatus.isPaused === false &&
+      initialRoom.isHostOut &&
+      state.foundAt
+    ) {
+      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
     }
-  }, [state.shouldStopCrawing]);
+    if (state.foundAt && gameStatus.isPaused && crawingRoom.isFinish) {
+      handleLeaveRoom(state.foundAt);
+    }
+  }, [gameStatus.isPaused, crawingRoom.isFinish]);
 
   // // Call sub join
   useEffect(() => {
@@ -206,13 +207,6 @@ export function useSetupSubHost(bot: LoginParams) {
       joinRoom(subMain, state.targetAt);
     }
   }, [state.targetAt]);
-
-  // // sub leave
-  // useEffect(() => {
-  //   if (user?.status === BotStatus.Finished && room.isSubJoin) {
-  //     sendMessage(`[4,"Simms",${room.id}]`);
-  //   }
-  // }, [room]);
 
   return {
     user,

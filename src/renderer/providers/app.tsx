@@ -12,21 +12,6 @@ interface AppProviderProps {
   children: ReactNode;
 }
 
-export enum BotStatus {
-  Initialized = 'INITIALIZED',
-  Connected = 'CONNECTED',
-  Finding = 'Finding',
-  Joined = 'JOINED',
-  Ready = 'READY',
-  Received = 'RECEIVED',
-  Submitted = 'SUBMITTED',
-  Saved = 'SAVED',
-  PreFinished = 'PREFINISHED',
-  Finished = 'FINISHED',
-  Left = 'LEFT',
-  Reconnect = 'RECONNECT',
-}
-
 export interface GameState {
   number: number;
   sheet: {
@@ -43,7 +28,6 @@ export interface Room {
   id?: number;
   owner?: string;
   cardGame: GameCard[][];
-  cardDesk: GameCard[];
   isFinish?: boolean;
   isPrefinish?: boolean;
   isSubJoin?: boolean;
@@ -74,6 +58,12 @@ export interface StateProps {
   shouldRefresh?: boolean;
   roomType: number;
   loggedAccount: string[];
+  isCheckDone?: boolean;
+}
+
+export interface GameStatus {
+  isCrawing?: boolean;
+  isPaused?: boolean;
 }
 
 export const defaultState = {
@@ -86,6 +76,8 @@ export const defaultState = {
 interface AppContextProps {
   state: StateProps;
   setState: Dispatch<SetStateAction<StateProps>>;
+  gameStatus: GameStatus;
+  setGameStatus: Dispatch<SetStateAction<GameStatus>>;
   initialRoom: Room;
   setInitialRoom: Dispatch<SetStateAction<Room>>;
   crawingRoom: Room;
@@ -96,10 +88,12 @@ interface AppContextProps {
 
 export const AppContext = createContext<AppContextProps>({
   state: defaultState,
+  gameStatus: {},
   initialRoom: defaultRoom,
   crawingRoom: defaultRoom,
   recreateTime: 0,
   setState: () => {},
+  setGameStatus: () => {},
   setInitialRoom: () => {},
   setCrawingRoom: () => {},
   tobeRecreateRoom: () => {},
@@ -107,7 +101,7 @@ export const AppContext = createContext<AppContextProps>({
 
 const AppProvider = ({ children }: AppProviderProps) => {
   const [state, setState] = useState(defaultState);
-
+  const [gameStatus, setGameStatus] = useState({});
   const [initialRoom, setInitialRoom] = useState(defaultRoom);
   const [crawingRoom, setCrawingRoom] = useState(defaultRoom);
   const [recreateTime, setRecreateTime] = useState(0);
@@ -118,6 +112,8 @@ const AppProvider = ({ children }: AppProviderProps) => {
       value={{
         state,
         setState,
+        gameStatus,
+        setGameStatus,
         initialRoom,
         setInitialRoom,
         crawingRoom,

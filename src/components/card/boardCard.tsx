@@ -37,6 +37,7 @@ const BoardCard: React.FC<any> = ({
         <HandCard
           key={index}
           cardProp={hand}
+          // cardProp={[42, 6, 3, 11, 49, 36, 4, 50, 24, 48, 18, 1, 40]}
           isShowPlayer={indexProps === currentGame.number}
           player={currentGame.sheet[(index + 1).toString()]}
         />

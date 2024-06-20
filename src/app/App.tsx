@@ -38,13 +38,21 @@ import {
 } from '../components/ui/tooltip';
 import { roomTypes } from '../lib/config';
 
+import { formatCurrency } from '../lib/utils';
 import { AppContext, defaultState } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
 import { HomePage } from './pages/home';
 
 export function App() {
-  const { state, setState, initialRoom, crawingRoom, recreateTime } =
-    useContext(AppContext);
+  const {
+    state,
+    setState,
+    initialRoom,
+    crawingRoom,
+    recreateTime,
+    gameStatus,
+    setGameStatus,
+  } = useContext(AppContext);
   const { accounts } = useAccountStore();
 
   const bots = accounts['SUB'].filter((item: any) => item.isSelected === true);
@@ -89,11 +97,8 @@ export function App() {
     setIsFinding(true);
   };
 
-  const onStopCrawing = () => {
-    setState((pre) => ({ ...pre, shouldStopCrawing: true }));
-  };
-  const onContinueCrawing = () => {
-    setState((pre) => ({ ...pre, shouldStopCrawing: false }));
+  const onToggleCrawing = () => {
+    setGameStatus((pre) => ({ ...pre, isPaused: !pre.isPaused }));
   };
 
   const onRefreshBot = () => {
@@ -144,17 +149,18 @@ export function App() {
   //   }
   // }, []);
 
+  useEffect(() => {
+    if (state.isLoggedIn === false) {
+      setIsLoging(false);
+    }
+  }, [state.isLoggedIn]);
+
   const handleRoomTypeChange = (money: number) => {
     setState((pre) => ({
       ...pre,
       roomType: money,
     }));
   };
-
-  function formatCurrency(value: number) {
-    const cash = value / 1000;
-    return cash < 1 ? value : `${value} (${cash}k)`;
-  }
 
   return (
     <div className="h-screen">
@@ -306,35 +312,20 @@ export function App() {
                     ) : (
                       <Badge>Room: {state.targetAt}</Badge>
                     )}
-                    {!state.shouldStopCrawing ? (
-                      <Button
-                        onClick={onStopCrawing}
-                        size="sm"
-                        className="h-8 gap-1 bg-yellow-500 cursor-pointer hover:opacity-70"
-                        disabled={!Boolean(state.foundAt) || isQuiting}
-                      >
-                        {isQuiting ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <LogOut className="h-3.5 w-3.5" />
-                        )}
-                        Stop crawing
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={onContinueCrawing}
-                        size="sm"
-                        className="h-8 gap-1 bg-yellow-500 cursor-pointer hover:opacity-70"
-                        disabled={!Boolean(state.foundAt) || isQuiting}
-                      >
-                        {isQuiting ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <LogOut className="h-3.5 w-3.5" />
-                        )}
-                        Continue craw
-                      </Button>
-                    )}
+                    <Button
+                      onClick={onToggleCrawing}
+                      size="sm"
+                      className="h-8 gap-1 bg-yellow-500 cursor-pointer hover:opacity-70"
+                      disabled={!Boolean(state.foundAt) || isQuiting}
+                    >
+                      {isQuiting ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <LogOut className="h-3.5 w-3.5" />
+                      )}
+                      {!gameStatus.isPaused ? 'Stop craw' : 'Continue craw'}
+                    </Button>
+
                     <Button
                       onClick={onRefreshBot}
                       size="sm"

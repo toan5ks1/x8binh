@@ -23,13 +23,12 @@ export const HomePage = (cardDeck: any) => {
   useEffect(() => {
     if (state.foundAt) {
       const desk = crawingRoom.cardGame;
+      console.log(desk);
       const lastIndex = desk.length - 1;
       const lastGame = desk[lastIndex];
 
       if (lastIndex > 0 && cards.length === lastIndex - 1) {
         const mappedCard = lastGame.map((gameCard) => gameCard.cs);
-        console.log(mappedCard);
-
         const boBai: number[] = [];
 
         if (mappedCard.length === 4) {

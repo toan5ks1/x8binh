@@ -77,7 +77,6 @@ export function handleStartActionTimer(message: any) {
 
 export const defaultRoom = {
   cardGame: [] as GameCard[][],
-  cardDesk: [] as GameCard[],
 };
 
 // export const isAllCrawLeft = (rooms: StateProps['crawingRoom']) => {
@@ -86,6 +85,10 @@ export const defaultRoom = {
 //   );
 //   return !isNotLeft;
 // };
+export function formatCurrency(value: number) {
+  const cash = value / 1000;
+  return cash < 1 ? value : `${value} (${cash}k)`;
+}
 
 export const getCardsArray = (ps: any) => {
   return ps.map((item: any) => ({ cs: item.cs, dn: item.dn }));
@@ -180,3 +183,15 @@ export function areArraysEqual(arr1: number[], arr2: number[]) {
 
   return true;
 }
+
+export const updateCardGame = (cg: GameCard[][], newCard: GameCard) => {
+  const lgIndex = cg.length - 1;
+  const lastGame = cg[lgIndex];
+  const cgExc = cg.slice(0, -1);
+
+  if (lastGame?.length < 4) {
+    return [...cgExc, [...lastGame, newCard]];
+  } else {
+    return [...cg, [newCard]];
+  }
+};

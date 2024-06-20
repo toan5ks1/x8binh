@@ -3,11 +3,13 @@ import { SendMessage } from 'react-use-websocket';
 import { Room, StateProps } from '../../renderer/providers/app';
 import { binhlung } from '../binhlung';
 import { LoginResponseDto } from '../login';
+import { updateCardGame } from '../utils';
 
 interface HandleCRMessageProps {
   message: any;
   initialRoom: Room;
   setInitialRoom: Dispatch<SetStateAction<Room>>;
+  setCrawingRoom: Dispatch<SetStateAction<Room>>;
   sendMessage: SendMessage;
   user: LoginResponseDto;
   state: StateProps;
@@ -17,6 +19,7 @@ export function handleMessageSubGuess({
   message,
   initialRoom,
   setInitialRoom,
+  setCrawingRoom,
   sendMessage,
   state,
   user,
@@ -34,14 +37,26 @@ export function handleMessageSubGuess({
       if (message[1]?.cmd === 5 && message[1]?.dn === fullname) {
         setInitialRoom((pre) => ({
           ...pre,
+          isGuessJoin: false,
           isGuessReady: true,
           shouldHostReady: true,
         }));
       } else if (message[1]?.cs?.length > 0) {
-        setInitialRoom((pre) => ({
-          ...pre,
-          cardDesk: [...pre.cardDesk, { cs: message[1].cs, dn: 'guess' }],
-        }));
+        !state.foundAt
+          ? setInitialRoom((pre) => ({
+              ...pre,
+              cardGame: updateCardGame(pre.cardGame, {
+                cs: message[1].cs,
+                dn: 'guess',
+              }),
+            }))
+          : setCrawingRoom((pre) => ({
+              ...pre,
+              cardGame: updateCardGame(pre.cardGame, {
+                cs: message[1].cs,
+                dn: 'guess',
+              }),
+            }));
         // Submit cards
         sendMessage(
           `[5,"Simms",${
@@ -57,6 +72,7 @@ export function handleMessageSubGuess({
         // Guess join room response
         setInitialRoom((pre) => ({
           ...pre,
+          isGuessOut: false,
           isGuessJoin: true,
         }));
 
@@ -75,7 +91,6 @@ export function handleMessageSubGuess({
         setInitialRoom((pre) => ({
           ...pre,
           isGuessOut: true,
-          isGuessJoin: false,
         }));
 
         returnMsg = message[5] || 'Left room successfully!';

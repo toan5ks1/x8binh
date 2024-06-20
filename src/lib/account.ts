@@ -7,12 +7,15 @@ const readValidAccount = (input: string): any => {
     .split('\n')
     .map((line) => {
       if (line != '') {
-        const [username, password, isSelected, token] = line.trim().split('|');
+        const [username, password, token, accountType, isSelected] = line
+          .trim()
+          .split('|');
         return {
           username,
           password,
-          isSelected: Boolean(isSelected),
           token,
+          accountType,
+          isSelected: Boolean(isSelected),
           fg: defaultLoginParams.fg,
         };
       } else {
@@ -62,12 +65,19 @@ const addUniqueAccounts = async (
   });
 };
 
-const generateAccount = ({ username, password, token, isSelected }: any) => {
+const generateAccount = ({
+  username,
+  password,
+  token,
+  accountType,
+  isSelected,
+}: any) => {
   return {
     username,
     password,
-    isSelected: Boolean(isSelected),
     token,
+    accountType,
+    isSelected: Boolean(isSelected),
     fg: defaultLoginParams.fg,
   };
 };
