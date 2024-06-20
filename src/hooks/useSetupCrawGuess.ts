@@ -11,7 +11,8 @@ import {
 import { AppContext } from '../renderer/providers/app';
 
 export function useSetupCrawGuess(bot: LoginParams) {
-  const { state, crawingRoom, setCrawingRoom } = useContext(AppContext);
+  const { state, gameStatus, crawingRoom, setCrawingRoom } =
+    useContext(AppContext);
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
   const [shouldPingMaubinh, setShouldPingMaubinh] = useState(false);
@@ -136,7 +137,7 @@ export function useSetupCrawGuess(bot: LoginParams) {
 
   // Guess join initial room
   useEffect(() => {
-    if (!state.foundAt && crawingRoom.shouldGuessJoin) {
+    if (!state.foundAt && crawingRoom.shouldGuessJoin && !gameStatus.isPaused) {
       sendMessage(`[3,"Simms",${crawingRoom.id},"",true]`);
     }
   }, [crawingRoom.shouldGuessJoin]);
@@ -155,20 +156,24 @@ export function useSetupCrawGuess(bot: LoginParams) {
 
   // Ready to crawing (Craw found)
   useEffect(() => {
-    if (state.isCrawing && state.foundAt && crawingRoom.isFinish) {
+    if (gameStatus.isCrawing && state.foundAt && crawingRoom.isFinish) {
       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
     }
   }, [crawingRoom.isFinish, crawingRoom.isGuessJoin]);
 
-  // Continue crawing
+  // Pause/Continue crawing
   useEffect(() => {
-    if (state.isCrawing && crawingRoom.isGuessOut && state.foundAt) {
+    if (
+      gameStatus.isPaused === false &&
+      crawingRoom.isGuessOut &&
+      state.foundAt
+    ) {
       sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
     }
-    if (state.foundAt && !state.isCrawing) {
+    if (state.foundAt && gameStatus.isPaused && crawingRoom.isFinish) {
       handleLeaveRoom(state.foundAt);
     }
-  }, [state.isCrawing]);
+  }, [gameStatus.isPaused, crawingRoom.isFinish]);
 
   return {
     user,

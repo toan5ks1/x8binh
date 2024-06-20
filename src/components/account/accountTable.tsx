@@ -210,6 +210,7 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
     const data = (await accountLogin(rowData)) as any;
 
     if (data?.code === 404) {
+      // TODO: handle token expire
       openAccounts(rowData);
     } else {
       const cash = Array.isArray(data?.data) ? data?.data[0].main_balance : 0;

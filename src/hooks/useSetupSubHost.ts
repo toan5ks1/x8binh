@@ -13,7 +13,7 @@ import { AppContext } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
 
 export function useSetupSubHost(bot: LoginParams) {
-  const { state, initialRoom, setInitialRoom, crawingRoom } =
+  const { state, gameStatus, initialRoom, setInitialRoom, crawingRoom } =
     useContext(AppContext);
   const { accounts } = useAccountStore();
   const subMain = accounts['MAIN'].filter((item: any) => item.isSelected)[0];
@@ -168,27 +168,31 @@ export function useSetupSubHost(bot: LoginParams) {
 
   // Join found room
   useEffect(() => {
-    if (state.foundAt && initialRoom.isHostOut) {
+    if (state.foundAt && initialRoom.isHostOut && !gameStatus.isPaused) {
       sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
     }
   }, [state.foundAt, initialRoom.isHostOut]);
 
   // Ready to crawing (Craw found)
   useEffect(() => {
-    if (state.isCrawing && state.foundAt && crawingRoom.isFinish) {
+    if (gameStatus.isCrawing && state.foundAt && crawingRoom.isFinish) {
       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
     }
   }, [crawingRoom.isFinish, initialRoom.isHostJoin]);
 
   // Continue crawing
   useEffect(() => {
-    if (state.isCrawing && initialRoom.isHostOut && state.foundAt) {
+    if (
+      gameStatus.isPaused === false &&
+      initialRoom.isHostOut &&
+      state.foundAt
+    ) {
       sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
     }
-    if (state.foundAt && !state.isCrawing) {
+    if (state.foundAt && gameStatus.isPaused && crawingRoom.isFinish) {
       handleLeaveRoom(state.foundAt);
     }
-  }, [state.isCrawing]);
+  }, [gameStatus.isPaused, crawingRoom.isFinish]);
 
   // // Call sub join
   useEffect(() => {

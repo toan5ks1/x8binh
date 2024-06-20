@@ -17,6 +17,8 @@ export function useSetupCrawHost(bot: LoginParams) {
   const {
     state,
     setState,
+    gameStatus,
+    setGameStatus,
     crawingRoom,
     setCrawingRoom,
     initialRoom,
@@ -70,6 +72,7 @@ export function useSetupCrawHost(bot: LoginParams) {
         sendMessage,
         user,
         state,
+        gameStatus,
       });
 
       newMsg && setMessageHistory((msgs) => [...msgs, newMsg]);
@@ -219,14 +222,14 @@ export function useSetupCrawHost(bot: LoginParams) {
       sendMessage(
         `[5,"Simms",${state.foundAt},{"cmd":603,"cs":[${binhlung(card.cs)}]}]`
       );
-      setState((pre) => ({ ...pre, isCrawing: true }));
+      setGameStatus((pre) => ({ ...pre, isCrawing: true }));
     }
   }, [initialRoom.isGuessJoin, initialRoom.isHostJoin]);
 
   useEffect(() => {
     if (
-      state.isCrawing &&
       state.foundAt &&
+      gameStatus.isCrawing &&
       crawingRoom.isFinish &&
       crawingRoom.isGuessReady &&
       initialRoom.isGuessReady &&
@@ -241,18 +244,16 @@ export function useSetupCrawHost(bot: LoginParams) {
     initialRoom.isHostReady,
   ]);
 
-  // Continue crawing
-  // useEffect(() => {
-  //   if (state.isCrawing && state.foundAt) {
-  //     if (crawingRoom.isHostOut) {
-  //       sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
-  //     }
-
-  //     if (crawingRoom.isHostOut && crawingRoom.isHostJoin) {
-  //       sendMessage(`[5,"Simms",${state.foundAt},{"cmd":5}]`);
-  //     }
-  //   }
-  // }, [state.isCrawing, crawingRoom.isHostJoin]);
+  // Pause/Continue crawing
+  useEffect(() => {
+    if (
+      gameStatus.isPaused === false &&
+      crawingRoom.isHostOut &&
+      state.foundAt
+    ) {
+      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+    }
+  }, [gameStatus.isPaused]);
 
   return {
     user,

@@ -44,8 +44,15 @@ import useAccountStore from '../store/accountStore';
 import { HomePage } from './pages/home';
 
 export function App() {
-  const { state, setState, initialRoom, crawingRoom, recreateTime } =
-    useContext(AppContext);
+  const {
+    state,
+    setState,
+    initialRoom,
+    crawingRoom,
+    recreateTime,
+    gameStatus,
+    setGameStatus,
+  } = useContext(AppContext);
   const { accounts } = useAccountStore();
 
   const bots = accounts['SUB'].filter((item: any) => item.isSelected === true);
@@ -91,7 +98,7 @@ export function App() {
   };
 
   const onToggleCrawing = () => {
-    setState((pre) => ({ ...pre, isCrawing: false }));
+    setGameStatus((pre) => ({ ...pre, isPaused: !pre.isPaused }));
   };
 
   const onRefreshBot = () => {
@@ -316,7 +323,7 @@ export function App() {
                       ) : (
                         <LogOut className="h-3.5 w-3.5" />
                       )}
-                      {state.isCrawing ? 'Stop craw' : 'Continue craw'}
+                      {!gameStatus.isPaused ? 'Stop craw' : 'Continue craw'}
                     </Button>
 
                     <Button

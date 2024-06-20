@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from 'react';
 import { SendMessage } from 'react-use-websocket';
-import { Room, StateProps } from '../../renderer/providers/app';
+import { GameStatus, Room, StateProps } from '../../renderer/providers/app';
 import { binhlung } from '../binhlung';
 import { LoginResponseDto } from '../login';
 import { defaultRoom, getCardsArray } from '../utils';
@@ -13,6 +13,7 @@ interface HandleCRMessageProps {
   sendMessage: SendMessage;
   user: LoginResponseDto;
   state: StateProps;
+  gameStatus: GameStatus;
 }
 
 export function handleMessageCrawHost({
@@ -21,6 +22,7 @@ export function handleMessageCrawHost({
   setCrawingRoom,
   sendMessage,
   state,
+  gameStatus,
   user,
 }: HandleCRMessageProps) {
   let returnMsg;
@@ -59,7 +61,7 @@ export function handleMessageCrawHost({
         }));
 
         // Submit cards
-        if (state.foundAt && state.isCrawing) {
+        if (state.foundAt && gameStatus.isCrawing) {
           sendMessage(
             `[5,"Simms",${
               state.foundAt ?? crawingRoom.id
