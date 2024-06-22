@@ -71,6 +71,7 @@ export function useSetupSubHost(bot: LoginParams) {
         sendMessage,
         crawingRoom,
         user,
+        setUser,
         state,
       });
 
@@ -108,7 +109,7 @@ export function useSetupSubHost(bot: LoginParams) {
           const user = data?.data[0];
           setUser(user);
           connectMainGame(user);
-        } else if (data?.code === 404) {
+        } else if (data?.code === 404 || data?.code === 152) {
           setMessageHistory((msgs) => [
             ...msgs,
             data?.message ?? 'Login failed',
@@ -162,7 +163,6 @@ export function useSetupSubHost(bot: LoginParams) {
 
   useEffect(() => {
     if (state.foundAt && initialRoom.isSubJoin) {
-      console.log('out');
       handleLeaveRoom(initialRoom?.id);
     }
   }, [initialRoom.isSubJoin]);

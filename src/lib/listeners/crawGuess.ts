@@ -3,7 +3,7 @@ import { SendMessage } from 'react-use-websocket';
 import { Room, StateProps } from '../../renderer/providers/app';
 import { binhlung } from '../binhlung';
 import { LoginResponseDto } from '../login';
-import { updateCardGame } from '../utils';
+import { findPosition, updateCardGame } from '../utils';
 
 interface HandleCRMessageProps {
   message: any;
@@ -11,6 +11,7 @@ interface HandleCRMessageProps {
   setCrawingRoom: Dispatch<SetStateAction<Room>>;
   sendMessage: SendMessage;
   user: LoginResponseDto;
+  setUser: Dispatch<SetStateAction<LoginResponseDto | undefined>>;
   state: StateProps;
 }
 
@@ -21,6 +22,7 @@ export function handleMessageCrawGuess({
   sendMessage,
   state,
   user,
+  setUser,
 }: HandleCRMessageProps) {
   let returnMsg;
   const { fullname } = user;
@@ -32,7 +34,9 @@ export function handleMessageCrawGuess({
       }
       break;
     case 5:
-      if (message[1]?.cmd === 5 && message[1]?.dn === fullname) {
+      if (message[1]?.cmd === 100 && message[1].uid) {
+        setUser((pre) => ({ ...pre, uid: message[1].uid }));
+      } else if (message[1]?.cmd === 5 && message[1]?.dn === fullname) {
         setCrawingRoom((pre) => ({
           ...pre,
           isGuessJoin: false,
@@ -40,12 +44,18 @@ export function handleMessageCrawGuess({
           shouldHostReady: true,
         }));
       } else if (message[1]?.cs?.length > 0) {
+        const idxToAdd = findPosition(message[1].lpi, user.uid);
+
         setCrawingRoom((pre) => ({
           ...pre,
-          cardGame: updateCardGame(pre.cardGame, {
-            cs: message[1].cs,
-            dn: 'guess',
-          }),
+          cardGame: updateCardGame(
+            pre.cardGame,
+            {
+              cs: message[1].cs,
+              dn: 'guess',
+            },
+            idxToAdd
+          ),
         }));
         // Submit cards
         sendMessage(
@@ -54,7 +64,10 @@ export function handleMessageCrawGuess({
           },{"cmd":603,"cs":[${binhlung(message[1].cs)}]}]`
         );
 
-        returnMsg = `Card received: ${message[1].cs}`;
+        returnMsg =
+          idxToAdd >= 0
+            ? `Card received: ${message[1].cs}`
+            : 'Error when save card';
       }
       break;
     case 3:

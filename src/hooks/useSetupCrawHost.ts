@@ -10,7 +10,7 @@ import {
   LoginResponseDto,
   login,
 } from '../lib/login';
-import { isFoundCards } from '../lib/utils';
+import { isAbleToCheck, isFoundCards } from '../lib/utils';
 import { AppContext } from '../renderer/providers/app';
 
 export function useSetupCrawHost(bot: LoginParams) {
@@ -71,6 +71,7 @@ export function useSetupCrawHost(bot: LoginParams) {
         setCrawingRoom,
         sendMessage,
         user,
+        setUser,
         state,
         gameStatus,
       });
@@ -110,7 +111,7 @@ export function useSetupCrawHost(bot: LoginParams) {
           const user = data?.data[0];
           setUser(user);
           connectMainGame(user);
-        } else if (data?.code === 404) {
+        } else if (data?.code === 404 || data?.code === 152) {
           setMessageHistory((msgs) => [
             ...msgs,
             data?.message ?? 'Login failed',
@@ -161,8 +162,8 @@ export function useSetupCrawHost(bot: LoginParams) {
   useEffect(() => {
     if (
       !state.foundAt &&
-      initialRoom.cardGame[0]?.length === 2 &&
-      crawingRoom.cardGame[0]?.length === 2
+      isAbleToCheck(initialRoom.cardGame[0]) &&
+      isAbleToCheck(crawingRoom.cardGame[0])
     ) {
       if (isFoundCards(initialRoom.cardGame[0], crawingRoom.cardGame[0])) {
         setState((pre) => ({

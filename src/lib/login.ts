@@ -2,19 +2,19 @@ import axios from 'axios';
 import { loginTokenB52, loginUrlB52 } from './config';
 
 export interface LoginResponseDto {
-  avatar: string;
-  deposit_today: number;
-  event_deposit_max: number;
-  fullname: string;
-  is_deposit: boolean;
-  level: string;
-  main_balance: number;
-  session_id: string;
-  token: string;
-  username: string;
+  avatar?: string;
+  deposit_today?: number;
+  event_deposit_max?: number;
+  fullname?: string;
+  is_deposit?: boolean;
+  level?: string;
+  main_balance?: number;
+  session_id?: string;
+  token?: string;
+  username?: string;
   currentCard?: number[];
   isReconnected?: boolean;
-  uid: string[];
+  uid?: string;
 }
 
 export interface LoginResponse {

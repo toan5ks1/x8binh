@@ -66,6 +66,7 @@ export function useSetupSubGuess(bot: LoginParams) {
         setCrawingRoom,
         sendMessage,
         user,
+        setUser,
         state,
       });
 
@@ -103,7 +104,7 @@ export function useSetupSubGuess(bot: LoginParams) {
           const user = data?.data[0];
           setUser(user);
           connectMainGame(user);
-        } else if (data?.code === 404) {
+        } else if (data?.code === 404 || data?.code === 152) {
           setMessageHistory((msgs) => [
             ...msgs,
             data?.message ?? 'Login failed',

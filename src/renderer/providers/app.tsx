@@ -54,7 +54,7 @@ export interface StateProps {
   isQuited?: boolean;
   activeMain?: string;
   shouldStopCrawing?: boolean;
-  shouldDisconnect?: boolean;
+  shouldReconnect?: boolean;
   shouldRefresh?: boolean;
   roomType: number;
   loggedAccount: string[];
