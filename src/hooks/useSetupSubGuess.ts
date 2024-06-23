@@ -1,6 +1,5 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { connectURLB52 } from '../lib/config';
 import { handleMessageSubGuess } from '../lib/listeners/subGuess';
 import {
   LoginParams,
@@ -14,6 +13,7 @@ export function useSetupSubGuess(bot: LoginParams) {
   const {
     state,
     gameStatus,
+    game,
     initialRoom,
     setInitialRoom,
     setCrawingRoom,
@@ -30,7 +30,7 @@ export function useSetupSubGuess(bot: LoginParams) {
   const iTimeRef = useRef(iTime);
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(
-    connectURLB52,
+    game.connectURL,
     {
       shouldReconnect: () => true,
       reconnectInterval: 3000,
@@ -98,7 +98,7 @@ export function useSetupSubGuess(bot: LoginParams) {
   }, [shouldPingMaubinh]);
 
   const handleLoginClick = async () => {
-    login(bot)
+    login(bot, game.loginToken)
       .then((data: LoginResponse | null) => {
         if (data?.code === 200 && data?.data[0]) {
           const user = data?.data[0];

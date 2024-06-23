@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import * as React from 'react';
 
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import {
   addUniqueAccounts,
   generateAccount,
@@ -31,6 +31,7 @@ import {
 } from '../../lib/account';
 import { readFile, updateFile } from '../../lib/file';
 import { accountLogin, openAccounts } from '../../lib/login';
+import { AppContext } from '../../renderer/providers/app';
 import useAccountStore from '../../store/accountStore';
 import { useToast } from '../toast/use-toast';
 import { Button } from '../ui/button';
@@ -70,6 +71,8 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
   const [isDialogAddAccountOpen, setDialogAddAccountOpen] = useState(false);
   const [isDialogUpdateAccountOpen, setDialogUpdateAccountOpen] =
     useState(false);
+
+  const { game } = useContext(AppContext);
   // const [isDialogProxyOpen, setDialogProxyOpen] = useState(false);
   // const [rowSelected, setRowSelected] = useState<any>();
   // const [errorAddProxy, setErrorAddProxy] = useState<any>();
@@ -171,13 +174,13 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
   }, []);
 
   useEffect(() => {
-    readFile(accountType);
-  }, []);
+    readFile(accountType, game.name);
+  }, [game.name]);
 
   useEffect(() => {
     if (accounts[accountType]) {
       setDataTable(accounts[accountType]);
-      updateFile(accounts[accountType], accountType);
+      updateFile(accounts[accountType], accountType, game.name);
     }
   }, [accounts]);
 
@@ -207,10 +210,10 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
 
   const checkBalance = async (rowData: any) => {
     var mainBalance = rowData.main_balance;
-    const data = (await accountLogin(rowData)) as any;
+    const data = (await accountLogin(rowData, game.loginToken)) as any;
 
     if (data?.code === 404 || data?.code === 152) {
-      openAccounts(rowData);
+      openAccounts(rowData, game);
     } else {
       const cash = Array.isArray(data?.data) ? data?.data[0].main_balance : 0;
       mainBalance = cash;
@@ -286,7 +289,10 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
             row.toggleSelected(!!value);
             var mainBalance = row.original.main_balance;
             if (value) {
-              const data = (await accountLogin(row.original)) as any;
+              const data = (await accountLogin(
+                row.original,
+                game.loginToken
+              )) as any;
               const cash = Array.isArray(data?.data)
                 ? data?.data[0].main_balance
                 : 0;
@@ -379,7 +385,9 @@ export const AccountTable: React.FC<any> = ({ accountType }) => {
                 Update account
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => openAccounts(rowData, false)}>
+              <DropdownMenuItem
+                onClick={() => openAccounts(rowData, game, false)}
+              >
                 Open account
               </DropdownMenuItem>
             </DropdownMenuContent>

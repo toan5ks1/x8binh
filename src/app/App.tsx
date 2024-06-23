@@ -2,6 +2,7 @@ import {
   Bot,
   ChevronDown,
   DollarSign,
+  Gamepad,
   Hand,
   Loader2,
   LogIn,
@@ -35,10 +36,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '../components/ui/tooltip';
-import { roomTypes } from '../lib/config';
+import { gameList, roomTypes } from '../lib/config';
 
 import { formatCurrency } from '../lib/utils';
-import { AppContext, defaultState } from '../renderer/providers/app';
+import { AppContext, GameProps, defaultState } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
 import { HomePage } from './pages/home';
 
@@ -46,13 +47,15 @@ export function App() {
   const {
     state,
     setState,
+    game,
+    setGame,
     initialRoom,
     crawingRoom,
     recreateTime,
     gameStatus,
     setGameStatus,
   } = useContext(AppContext);
-  const { accounts } = useAccountStore();
+  const { accounts, clearAccounts } = useAccountStore();
 
   const bots = accounts['SUB'].filter((item: any) => item.isSelected === true);
   const craws = accounts['BOT'].filter((item: any) => item.isSelected === true);
@@ -149,6 +152,11 @@ export function App() {
     }));
   };
 
+  const handleGameChange = (game: GameProps) => {
+    setGame(game);
+    clearAccounts();
+  };
+
   return (
     <div className="h-screen">
       <MainSetting setIsOpen={setIsOpenSheet} isOpen={isOpenSheet}>
@@ -195,6 +203,35 @@ export function App() {
                 </div>
 
                 <div className="flex gap-2 items-center">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-1 !border-[#fff]"
+                      >
+                        <Gamepad className="h-3.5 w-3.5" />
+                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                          {game.name}
+                        </span>
+                        <ChevronDown />
+                      </Button>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Game</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {gameList.map((g) => (
+                        <DropdownMenuCheckboxItem
+                          key={g.name}
+                          checked={game.name === g.name}
+                          onSelect={() => handleGameChange(g)}
+                        >
+                          {g.name}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <RadioGroup
                     defaultValue={cardDeck}
                     onValueChange={(value) => {

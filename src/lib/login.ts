@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { loginTokenB52, loginUrlB52 } from './config';
+import { GameProps } from '../renderer/providers/app';
 
 export interface LoginResponseDto {
   avatar?: string;
@@ -55,10 +55,11 @@ export const getAddNameTagCommand = (main: any) => {
 };
 
 export const login = async (
-  botInfo: LoginParams
+  botInfo: LoginParams,
+  loginTokenUrl: string
 ): Promise<LoginResponse | null> => {
   try {
-    const response = await axios.get<LoginResponse>(loginTokenB52, {
+    const response = await axios.get<LoginResponse>(loginTokenUrl, {
       params: { fg: botInfo.fg, token: botInfo.token },
     });
     return response.data;
@@ -71,27 +72,9 @@ export const login = async (
   }
 };
 
-const loginPup = async (
-  botInfo: LoginParams
-): Promise<LoginResponse | null> => {
+export async function accountLogin(account: any, loginTokenUrl: string) {
   try {
-    const response = await axios.post<LoginResponse>(loginUrlB52, {
-      ...defaultLoginParams,
-      botInfo,
-    });
-    return response.data;
-  } catch (error) {
-    console.error(
-      'Login failed:',
-      axios.isAxiosError(error) ? error.response?.data : error
-    );
-    return null;
-  }
-};
-
-export async function accountLogin(account: any) {
-  try {
-    const res = await login(account);
+    const res = await login(account, loginTokenUrl);
     return res;
   } catch (err) {
     console.error('Error when calling accountLogin:', err);
@@ -99,8 +82,12 @@ export async function accountLogin(account: any) {
   }
 }
 
-export async function openAccounts(account: any, autoClose: boolean = true) {
-  await window.backend.sendMessage('open-accounts', account, autoClose);
+export async function openAccounts(
+  account: any,
+  game: GameProps,
+  autoClose: boolean = true
+) {
+  await window.backend.sendMessage('open-accounts', account, game, autoClose);
 }
 
 export function joinRoom(account: any, room?: number): void {
@@ -113,20 +100,17 @@ export function joinRoom(account: any, room?: number): void {
   }
 }
 
-export function fillLoginParam(account: any) {
-  window.backend.sendMessage(
-    'execute-script',
-    account,
-    getAddNameTagCommand(account)
-  );
+export function loginScript(account: any, loginUI: GameProps['loginUI']) {
+  return `
+    var myDiv = document.createElement("div");
+    myDiv.id = 'div_id';
+    myDiv.innerHTML = '<h3 style="color:#fff;position:fixed;top:0;right:0;z-index:99999;background:#020817;padding:10px;border: solid 1px #1E293B; border-radius: 5px">${account.username} </h3>';
+    document.body.appendChild(myDiv);
 
-  window.backend.sendMessage(
-    'execute-script',
-    account,
-    `
-      if(!btnDangnhap){
-        var btnDangnhap = cc.find("Canvas/MainUIParent/NewLobby/Footder/footerBar/PublicLobby/layout/dangNhap");
-      }
+    if(!btnDangnhap){
+      var btnDangnhap = cc.find("${loginUI.loginBtnDir}");
+      console.log("${loginUI.loginBtnDir}", btnDangnhap)
+    }
 
       if (btnDangnhap) {
         let touchStart = new cc.Touch(0, 0);
@@ -142,9 +126,7 @@ export function fillLoginParam(account: any) {
       }
       
       setTimeout(() => {
-          let pathUserName = "CommonPrefabs/PopupDangNhap/popup/TenDangNhap/Username";
-          let editBoxNodeUserName = cc.find(pathUserName);
-          console.log('editBoxNodeUserName', editBoxNodeUserName)
+          let editBoxNodeUserName = cc.find("${loginUI.usernameDir}");
           let editBoxUserName = editBoxNodeUserName.getComponent(cc.EditBox);
           if (editBoxUserName) {
               editBoxUserName.string = "${account.username}";
@@ -152,8 +134,7 @@ export function fillLoginParam(account: any) {
               console.log("Không tìm thấy component cc.EditBox trong node");
           }
 
-          let pathPass = "CommonPrefabs/PopupDangNhap/popup/Matkhau/Password";
-          let editBoxNodePass = cc.find(pathPass);
+          let editBoxNodePass = cc.find("${loginUI.passwordDir}");
           let editBoxPass = editBoxNodePass.getComponent(cc.EditBox);
           if (editBoxPass) {
               editBoxPass.string = "${account.password}";
@@ -161,7 +142,7 @@ export function fillLoginParam(account: any) {
               console.log("Không tìm thấy component cc.EditBox trong node");
           }
           setTimeout(() => {
-            let nodeXacNhan = cc.find("CommonPrefabs/PopupDangNhap/popup/BtnOk").getComponent(cc.Button);
+            let nodeXacNhan = cc.find("${loginUI.confirmBtnDir}").getComponent(cc.Button);
             if (nodeXacNhan) {
                 let touchStart = new cc.Touch(0, 0);
                 let touchEnd = new cc.Touch(0, 0);
@@ -175,6 +156,13 @@ export function fillLoginParam(account: any) {
             }
           }, 500)
       }, 500);
-      `
+      `;
+}
+
+export function fillLoginParam(account: any, loginUI: GameProps['loginUI']) {
+  window.backend.sendMessage(
+    'execute-script',
+    account,
+    loginScript(account, loginUI)
   );
 }

@@ -1,6 +1,10 @@
 import { toast } from '../components/toast/use-toast';
 
-const updateFile = async (accountsUpdate: any, accountType: string) => {
+const updateFile = async (
+  accountsUpdate: any,
+  accountType: string,
+  gameName: string
+) => {
   const accountsText = accountsUpdate
     .map(
       (account: {
@@ -19,7 +23,9 @@ const updateFile = async (accountsUpdate: any, accountType: string) => {
     window.backend.sendMessage(
       'update-file',
       accountsText,
-      [`account/${accountType.toLowerCase()}Account.txt`],
+      [
+        `account/${gameName.toLowerCase()}/${accountType.toLowerCase()}Account.txt`,
+      ],
       accountType
     );
 
@@ -30,12 +36,12 @@ const updateFile = async (accountsUpdate: any, accountType: string) => {
   }
 };
 
-const readFile = (accountType: string) => {
+const readFile = (accountType: string, gameName: string) => {
   window.backend.sendMessage(
     'read-file',
     [
       // `C:/Users/PC/AppData/Local/Programs/electron-react-boilerplate/resources/account/${accountType.toLowerCase()}Account.txt`,
-      `account/${accountType.toLowerCase()}Account.txt`,
+      `account/${gameName.toLowerCase()}/${accountType.toLowerCase()}Account.txt`,
     ],
     accountType
   );

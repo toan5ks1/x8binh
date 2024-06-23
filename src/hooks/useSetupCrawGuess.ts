@@ -1,6 +1,5 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { connectURLB52 } from '../lib/config';
 import { handleMessageCrawGuess } from '../lib/listeners/crawGuess';
 import {
   LoginParams,
@@ -11,7 +10,7 @@ import {
 import { AppContext } from '../renderer/providers/app';
 
 export function useSetupCrawGuess(bot: LoginParams) {
-  const { state, gameStatus, crawingRoom, setCrawingRoom } =
+  const { state, game, gameStatus, crawingRoom, setCrawingRoom } =
     useContext(AppContext);
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
@@ -24,7 +23,7 @@ export function useSetupCrawGuess(bot: LoginParams) {
   const iTimeRef = useRef(iTime);
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(
-    connectURLB52,
+    game.connectURL,
     {
       shouldReconnect: () => true,
       reconnectInterval: 3000,
@@ -91,7 +90,7 @@ export function useSetupCrawGuess(bot: LoginParams) {
   }, [shouldPingMaubinh]);
 
   const handleLoginClick = async () => {
-    login(bot)
+    login(bot, game.loginToken)
       .then((data: LoginResponse | null) => {
         if (data?.code === 200 && data?.data[0]) {
           const user = data?.data[0];

@@ -29,7 +29,7 @@ import {
 export const TerminalBoard: React.FC<any> = ({ main }) => {
   const { toast } = useToast();
   const [data, setData] = useState<unknown[]>([]);
-  const { state, setState, setInitialRoom, initialRoom } =
+  const { state, game, setState, setInitialRoom, initialRoom } =
     useContext(AppContext);
   const [isInLobby, setIsInLobby] = useState(false);
   const [currentSit, setCurrentSit] = useState('');
@@ -288,7 +288,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
   }, [autoInvite, main]);
 
   const onLogin = () => {
-    fillLoginParam(main);
+    fillLoginParam(main, game.loginUI);
   };
 
   useEffect(() => {
@@ -332,7 +332,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
             <Tooltip>
               <TooltipTrigger>
                 <div
-                  onClick={() => openAccounts(main)}
+                  onClick={() => openAccounts(main, game)}
                   style={{ fontFamily: 'monospace' }}
                   className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
                 >

@@ -1,7 +1,8 @@
 const { ipcMain } = require('electron');
 const puppeteer = require('puppeteer');
-import { connectURLB52, infoB52, loginUrlB52, webB52 } from '../../lib/config';
-import { joinLobbyScript, loginScript } from '../util';
+import { loginScript } from '../../lib/login';
+import { GameProps } from '../../renderer/providers/app';
+import { joinLobbyScript } from '../util';
 
 interface WebSocketCreatedData {
   requestId: string;
@@ -19,7 +20,11 @@ export const setupAccountHandlers = (
 ) => {
   let puppeteerInstances: any[] = [];
 
-  async function startPuppeteerForAccount(account: any, autoClose: boolean) {
+  async function startPuppeteerForAccount(
+    account: any,
+    game: GameProps,
+    autoClose: boolean
+  ) {
     try {
       const browser = await puppeteer.launch({
         headless: false,
@@ -64,7 +69,7 @@ export const setupAccountHandlers = (
       client.on(
         'Network.webSocketCreated',
         ({ requestId, url }: WebSocketCreatedData) => {
-          if (url.includes(connectURLB52)) {
+          if (url.includes(game.connectURL)) {
             specificWebSocketRequestId = requestId;
           }
         }
@@ -101,14 +106,28 @@ export const setupAccountHandlers = (
       page.on('response', async (response: any) => {
         const url = response.url();
 
-        if (url === infoB52) {
-          await page.evaluate(loginScript(account));
+        if (url === game.load && game.name === 'B52') {
+          await page.evaluate(loginScript(account, game.loginUI));
           if (account.accountType === 'main') {
             await page.evaluate(joinLobbyScript);
           }
         }
 
-        if (url === loginUrlB52) {
+        if (url === game.info && game.name === 'HIT') {
+          await page.evaluate(loginScript(account, game.loginUI));
+        }
+
+        // cheat hit
+        if (
+          url === 'https://bodergatez.dsrcgoms.net/inbox/count.aspx' &&
+          game.name === 'HIT'
+        ) {
+          if (account.accountType === 'main') {
+            await page.evaluate(joinLobbyScript);
+          }
+        }
+
+        if (url === game.loginUrl) {
           if (account.accountType !== 'main') {
             const responseBody = await response.json();
             if (responseBody.data?.length) {
@@ -127,7 +146,7 @@ export const setupAccountHandlers = (
         }
       });
 
-      await page.goto(webB52);
+      await page.goto(game.web);
 
       await page.waitForNavigation({ waitUntil: 'networkidle2' });
 
@@ -138,8 +157,8 @@ export const setupAccountHandlers = (
     }
   }
 
-  ipcMain.on('open-accounts', async (event, account, autoClose) => {
-    await startPuppeteerForAccount(account, autoClose);
+  ipcMain.on('open-accounts', async (event, account, game, autoClose) => {
+    await startPuppeteerForAccount(account, game, autoClose);
     event.reply('open-accounts-reply', 'All accounts have been opened.');
   });
   ipcMain.on('close-account', async (event, username) => {

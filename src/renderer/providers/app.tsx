@@ -5,7 +5,7 @@ import {
   SetStateAction,
   useState,
 } from 'react';
-import { roomTypes } from '../../lib/config';
+import { gameList, roomTypes } from '../../lib/config';
 import { defaultRoom } from '../../lib/utils';
 
 interface AppProviderProps {
@@ -66,6 +66,22 @@ export interface GameStatus {
   isPaused?: boolean;
 }
 
+export interface GameProps {
+  name: string;
+  loginToken: string;
+  loginUrl: string;
+  connectURL: string;
+  web: string;
+  info: string;
+  load: string;
+  loginUI: {
+    loginBtnDir: string;
+    usernameDir: string;
+    passwordDir: string;
+    confirmBtnDir: string;
+  };
+}
+
 export const defaultState = {
   currentGame: { number: 0, sheet: {} },
   recreateTime: 0,
@@ -76,6 +92,8 @@ export const defaultState = {
 interface AppContextProps {
   state: StateProps;
   setState: Dispatch<SetStateAction<StateProps>>;
+  game: GameProps;
+  setGame: Dispatch<SetStateAction<GameProps>>;
   gameStatus: GameStatus;
   setGameStatus: Dispatch<SetStateAction<GameStatus>>;
   initialRoom: Room;
@@ -88,11 +106,13 @@ interface AppContextProps {
 
 export const AppContext = createContext<AppContextProps>({
   state: defaultState,
+  game: gameList[0],
   gameStatus: {},
   initialRoom: defaultRoom,
   crawingRoom: defaultRoom,
   recreateTime: 0,
   setState: () => {},
+  setGame: () => {},
   setGameStatus: () => {},
   setInitialRoom: () => {},
   setCrawingRoom: () => {},
@@ -101,6 +121,7 @@ export const AppContext = createContext<AppContextProps>({
 
 const AppProvider = ({ children }: AppProviderProps) => {
   const [state, setState] = useState(defaultState);
+  const [game, setGame] = useState(gameList[0]);
   const [gameStatus, setGameStatus] = useState({});
   const [initialRoom, setInitialRoom] = useState(defaultRoom);
   const [crawingRoom, setCrawingRoom] = useState(defaultRoom);
@@ -112,6 +133,8 @@ const AppProvider = ({ children }: AppProviderProps) => {
       value={{
         state,
         setState,
+        game,
+        setGame,
         gameStatus,
         setGameStatus,
         initialRoom,

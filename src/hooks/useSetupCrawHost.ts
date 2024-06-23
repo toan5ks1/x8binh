@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { toast } from '../components/toast/use-toast';
 import { binhlung } from '../lib/binhlung';
-import { connectURLB52, roomTypes } from '../lib/config';
+import { roomTypes } from '../lib/config';
 import { handleMessageCrawHost } from '../lib/listeners/crawHost';
 import {
   LoginParams,
@@ -17,6 +17,7 @@ export function useSetupCrawHost(bot: LoginParams) {
   const {
     state,
     setState,
+    game,
     gameStatus,
     setGameStatus,
     crawingRoom,
@@ -35,7 +36,7 @@ export function useSetupCrawHost(bot: LoginParams) {
   const iTimeRef = useRef(iTime);
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(
-    connectURLB52,
+    game.connectURL,
     {
       shouldReconnect: () => true,
       reconnectInterval: 3000,
@@ -105,7 +106,7 @@ export function useSetupCrawHost(bot: LoginParams) {
   }, [shouldPingMaubinh]);
 
   const handleLoginClick = async () => {
-    login(bot)
+    login(bot, game.loginToken)
       .then((data: LoginResponse | null) => {
         if (data?.code === 200 && data?.data[0]) {
           const user = data?.data[0];
