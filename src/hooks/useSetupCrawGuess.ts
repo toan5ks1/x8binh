@@ -131,14 +131,18 @@ export function useSetupCrawGuess(bot: LoginParams) {
 
   const handleCreateRoom = () => {
     sendMessage(
-      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":${state.roomType},"Mu":4,"iJ":true,"inc":false,"pwd":""}]`
+      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":${
+        state.roomType
+      },"Mu":4,"iJ":true,"inc":false,"pwd":"${game.usePw ? 'hitplay' : ''}"}]`
     );
   };
 
   // Guess join initial room
   useEffect(() => {
     if (!state.foundAt && crawingRoom.shouldGuessJoin && !gameStatus.isPaused) {
-      sendMessage(`[3,"Simms",${crawingRoom.id},"",true]`);
+      sendMessage(
+        `[3,"Simms",${crawingRoom.id},"${game.usePw ? 'hitplay' : ''}",true]`
+      );
     }
   }, [crawingRoom.shouldGuessJoin]);
 
@@ -168,7 +172,9 @@ export function useSetupCrawGuess(bot: LoginParams) {
       crawingRoom.isGuessOut &&
       state.foundAt
     ) {
-      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+      sendMessage(
+        `[3,"Simms",${state.foundAt},"${game.usePw ? 'hitplay' : ''}",true]`
+      );
     }
     if (state.foundAt && gameStatus.isPaused && crawingRoom.isFinish) {
       handleLeaveRoom(state.foundAt);

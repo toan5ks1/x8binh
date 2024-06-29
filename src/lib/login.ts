@@ -90,14 +90,20 @@ export async function openAccounts(
   await window.backend.sendMessage('open-accounts', account, game, autoClose);
 }
 
-export function joinRoom(account: any, room?: number): void {
-  if (room) {
-    window.backend.sendMessage(
-      'execute-script',
-      account,
-      `__require('GamePlayManager').default.getInstance().joinRoom(${room},0,'',true);`
-    );
-  }
+export function joinRoom(account: any, roomId: number): void {
+  window.backend.sendMessage(
+    'execute-script',
+    account,
+    `__require('GamePlayManager').default.getInstance().joinRoom(${roomId},0,'',true);`
+  );
+}
+
+export function joinRoomWithId(account: any, roomId: number): void {
+  window.backend.sendMessage(
+    'execute-script',
+    account,
+    `__require('GamePlayManager').default.getInstance().joinRoomWithGameID(${roomId},0,"",4);`
+  );
 }
 
 export function loginScript(account: any, loginUI: GameProps['loginUI']) {

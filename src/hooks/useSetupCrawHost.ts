@@ -75,6 +75,7 @@ export function useSetupCrawHost(bot: LoginParams) {
         setUser,
         state,
         gameStatus,
+        game,
       });
 
       newMsg && setMessageHistory((msgs) => [...msgs, newMsg]);
@@ -148,7 +149,9 @@ export function useSetupCrawHost(bot: LoginParams) {
 
   const handleCreateRoom = () => {
     sendMessage(
-      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":${roomTypes[0]},"Mu":4,"iJ":true,"inc":false,"pwd":""}]`
+      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":${
+        roomTypes[0]
+      },"Mu":4,"iJ":true,"inc":false,"pwd":"${game.usePw ? 'hitplay' : ''}"}]`
     );
   };
 
@@ -253,7 +256,9 @@ export function useSetupCrawHost(bot: LoginParams) {
       crawingRoom.isHostOut &&
       state.foundAt
     ) {
-      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+      sendMessage(
+        `[3,"Simms",${state.foundAt},"${game.usePw ? 'hitplay' : ''}",true]`
+      );
     }
   }, [gameStatus.isPaused]);
 

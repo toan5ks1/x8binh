@@ -50,7 +50,6 @@ export const HomePage = ({ cardDeck, refreshTime }: HomePageProps) => {
 
   useEffect(() => {
     if (refreshTime > 0) {
-      console.log(refreshTime);
       setCards([]);
     }
   }, [refreshTime]);

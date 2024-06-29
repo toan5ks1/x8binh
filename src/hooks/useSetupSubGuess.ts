@@ -146,7 +146,9 @@ export function useSetupSubGuess(bot: LoginParams) {
   // Guess join initial room
   useEffect(() => {
     if (!state.foundAt && initialRoom.shouldGuessJoin) {
-      sendMessage(`[3,"Simms",${initialRoom.id},"",true]`);
+      game.needJoinID
+        ? sendMessage(`[8,"Simms",${initialRoom.id},"",4]`)
+        : sendMessage(`[3,"Simms",${initialRoom.id},"",true]`);
     }
   }, [initialRoom.shouldGuessJoin]);
 
@@ -165,7 +167,9 @@ export function useSetupSubGuess(bot: LoginParams) {
   // Join found room
   useEffect(() => {
     if (state.foundAt && initialRoom.isGuessOut && !gameStatus.isPaused) {
-      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+      sendMessage(
+        `[3,"Simms",${state.foundAt},"${game.usePw ? 'hitplay' : ''}",true]`
+      );
     }
   }, [state.foundAt, initialRoom.isGuessOut]);
 
@@ -183,7 +187,9 @@ export function useSetupSubGuess(bot: LoginParams) {
       initialRoom.isGuessOut &&
       state.foundAt
     ) {
-      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+      sendMessage(
+        `[3,"Simms",${state.foundAt},"${game.usePw ? 'hitplay' : ''}",true]`
+      );
     }
     if (state.foundAt && gameStatus.isPaused && crawingRoom.isFinish) {
       handleLeaveRoom(state.foundAt);

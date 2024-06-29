@@ -155,6 +155,7 @@ export function App() {
   const handleGameChange = (game: GameProps) => {
     setGame(game);
     clearAccounts();
+    onRefreshBot();
   };
 
   return (

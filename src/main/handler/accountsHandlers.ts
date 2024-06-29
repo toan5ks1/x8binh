@@ -122,7 +122,8 @@ export const setupAccountHandlers = (
           url === 'https://bodergatez.dsrcgoms.net/inbox/count.aspx' &&
           game.name === 'HIT'
         ) {
-          if (account.accountType === 'main') {
+          if (account.accountType === 'main' && !account.isJoinLobby) {
+            account.isJoinLobby = true;
             await page.evaluate(joinLobbyScript);
           }
         }

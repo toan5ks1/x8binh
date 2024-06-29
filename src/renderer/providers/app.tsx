@@ -80,6 +80,8 @@ export interface GameProps {
     passwordDir: string;
     confirmBtnDir: string;
   };
+  usePw?: boolean;
+  needJoinID?: boolean;
 }
 
 export const defaultState = {

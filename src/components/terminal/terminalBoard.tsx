@@ -332,7 +332,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
             <Tooltip>
               <TooltipTrigger>
                 <div
-                  onClick={() => openAccounts(main, game)}
+                  onClick={() => openAccounts(main, game, false)}
                   style={{ fontFamily: 'monospace' }}
                   className="rounded-[5px] px-[5px] py-[0px] h-full bg-white flex items-center hover:bg-slate-400 justify-center cursor-pointer hover:opacity-70"
                 >

@@ -6,6 +6,7 @@ import {
   LoginResponse,
   LoginResponseDto,
   joinRoom,
+  joinRoomWithId,
   login,
 } from '../lib/login';
 import { AppContext } from '../renderer/providers/app';
@@ -176,7 +177,9 @@ export function useSetupSubHost(bot: LoginParams) {
   // Join found room
   useEffect(() => {
     if (state.foundAt && initialRoom.isHostOut && !gameStatus.isPaused) {
-      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+      sendMessage(
+        `[3,"Simms",${state.foundAt},"${game.usePw ? 'hitplay' : ''}",true]`
+      );
     }
   }, [state.foundAt, initialRoom.isHostOut]);
 
@@ -194,7 +197,9 @@ export function useSetupSubHost(bot: LoginParams) {
       initialRoom.isHostOut &&
       state.foundAt
     ) {
-      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+      sendMessage(
+        `[3,"Simms",${state.foundAt},"${game.usePw ? 'hitplay' : ''}",true]`
+      );
     }
     if (state.foundAt && gameStatus.isPaused && crawingRoom.isFinish) {
       handleLeaveRoom(state.foundAt);
@@ -204,7 +209,9 @@ export function useSetupSubHost(bot: LoginParams) {
   // // Call sub join
   useEffect(() => {
     if (state.targetAt && subMain) {
-      joinRoom(subMain, state.targetAt);
+      game.needJoinID
+        ? joinRoomWithId(subMain, state.targetAt)
+        : joinRoom(subMain, state.targetAt);
     }
   }, [state.targetAt]);
 

@@ -1,6 +1,11 @@
 import { Dispatch, SetStateAction } from 'react';
 import { SendMessage } from 'react-use-websocket';
-import { GameStatus, Room, StateProps } from '../../renderer/providers/app';
+import {
+  GameProps,
+  GameStatus,
+  Room,
+  StateProps,
+} from '../../renderer/providers/app';
 import { binhlung } from '../binhlung';
 import { LoginResponseDto } from '../login';
 import { defaultRoom, findPosition, updateCardGame } from '../utils';
@@ -15,6 +20,7 @@ interface HandleCRMessageProps {
   setUser: Dispatch<SetStateAction<LoginResponseDto | undefined>>;
   state: StateProps;
   gameStatus: GameStatus;
+  game: GameProps;
 }
 
 export function handleMessageCrawHost({
@@ -26,6 +32,7 @@ export function handleMessageCrawHost({
   gameStatus,
   user,
   setUser,
+  game,
 }: HandleCRMessageProps) {
   let returnMsg;
   const { fullname } = user;
@@ -56,7 +63,7 @@ export function handleMessageCrawHost({
         returnMsg = `Created room ${roomId}`;
 
         // Host join
-        sendMessage(`[3,"Simms",${roomId},""]`);
+        sendMessage(`[3,"Simms",${roomId},"${game.usePw ? 'hitplay' : ''}"]`);
       } else if (message[1]?.cs?.length > 0) {
         const idxToAdd = findPosition(message[1].lpi, user.uid);
 
