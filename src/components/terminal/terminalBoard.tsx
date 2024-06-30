@@ -82,6 +82,31 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
       );
     }
   }
+  function joinRoomID(account: any, roomId: number): void {
+    state.antiRoom = roomId;
+    window.backend.sendMessage(
+      'execute-script',
+      account,
+      `__require('GamePlayManager').default.getInstance().joinRoom(${roomId},0,'',true);`
+    );
+  }
+  async function outInRoomID(account: any): Promise<void> {
+    await window.backend.sendMessage(
+      'execute-script',
+      account,
+      `__require('GameController').default.prototype.sendLeaveRoom();`
+    );
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    if (state.antiRoom) {
+      window.backend.sendMessage(
+        'execute-script',
+        account,
+        `__require('GamePlayManager').default.getInstance().joinRoom(${state.antiRoom},0,'',true);`
+      );
+    } else {
+      console.log('not found room');
+    }
+  }
 
   function checkPosition(account: any): void {
     window.backend.sendMessage('check-position', account, checkPositionCommand);
@@ -128,12 +153,7 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
     if (username === main.username) {
       if (!data.includes('[6,1') && !data.includes('["7","Simms",')) {
         const parsedData = parseData(data);
-        // if (parsedData[1]?.ri?.rid) {
-        //   setCurrentRoom(parsedData[1].ri.rid.toString());
-        // }
-        // if (parsedData[0] == 3) {
-        //   setCurrentRoom(parsedData[3].toString());
-        // }
+
         if (parsedData[0] == 4 && parsedData[1] == true) {
           // setCurrentRoom('');
           // setCurrentSit('');
@@ -149,6 +169,17 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
           // setCurrentRoom('');
           // setCurrentSit('');
         }
+        if (
+          parsedData[0] == 5 &&
+          parsedData[1].cmd === 305 &&
+          parsedData[1]?.ri?.gid == 4 &&
+          parsedData[1]?.ri?.b <= 5000
+        ) {
+          console.log(
+            `AntiRoom: ${parsedData[1]?.ri?.rid} data: ${parsedData[1]?.ri}`
+          );
+          joinRoomID(main, parsedData[1]?.ri?.rid);
+        }
         if (parsedData[0] == 3 && parsedData[1] === true) {
           setInitialRoom((pre) => ({ ...pre, isSubJoin: true }));
         }
@@ -158,6 +189,8 @@ export const TerminalBoard: React.FC<any> = ({ main }) => {
             // console.log('Đang trong ván');
           }
           if (parsedData[1].cmd === 205) {
+            console.log('ss', state.antiRoom);
+            outInRoomID(main);
           }
           if (parsedData[1].p) {
             if (parsedData[1].p.uid) {

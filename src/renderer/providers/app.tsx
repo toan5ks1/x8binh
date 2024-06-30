@@ -59,6 +59,7 @@ export interface StateProps {
   roomType: number;
   loggedAccount: string[];
   isCheckDone?: boolean;
+  antiRoom?: number;
 }
 
 export interface GameStatus {

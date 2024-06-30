@@ -14,8 +14,6 @@ import {
 } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import { AccountSection } from '../components/account/accountSection';
-import { CoupleCrawStatus } from '../components/bots/coupleCraw';
-import { CoupleSubStatus } from '../components/bots/coupleSub';
 import BotSetting from '../components/menu/botSheet';
 import MainSetting from '../components/menu/mainSetting';
 import { Badge } from '../components/ui/badge';
@@ -38,6 +36,7 @@ import {
 } from '../components/ui/tooltip';
 import { gameList, roomTypes } from '../lib/config';
 
+import { AntiBotStatus } from '../components/bots/antiBot';
 import { formatCurrency } from '../lib/utils';
 import { AppContext, GameProps, defaultState } from '../renderer/providers/app';
 import useAccountStore from '../store/accountStore';
@@ -184,7 +183,7 @@ export function App() {
                   >
                     <ScrollArea className="h-full rounded-md flex flex-col">
                       <div className="flex flex-col  text-white space-y-4 flex-1 w-full">
-                        <CoupleSubStatus
+                        {/* <CoupleSubStatus
                           craw1={bots[0]}
                           craw2={bots[1]}
                           shouldLogin={shouldLogin}
@@ -194,6 +193,12 @@ export function App() {
                         <CoupleCrawStatus
                           craw1={craws[0]}
                           craw2={craws[1]}
+                          shouldLogin={shouldLogin}
+                          shouldCreatRoom={shouldCreatRoom}
+                          shouldDisconnect={shouldDisconnect}
+                        /> */}
+                        <AntiBotStatus
+                          craw1={bots[0]}
                           shouldLogin={shouldLogin}
                           shouldCreatRoom={shouldCreatRoom}
                           shouldDisconnect={shouldDisconnect}
