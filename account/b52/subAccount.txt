@@ -1,0 +1,2 @@
+vipclass1|vipclass1|1ad9de90c3445472626d6bd91df6234a|sub|true
+vipprox1|vipprox1|34e3113a180bfff193c83bc09ac66ea3|sub|true

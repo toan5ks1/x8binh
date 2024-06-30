@@ -1,6 +1,5 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { connectURLB52 } from '../lib/config';
 import { handleMessageSubGuess } from '../lib/listeners/subGuess';
 import {
   LoginParams,
@@ -14,6 +13,7 @@ export function useSetupSubGuess(bot: LoginParams) {
   const {
     state,
     gameStatus,
+    game,
     initialRoom,
     setInitialRoom,
     setCrawingRoom,
@@ -30,7 +30,7 @@ export function useSetupSubGuess(bot: LoginParams) {
   const iTimeRef = useRef(iTime);
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(
-    connectURLB52,
+    game.connectURL,
     {
       shouldReconnect: () => true,
       reconnectInterval: 3000,
@@ -66,6 +66,7 @@ export function useSetupSubGuess(bot: LoginParams) {
         setCrawingRoom,
         sendMessage,
         user,
+        setUser,
         state,
       });
 
@@ -97,13 +98,13 @@ export function useSetupSubGuess(bot: LoginParams) {
   }, [shouldPingMaubinh]);
 
   const handleLoginClick = async () => {
-    login(bot)
+    login(bot, game.loginToken)
       .then((data: LoginResponse | null) => {
         if (data?.code === 200 && data?.data[0]) {
           const user = data?.data[0];
           setUser(user);
           connectMainGame(user);
-        } else if (data?.code === 404) {
+        } else if (data?.code === 404 || data?.code === 152) {
           setMessageHistory((msgs) => [
             ...msgs,
             data?.message ?? 'Login failed',
@@ -145,7 +146,9 @@ export function useSetupSubGuess(bot: LoginParams) {
   // Guess join initial room
   useEffect(() => {
     if (!state.foundAt && initialRoom.shouldGuessJoin) {
-      sendMessage(`[3,"Simms",${initialRoom.id},"",true]`);
+      game.needJoinID
+        ? sendMessage(`[8,"Simms",${initialRoom.id},"",4]`)
+        : sendMessage(`[3,"Simms",${initialRoom.id},"",true]`);
     }
   }, [initialRoom.shouldGuessJoin]);
 
@@ -164,7 +167,9 @@ export function useSetupSubGuess(bot: LoginParams) {
   // Join found room
   useEffect(() => {
     if (state.foundAt && initialRoom.isGuessOut && !gameStatus.isPaused) {
-      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+      sendMessage(
+        `[3,"Simms",${state.foundAt},"${game.usePw ? 'hitplay' : ''}",true]`
+      );
     }
   }, [state.foundAt, initialRoom.isGuessOut]);
 
@@ -182,7 +187,9 @@ export function useSetupSubGuess(bot: LoginParams) {
       initialRoom.isGuessOut &&
       state.foundAt
     ) {
-      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+      sendMessage(
+        `[3,"Simms",${state.foundAt},"${game.usePw ? 'hitplay' : ''}",true]`
+      );
     }
     if (state.foundAt && gameStatus.isPaused && crawingRoom.isFinish) {
       handleLeaveRoom(state.foundAt);

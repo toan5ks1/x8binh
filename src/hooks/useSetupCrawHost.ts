@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 import { toast } from '../components/toast/use-toast';
 import { binhlung } from '../lib/binhlung';
-import { connectURLB52, roomTypes } from '../lib/config';
+import { roomTypes } from '../lib/config';
 import { handleMessageCrawHost } from '../lib/listeners/crawHost';
 import {
   LoginParams,
@@ -10,13 +10,14 @@ import {
   LoginResponseDto,
   login,
 } from '../lib/login';
-import { isFoundCards } from '../lib/utils';
+import { isAbleToCheck, isFoundCards } from '../lib/utils';
 import { AppContext } from '../renderer/providers/app';
 
 export function useSetupCrawHost(bot: LoginParams) {
   const {
     state,
     setState,
+    game,
     gameStatus,
     setGameStatus,
     crawingRoom,
@@ -35,7 +36,7 @@ export function useSetupCrawHost(bot: LoginParams) {
   const iTimeRef = useRef(iTime);
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(
-    connectURLB52,
+    game.connectURL,
     {
       shouldReconnect: () => true,
       reconnectInterval: 3000,
@@ -71,8 +72,10 @@ export function useSetupCrawHost(bot: LoginParams) {
         setCrawingRoom,
         sendMessage,
         user,
+        setUser,
         state,
         gameStatus,
+        game,
       });
 
       newMsg && setMessageHistory((msgs) => [...msgs, newMsg]);
@@ -104,13 +107,13 @@ export function useSetupCrawHost(bot: LoginParams) {
   }, [shouldPingMaubinh]);
 
   const handleLoginClick = async () => {
-    login(bot)
+    login(bot, game.loginToken)
       .then((data: LoginResponse | null) => {
         if (data?.code === 200 && data?.data[0]) {
           const user = data?.data[0];
           setUser(user);
           connectMainGame(user);
-        } else if (data?.code === 404) {
+        } else if (data?.code === 404 || data?.code === 152) {
           setMessageHistory((msgs) => [
             ...msgs,
             data?.message ?? 'Login failed',
@@ -146,7 +149,9 @@ export function useSetupCrawHost(bot: LoginParams) {
 
   const handleCreateRoom = () => {
     sendMessage(
-      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":${roomTypes[0]},"Mu":4,"iJ":true,"inc":false,"pwd":""}]`
+      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":${
+        roomTypes[0]
+      },"Mu":4,"iJ":true,"inc":false,"pwd":"${game.usePw ? 'hitplay' : ''}"}]`
     );
   };
 
@@ -161,8 +166,8 @@ export function useSetupCrawHost(bot: LoginParams) {
   useEffect(() => {
     if (
       !state.foundAt &&
-      initialRoom.cardGame[0]?.length === 2 &&
-      crawingRoom.cardGame[0]?.length === 2
+      isAbleToCheck(initialRoom.cardGame[0]) &&
+      isAbleToCheck(crawingRoom.cardGame[0])
     ) {
       if (isFoundCards(initialRoom.cardGame[0], crawingRoom.cardGame[0])) {
         setState((pre) => ({
@@ -251,7 +256,9 @@ export function useSetupCrawHost(bot: LoginParams) {
       crawingRoom.isHostOut &&
       state.foundAt
     ) {
-      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+      sendMessage(
+        `[3,"Simms",${state.foundAt},"${game.usePw ? 'hitplay' : ''}",true]`
+      );
     }
   }, [gameStatus.isPaused]);
 

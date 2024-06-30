@@ -1,6 +1,5 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { connectURLB52 } from '../lib/config';
 import { handleMessageCrawGuess } from '../lib/listeners/crawGuess';
 import {
   LoginParams,
@@ -11,7 +10,7 @@ import {
 import { AppContext } from '../renderer/providers/app';
 
 export function useSetupCrawGuess(bot: LoginParams) {
-  const { state, gameStatus, crawingRoom, setCrawingRoom } =
+  const { state, game, gameStatus, crawingRoom, setCrawingRoom } =
     useContext(AppContext);
 
   const [user, setUser] = useState<LoginResponseDto | undefined>(undefined);
@@ -24,7 +23,7 @@ export function useSetupCrawGuess(bot: LoginParams) {
   const iTimeRef = useRef(iTime);
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(
-    connectURLB52,
+    game.connectURL,
     {
       shouldReconnect: () => true,
       reconnectInterval: 3000,
@@ -59,6 +58,7 @@ export function useSetupCrawGuess(bot: LoginParams) {
         setCrawingRoom,
         sendMessage,
         user,
+        setUser,
         state,
       });
 
@@ -90,13 +90,13 @@ export function useSetupCrawGuess(bot: LoginParams) {
   }, [shouldPingMaubinh]);
 
   const handleLoginClick = async () => {
-    login(bot)
+    login(bot, game.loginToken)
       .then((data: LoginResponse | null) => {
         if (data?.code === 200 && data?.data[0]) {
           const user = data?.data[0];
           setUser(user);
           connectMainGame(user);
-        } else if (data?.code === 404) {
+        } else if (data?.code === 404 || data?.code === 152) {
           setMessageHistory((msgs) => [
             ...msgs,
             data?.message ?? 'Login failed',
@@ -131,14 +131,18 @@ export function useSetupCrawGuess(bot: LoginParams) {
 
   const handleCreateRoom = () => {
     sendMessage(
-      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":${state.roomType},"Mu":4,"iJ":true,"inc":false,"pwd":""}]`
+      `[6,"Simms","channelPlugin",{"cmd":308,"aid":1,"gid":4,"b":${
+        state.roomType
+      },"Mu":4,"iJ":true,"inc":false,"pwd":"${game.usePw ? 'hitplay' : ''}"}]`
     );
   };
 
   // Guess join initial room
   useEffect(() => {
     if (!state.foundAt && crawingRoom.shouldGuessJoin && !gameStatus.isPaused) {
-      sendMessage(`[3,"Simms",${crawingRoom.id},"",true]`);
+      sendMessage(
+        `[3,"Simms",${crawingRoom.id},"${game.usePw ? 'hitplay' : ''}",true]`
+      );
     }
   }, [crawingRoom.shouldGuessJoin]);
 
@@ -168,7 +172,9 @@ export function useSetupCrawGuess(bot: LoginParams) {
       crawingRoom.isGuessOut &&
       state.foundAt
     ) {
-      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+      sendMessage(
+        `[3,"Simms",${state.foundAt},"${game.usePw ? 'hitplay' : ''}",true]`
+      );
     }
     if (state.foundAt && gameStatus.isPaused && crawingRoom.isFinish) {
       handleLeaveRoom(state.foundAt);

@@ -13,10 +13,16 @@ import {
 import { Label } from '../../components/ui/label';
 import { Table, TableBody, TableRow } from '../../components/ui/table';
 import { getRandomCards } from '../../lib/card';
+import { isRoomFull } from '../../lib/utils';
 import { AppContext } from '../../renderer/providers/app';
 import useAccountStore from '../../store/accountStore';
 
-export const HomePage = (cardDeck: any) => {
+interface HomePageProps {
+  cardDeck: string;
+  refreshTime: number;
+}
+
+export const HomePage = ({ cardDeck, refreshTime }: HomePageProps) => {
   const [cards, setCards] = useState<number[][]>([]);
   const { state, crawingRoom } = useContext(AppContext);
 
@@ -27,28 +33,26 @@ export const HomePage = (cardDeck: any) => {
       const lastIndex = desk.length - 1;
       const lastGame = desk[lastIndex];
 
-      if (lastIndex > 0 && cards.length === lastIndex - 1) {
+      if (lastGame?.length === 4 && isRoomFull(lastGame)) {
         const mappedCard = lastGame.map((gameCard) => gameCard.cs);
         const boBai: number[] = [];
 
-        if (mappedCard.length === 4) {
-          for (let i = 0; i < 13; i++) {
-            boBai.push(mappedCard[0][i]);
-            boBai.push(mappedCard[1][i]);
-            boBai.push(mappedCard[2][i]);
-            boBai.push(mappedCard[3][i]);
-          }
-          setCards((pre) => [...pre, boBai]);
+        for (let i = 0; i < 13; i++) {
+          boBai.push(mappedCard[0][i]);
+          boBai.push(mappedCard[1][i]);
+          boBai.push(mappedCard[2][i]);
+          boBai.push(mappedCard[3][i]);
         }
+        setCards((pre) => [...pre, boBai]);
       }
     }
   }, [state.foundAt, crawingRoom.cardGame]);
 
   useEffect(() => {
-    if (state.shouldDisconnect) {
+    if (refreshTime > 0) {
       setCards([]);
     }
-  }, [state.shouldDisconnect]);
+  }, [refreshTime]);
 
   const addRandomCards = () => {
     setCards((prevCards) => [...prevCards, getRandomCards()]);
@@ -79,7 +83,7 @@ export const HomePage = (cardDeck: any) => {
                     <BoardCard
                       cards={card}
                       indexProps={index}
-                      numPlayers={cardDeck.cardDeck}
+                      numPlayers={cardDeck}
                       currentGame={state.currentGame}
                     />
                   </TableRow>

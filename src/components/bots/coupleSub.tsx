@@ -9,14 +9,12 @@ export const CoupleSubStatus = ({
   craw2,
   shouldLogin,
   shouldCreatRoom,
-  shouldLeave,
   shouldDisconnect,
 }: BotStatusProps) => {
   const {
     user: user1,
     messageHistory: messageHistoryBot1,
     setMessageHistory: setMessageHistoryBot1,
-    handleLeaveRoom: handleLeaveRoomBot1,
     connectionStatus: connectionStatusBot1,
     handleLoginClick: loginBot1,
     handleCreateRoom: handleCreateRoomBot1,
@@ -27,7 +25,6 @@ export const CoupleSubStatus = ({
     user: user2,
     messageHistory: messageHistoryBot2,
     setMessageHistory: setMessageHistoryBot2,
-    handleLeaveRoom: handleLeaveRoomBot2,
     connectionStatus: connectionStatusBot2,
     handleLoginClick: loginBot2,
     disconnectGame: disconnectBot2,
@@ -45,13 +42,6 @@ export const CoupleSubStatus = ({
       handleCreateRoomBot1();
     }
   }, [shouldCreatRoom]);
-
-  useEffect(() => {
-    if (shouldLeave) {
-      handleLeaveRoomBot1();
-      handleLeaveRoomBot2();
-    }
-  }, [shouldLeave]);
 
   useEffect(() => {
     if (shouldDisconnect) {

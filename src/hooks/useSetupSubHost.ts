@@ -1,12 +1,12 @@
 import { useContext, useEffect, useRef, useState } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
-import { connectURLB52 } from '../lib/config';
 import { handleMessageSubHost } from '../lib/listeners/subHost';
 import {
   LoginParams,
   LoginResponse,
   LoginResponseDto,
   joinRoom,
+  joinRoomWithId,
   login,
 } from '../lib/login';
 import { AppContext } from '../renderer/providers/app';
@@ -16,6 +16,7 @@ export function useSetupSubHost(bot: LoginParams) {
   const {
     state,
     gameStatus,
+    game,
     initialRoom,
     setInitialRoom,
     setCrawingRoom,
@@ -34,7 +35,7 @@ export function useSetupSubHost(bot: LoginParams) {
   const iTimeRef = useRef(iTime);
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(
-    connectURLB52,
+    game.connectURL,
     {
       shouldReconnect: () => true,
       reconnectInterval: 3000,
@@ -71,6 +72,7 @@ export function useSetupSubHost(bot: LoginParams) {
         sendMessage,
         crawingRoom,
         user,
+        setUser,
         state,
       });
 
@@ -102,13 +104,13 @@ export function useSetupSubHost(bot: LoginParams) {
   }, [shouldPingMaubinh]);
 
   const handleLoginClick = async () => {
-    login(bot)
+    login(bot, game.loginToken)
       .then((data: LoginResponse | null) => {
         if (data?.code === 200 && data?.data[0]) {
           const user = data?.data[0];
           setUser(user);
           connectMainGame(user);
-        } else if (data?.code === 404) {
+        } else if (data?.code === 404 || data?.code === 152) {
           setMessageHistory((msgs) => [
             ...msgs,
             data?.message ?? 'Login failed',
@@ -162,7 +164,6 @@ export function useSetupSubHost(bot: LoginParams) {
 
   useEffect(() => {
     if (state.foundAt && initialRoom.isSubJoin) {
-      console.log('out');
       handleLeaveRoom(initialRoom?.id);
     }
   }, [initialRoom.isSubJoin]);
@@ -176,7 +177,9 @@ export function useSetupSubHost(bot: LoginParams) {
   // Join found room
   useEffect(() => {
     if (state.foundAt && initialRoom.isHostOut && !gameStatus.isPaused) {
-      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+      sendMessage(
+        `[3,"Simms",${state.foundAt},"${game.usePw ? 'hitplay' : ''}",true]`
+      );
     }
   }, [state.foundAt, initialRoom.isHostOut]);
 
@@ -194,7 +197,9 @@ export function useSetupSubHost(bot: LoginParams) {
       initialRoom.isHostOut &&
       state.foundAt
     ) {
-      sendMessage(`[3,"Simms",${state.foundAt},"",true]`);
+      sendMessage(
+        `[3,"Simms",${state.foundAt},"${game.usePw ? 'hitplay' : ''}",true]`
+      );
     }
     if (state.foundAt && gameStatus.isPaused && crawingRoom.isFinish) {
       handleLeaveRoom(state.foundAt);
@@ -204,7 +209,9 @@ export function useSetupSubHost(bot: LoginParams) {
   // // Call sub join
   useEffect(() => {
     if (state.targetAt && subMain) {
-      joinRoom(subMain, state.targetAt);
+      game.needJoinID
+        ? joinRoomWithId(subMain, state.targetAt)
+        : joinRoom(subMain, state.targetAt);
     }
   }, [state.targetAt]);
 

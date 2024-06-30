@@ -184,14 +184,53 @@ export function areArraysEqual(arr1: number[], arr2: number[]) {
   return true;
 }
 
-export const updateCardGame = (cg: GameCard[][], newCard: GameCard) => {
+export const isAbleToCheck = (arr: any[]) => {
+  if (!arr) return false;
+  for (let i = 0; i < 2; i++) {
+    if (arr[i] === undefined) {
+      return false;
+    }
+  }
+  return true;
+};
+
+export const isRoomFull = (arr: any[]) => {
+  if (!arr) return false;
+  for (let i = 0; i < 4; i++) {
+    if (arr[i] === undefined) {
+      return false;
+    }
+  }
+  return true;
+};
+
+const isRoomEmpty = (arr: any[]) => {
+  if (arr?.length) {
+    return false;
+  }
+  return true;
+};
+
+export const updateCardGame = (
+  cg: GameCard[][],
+  newCard: GameCard,
+  idxToAdd: number
+) => {
   const lgIndex = cg.length - 1;
   const lastGame = cg[lgIndex];
   const cgExc = cg.slice(0, -1);
 
-  if (lastGame?.length < 4) {
-    return [...cgExc, [...lastGame, newCard]];
+  if (isRoomEmpty(lastGame) || isRoomFull(lastGame)) {
+    const cloned = [];
+    cloned[idxToAdd] = newCard;
+    return [...cg, cloned];
   } else {
-    return [...cg, [newCard]];
+    const cloned = [...lastGame];
+    cloned[idxToAdd] = newCard;
+    return [...cgExc, cloned];
   }
+};
+
+export const findPosition = (pool: string[], uid?: string) => {
+  return pool.indexOf(uid ?? '');
 };
